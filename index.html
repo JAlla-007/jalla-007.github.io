@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Interactive Space</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; }
+        #status { 
+            position: absolute; top: 20px; left: 20px; 
+            color: rgb(1, 183, 220); z-index: 10; pointer-events: none;
+            background: rgba(0,0,0,0.5); padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status">Status: Initializing...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        
+        // 1. SET YOUR FILENAME HERE
+        const imageName = 'profile.jpeg'; 
+
+        let scene, camera, renderer, particleSystem;
+
+        function init(texture) {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const geometry = new THREE.BufferGeometry();
+            const count = 15000;
+            const positions = new Float32Array(count * 3);
+
+            for (let i = 0; i < count; i++) {
+                positions[i*3] = (Math.random() - 0.5) * 10;
+                positions[i*3+1] = (Math.random() - 0.5) * 10;
+                positions[i*3+2] = (Math.random() - 0.5) * 5;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                map: texture,
+                transparent: true,
+                alphaTest: 0.1,
+                blending: THREE.AdditiveBlending,
+                color: 0x00ff88
+            });
+
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+
+            // Mouse Interaction
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 2 - 1;
+                const y = -(e.clientY / window.innerHeight) * 2 + 1;
+                particleSystem.rotation.y = x * 0.3;
+                particleSystem.rotation.x = y * 0.3;
+            });
+
+            animate();
+            statusEl.innerText = "Status: Online (Move Mouse)";
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Constant subtle drift
+            particleSystem.rotation.z += 0.001;
+            renderer.render(scene, camera);
+        }
+
+        // START THE LOADER
+        const loader = new THREE.TextureLoader();
+        loader.setCrossOrigin('anonymous');
+
+        statusEl.innerText = "Status: Fetching " + imageName + "...";
+
+        loader.load(
+            imageName, 
+            (texture) => {
+                console.log("Success!");
+                init(texture);
+            },
+            undefined,
+            (err) => {
+                statusEl.style.color = "#f44";
+                statusEl.innerText = "Error: Cannot find '" + imageName + "'. Check file folder!";
+                console.error("Loader Error:", err);
+            }
+        );
+
+        window.addEventListener('resize', () => {
+            if(camera) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
