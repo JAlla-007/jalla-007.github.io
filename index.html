@@ -128,6 +128,7 @@ const initialView = {
     position: new THREE.Vector3(0, 1, 3),
     target: new THREE.Vector3(0, 0, 0)
 };
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 
 function getControls() {
     return viewer.controls;
@@ -259,9 +260,17 @@ async function loadScene() {
 
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
+            rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
             showLoadingUI: false,
             progressiveLoad: false
         });
+
+        if (viewer.controls) {
+            viewer.controls.minPolarAngle = 0;
+            viewer.controls.maxPolarAngle = Math.PI;
+            viewer.controls.enablePan = true;
+            viewer.controls.update();
+        }
 
         info.classList.add('hidden');
         window.setTimeout(() => {
