@@ -166,6 +166,36 @@
             font-weight: 600;
         }
 
+        #audio-toggle {
+            position: fixed;
+            right: 16px;
+            bottom: 18px;
+            z-index: 145;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 132px;
+            min-height: 42px;
+            padding: 0 16px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        #audio-toggle:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
         #hero-title {
             position: fixed;
             inset: 0;
@@ -263,6 +293,12 @@
     Gesture control: <strong>starting</strong>
 </div>
 
+<button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
+
+<audio id="ambient-audio" loop preload="auto">
+    <source src="./logoss%20(3).mp3" type="audio/mpeg">
+</audio>
+
 <script type="importmap">
 {
   "imports": {
@@ -282,6 +318,8 @@ const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const gestureStatus = document.getElementById('gesture-status');
 const heroTitle = document.getElementById('hero-title');
+const audioToggle = document.getElementById('audio-toggle');
+const ambientAudio = document.getElementById('ambient-audio');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -306,6 +344,7 @@ let lastGestureAt = 0;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
 const gestureCenter = { x: 0.5, y: 0.5 };
+let audioStarted = false;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -441,6 +480,26 @@ function setGestureStatus(label, detail = '') {
     gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
 }
 
+function updateAudioButton() {
+    audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
+}
+
+async function startAmbientAudio() {
+    if (audioStarted) return;
+    audioStarted = true;
+
+    try {
+        ambientAudio.muted = false;
+        ambientAudio.volume = 0.6;
+        await ambientAudio.play();
+        updateAudioButton();
+    } catch (err) {
+        console.error(err);
+        ambientAudio.muted = true;
+        updateAudioButton();
+    }
+}
+
 window.setTimeout(hideHint, 4500);
 
 window.addEventListener('pointerdown', hideHint, { once: true });
@@ -449,6 +508,26 @@ window.addEventListener('keydown', hideHint, { once: true });
 window.addEventListener('pointerdown', hideHeroTitle, { once: true });
 window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
+window.addEventListener('pointerdown', startAmbientAudio, { once: true });
+window.addEventListener('keydown', startAmbientAudio, { once: true });
+
+audioToggle.addEventListener('click', async () => {
+    if (!audioStarted) {
+        await startAmbientAudio();
+        return;
+    }
+
+    if (ambientAudio.paused || ambientAudio.muted) {
+        ambientAudio.muted = false;
+        await ambientAudio.play();
+    } else {
+        ambientAudio.muted = true;
+    }
+
+    updateAudioButton();
+});
+
+updateAudioButton();
 
 let navHideTimer = null;
 
