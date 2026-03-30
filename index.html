@@ -4,32 +4,38 @@
     <meta charset="UTF-8">
     <title>St. Donats - 3D Viewer</title>
     <style>
-        body { margin: 0; background-color: #000; color: white; overflow: hidden; font-family: sans-serif; }
-        #info { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 100; }
+        body { margin: 0; background: black; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
-    <div id="info">Loading St. Donats Scan...</div>
+<div id="info">Loading...</div>
 
-    <script type="module">
-        import { Viewer } from 'https://unpkg.com/gaussian-splats-3d@0.4.3/build/gaussian-splats-3d.module.js';
+<script type="module">
+import { Viewer } from 'https://unpkg.com/gaussian-splats-3d@0.4.3/build/gaussian-splats-3d.module.js';
 
-        const viewer = new Viewer({
-            cameraUp: [0, -1, -0.6],
-            initialCameraPosition: [0, 1, 3],
-            initialCameraLookAt: [0, 0, 0]
-        });
+const viewer = new Viewer({
+    initialCameraPosition: [0, 1, 3],
+    initialCameraLookAt: [0, 0, 0]
+});
 
-        viewer.addSplatScene('./Donat.splat')
-            .then(() => {
-                document.getElementById('info').innerHTML = 'St. Donats Castle - Use Mouse to Rotate';
-                viewer.start();
-                console.log("Splat Loaded!");
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('info').innerHTML = 'Failed to load model';
-            });
-    </script>
+viewer.addSplatScene('./Donat.splat')
+.then(() => {
+    document.getElementById('info').innerText = 'Loaded — drag to rotate';
+    viewer.start();
+})
+.catch(err => {
+    console.error(err);
+    document.getElementById('info').innerText = 'Failed to load model';
+});
+</script>
+
 </body>
 </html>
