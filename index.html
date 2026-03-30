@@ -118,14 +118,14 @@ import * as THREE from 'three';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const viewer = new GaussianSplats3D.Viewer({
-    initialCameraPosition: [0, 3, 12],
+    initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
     sharedMemoryForWorkers: false,
     gpuAcceleratedSort: false
 });
 
 const initialView = {
-    position: new THREE.Vector3(0, 3, 12),
+    position: new THREE.Vector3(0, -8, 8),
     target: new THREE.Vector3(0, 0, 0)
 };
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
