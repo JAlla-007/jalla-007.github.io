@@ -38,16 +38,16 @@ const viewer = new GaussianSplats3D.Viewer({
 
 async function loadScene() {
     try {
-        const response = await fetch('./Donats.splat');
+        const response = await fetch('./dn.ksplat');
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} while fetching Donats.splat`);
+            throw new Error(`HTTP ${response.status} while fetching dn.ksplat`);
         }
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
 
         await viewer.addSplatScene(blobUrl, {
-            format: GaussianSplats3D.SceneFormat.Splat,
+            format: GaussianSplats3D.SceneFormat.KSplat,
             showLoadingUI: true,
             progressiveLoad: false
         });
