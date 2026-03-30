@@ -65,69 +65,29 @@
             }
         }
 
-        #controls {
-            position: absolute;
-            right: 16px;
-            bottom: 16px;
-            z-index: 100;
-            display: grid;
-            gap: 10px;
-            color: white;
-            font-family: sans-serif;
-        }
-
-        .control-panel {
-            background: rgba(0, 0, 0, 0.65);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 10px;
-            backdrop-filter: blur(8px);
-        }
-
-        .control-title {
-            margin-bottom: 8px;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            opacity: 0.75;
-        }
-
-        .control-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 44px);
-            gap: 6px;
-        }
-
-        .zoom-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 44px);
-            gap: 6px;
-        }
-
-        button {
-            width: 44px;
-            height: 44px;
-            border: 0;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.14);
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: rgba(255, 255, 255, 0.22);
-        }
-
-        button:active {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
         #hint {
-            max-width: 220px;
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 120;
+            max-width: min(92vw, 420px);
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            color: rgba(255, 255, 255, 0.88);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 12px;
             line-height: 1.4;
-            opacity: 0.8;
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        #hint.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
         }
     </style>
 </head>
@@ -139,48 +99,8 @@
     </div>
 </div>
 
-<div id="controls">
-    <div class="control-panel">
-        <div class="control-title">Orbit</div>
-        <div class="control-grid">
-            <div></div>
-            <button data-action="orbit-up" aria-label="Orbit up">↑</button>
-            <div></div>
-            <button data-action="orbit-left" aria-label="Orbit left">←</button>
-            <button data-action="reset" aria-label="Reset view">•</button>
-            <button data-action="orbit-right" aria-label="Orbit right">→</button>
-            <div></div>
-            <button data-action="orbit-down" aria-label="Orbit down">↓</button>
-            <div></div>
-        </div>
-    </div>
-
-    <div class="control-panel">
-        <div class="control-title">Pan</div>
-        <div class="control-grid">
-            <div></div>
-            <button data-action="pan-up" aria-label="Pan up">↑</button>
-            <div></div>
-            <button data-action="pan-left" aria-label="Pan left">←</button>
-            <div></div>
-            <button data-action="pan-right" aria-label="Pan right">→</button>
-            <div></div>
-            <button data-action="pan-down" aria-label="Pan down">↓</button>
-            <div></div>
-        </div>
-    </div>
-
-    <div class="control-panel">
-        <div class="control-title">Zoom</div>
-        <div class="zoom-grid">
-            <button data-action="zoom-in" aria-label="Zoom in">+</button>
-            <button data-action="zoom-out" aria-label="Zoom out">-</button>
-        </div>
-    </div>
-
-    <div class="control-panel" id="hint">
-        Drag to orbit. Scroll to zoom. Shift+drag to pan. Keyboard: arrows orbit, WASD pan, Q/E zoom.
-    </div>
+<div id="hint">
+    Drag to orbit. Scroll to zoom. Shift+drag to pan.
 </div>
 
 <script type="importmap">
@@ -196,6 +116,7 @@ import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gauss
 import * as THREE from 'three';
 
 const info = document.getElementById('info');
+const hint = document.getElementById('hint');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, 1, 3],
     initialCameraLookAt: [0, 0, 0],
@@ -283,30 +204,19 @@ function runAction(action) {
     }
 }
 
-function bindHold(button) {
-    let timer = null;
-    const action = button.dataset.action;
-
-    const start = () => {
-        runAction(action);
-        if (action === 'reset') return;
-        timer = window.setInterval(() => runAction(action), 80);
-    };
-
-    const stop = () => {
-        if (timer) {
-            window.clearInterval(timer);
-            timer = null;
-        }
-    };
-
-    button.addEventListener('pointerdown', start);
-    button.addEventListener('pointerup', stop);
-    button.addEventListener('pointerleave', stop);
-    button.addEventListener('pointercancel', stop);
+function hideHint() {
+    if (!hint || hint.classList.contains('hidden')) return;
+    hint.classList.add('hidden');
+    window.setTimeout(() => {
+        hint.style.display = 'none';
+    }, 350);
 }
 
-document.querySelectorAll('[data-action]').forEach(bindHold);
+window.setTimeout(hideHint, 4500);
+
+window.addEventListener('pointerdown', hideHint, { once: true });
+window.addEventListener('wheel', hideHint, { once: true });
+window.addEventListener('keydown', hideHint, { once: true });
 
 window.addEventListener('keydown', (event) => {
     if (event.repeat) return;
