@@ -249,9 +249,9 @@ window.addEventListener('keydown', (event) => {
 
 async function loadScene() {
     try {
-        const response = await fetch('./dn.ksplat');
+        const response = await fetch('./PK.ksplat');
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} while fetching dn.ksplat`);
+            throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
         }
 
         const blob = await response.blob();
