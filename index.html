@@ -165,6 +165,51 @@
             color: white;
             font-weight: 600;
         }
+
+        #hero-title {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 130;
+            pointer-events: none;
+            opacity: 0;
+            animation: titleFadeIn 1.6s ease forwards;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #hero-title.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .hero-text {
+            max-width: min(92vw, 980px);
+            padding: 0 24px;
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(40px, 7vw, 92px);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            line-height: 0.95;
+            text-align: center;
+            text-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.12),
+                0 12px 24px rgba(0, 0, 0, 0.42),
+                0 24px 60px rgba(0, 0, 0, 0.48);
+        }
+
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -192,6 +237,10 @@
     </div>
 </nav>
 
+<div id="hero-title">
+    <div class="hero-text">Atlantic College Memo</div>
+</div>
+
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
 </div>
@@ -218,6 +267,7 @@ const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const gestureStatus = document.getElementById('gesture-status');
+const heroTitle = document.getElementById('hero-title');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -356,6 +406,14 @@ function hideHint() {
     }, 350);
 }
 
+function hideHeroTitle() {
+    if (!heroTitle || heroTitle.classList.contains('hidden')) return;
+    heroTitle.classList.add('hidden');
+    window.setTimeout(() => {
+        heroTitle.style.display = 'none';
+    }, 500);
+}
+
 function setGestureStatus(label, detail = '') {
     gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
 }
@@ -365,6 +423,9 @@ window.setTimeout(hideHint, 4500);
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
 window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', hideHeroTitle, { once: true });
+window.addEventListener('wheel', hideHeroTitle, { once: true });
+window.addEventListener('keydown', hideHeroTitle, { once: true });
 
 let navHideTimer = null;
 
