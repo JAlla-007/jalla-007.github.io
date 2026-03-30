@@ -28,22 +28,39 @@
 
 
 <script type="module">
-import { Viewer } from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 
-const viewer = new Viewer({
+const info = document.getElementById('info');
+const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, 1, 3],
     initialCameraLookAt: [0, 0, 0]
 });
 
-viewer.addSplatScene('./Donats.splat')
-.then(() => {
-    document.getElementById('info').innerText = 'Loaded — drag to rotate';
-    viewer.start();
-})
-.catch(err => {
-    console.error(err);
-    document.getElementById('info').innerText = 'Failed to load model or viewer library';
-});
+async function loadScene() {
+    try {
+        const response = await fetch('./Donats.splat');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} while fetching Donats.splat`);
+        }
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        await viewer.addSplatScene(blobUrl, {
+            format: GaussianSplats3D.SceneFormat.Splat,
+            showLoadingUI: true,
+            progressiveLoad: false
+        });
+
+        info.innerText = 'Loaded - drag to rotate';
+        viewer.start();
+    } catch (err) {
+        console.error(err);
+        info.innerText = `Failed to load model: ${err.message}`;
+    }
+}
+
+loadScene();
 </script>
 
 </body>
