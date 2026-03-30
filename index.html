@@ -175,8 +175,13 @@
             z-index: 130;
             pointer-events: none;
             opacity: 0;
-            animation: titleFadeIn 2s ease forwards;
+            transform: translateY(16px);
             transition: opacity 2s ease, transform 2s ease;
+        }
+
+        #hero-title.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         #hero-title.hidden {
@@ -198,17 +203,6 @@
                 0 1px 0 rgba(255, 255, 255, 0.12),
                 0 12px 24px rgba(0, 0, 0, 0.42),
                 0 24px 60px rgba(0, 0, 0, 0.48);
-        }
-
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
     </style>
 </head>
@@ -407,11 +401,20 @@ function hideHint() {
 }
 
 function hideHeroTitle() {
-    if (!heroTitle || heroTitle.classList.contains('hidden')) return;
+    if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
     heroTitle.classList.add('hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
     }, 2000);
+}
+
+function showHeroTitle() {
+    if (!heroTitle) return;
+    heroTitle.style.display = 'flex';
+    heroTitle.classList.remove('hidden');
+    window.requestAnimationFrame(() => {
+        heroTitle.classList.add('visible');
+    });
 }
 
 function setGestureStatus(label, detail = '') {
@@ -676,6 +679,7 @@ async function loadScene() {
         viewer.start();
         startAmbientMotion();
         startGestureControls();
+        showHeroTitle();
     } catch (err) {
         console.error(err);
         info.innerHTML = `
