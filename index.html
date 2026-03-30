@@ -2,61 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>St. Donats Virtual Tour</title>
+    <title>St. Donats - 3D Viewer</title>
     <style>
-        body { margin: 0; background: #000; color: white; overflow: hidden; font-family: sans-serif; }
-        #loader { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 1.2rem; z-index: 100; font-weight: bold;
-        }
+        body { margin: 0; background-color: #000; color: white; overflow: hidden; font-family: sans-serif; }
+        #info { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 100; }
     </style>
-    
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
-            "@lumaai/luma-web": "https://unpkg.com/@lumaai/luma-web@0.2.0/dist/library/luma-web.esm.js"
-        }
-    }
-    </script>
 </head>
 <body>
-
-    <div id="loader">Initializing St. Donats Scan...</div>
+    <div id="info">Loading St. Donats Scan...</div>
 
     <script type="module">
-        // We import them directly from the map above. No waiting required!
-        import * as THREE from 'three';
-        import { LumaSplatsThree } from '@lumaai/luma-web';
+        import * as THREE from 'https://unpkg.com/three@0.157.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+
+        // This is a direct, open-source Splat loader
+        import { PlyLoader } from 'https://cdn.jsdelivr.net/npm/@antimatter15/splat-loader@1.0.1/index.js';
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        // Pulled the camera back a bit so the castle isn't too close
-        camera.position.z = 10; 
+        camera.position.set(0, 2, 5);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Load the Splat!
-        const splat = new LumaSplatsThree({
-            source: 'st_donats.splat'
-        });
+        const controls = new OrbitControls(camera, renderer.domElement);
 
-        scene.add(splat);
+        // This loader is much more reliable than Luma for custom websites
+        const loader = new PlyLoader();
+        
+        // Make sure your file is named exactly st_donats.splat or .ply
+        loader.load('st_donats.splat', (splat) => {
+            scene.add(splat);
+            document.getElementById('info').innerHTML = 'St. Donats Castle - Use Mouse to Rotate';
+            console.log("Splat Loaded!");
+        });
 
         function animate() {
             requestAnimationFrame(animate);
-            // Slowly spin the castle
-            if (splat) splat.rotation.y += 0.001; 
+            controls.update();
             renderer.render(scene, camera);
         }
 
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
         animate();
-        
-        // Hide the loader text
-        document.getElementById('loader').style.display = 'none';
     </script>
 </body>
 </html>
