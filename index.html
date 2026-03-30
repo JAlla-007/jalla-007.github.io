@@ -50,6 +50,7 @@ async function loadScene() {
 
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
+            rotation: [-Math.PI / 2, 0, 0],
             showLoadingUI: true,
             progressiveLoad: false
         });
