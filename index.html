@@ -175,8 +175,8 @@
             z-index: 130;
             pointer-events: none;
             opacity: 0;
-            animation: titleFadeIn 1.6s ease forwards;
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            animation: titleFadeIn 2s ease forwards;
+            transition: opacity 2s ease, transform 2s ease;
         }
 
         #hero-title.hidden {
@@ -411,7 +411,7 @@ function hideHeroTitle() {
     heroTitle.classList.add('hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
-    }, 500);
+    }, 2000);
 }
 
 function setGestureStatus(label, detail = '') {
@@ -468,9 +468,9 @@ function applyGestureZoom(gesture) {
 
     const currentDistance = viewer.camera.position.distanceTo(controls.target);
     if (gesture === 'open-palm') {
-        setCameraDistance(currentDistance * 0.95);
+        setCameraDistance(currentDistance * 0.975);
     } else if (gesture === 'fist') {
-        setCameraDistance(currentDistance * 1.06);
+        setCameraDistance(currentDistance * 1.03);
     }
 }
 
@@ -520,7 +520,7 @@ function getPointDirection(landmarks) {
 function applyDirectionalGesture(direction) {
     if (!direction) return;
 
-    const orbitStep = 0.05;
+    const orbitStep = 0.025;
     switch (direction) {
         case 'left':
             orbit(-orbitStep, 0);
@@ -597,11 +597,11 @@ async function startGestureControls() {
                 }
             }
 
-            if (currentGesture === 'point' && direction && now - lastGestureAt > 45) {
+            if (currentGesture === 'point' && direction && now - lastGestureAt > 90) {
                 applyDirectionalGesture(direction);
                 setGestureStatus('steering', direction);
                 lastGestureAt = now;
-            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 45) {
+            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 90) {
                 applyGestureZoom(currentGesture);
                 lastGestureAt = now;
             }
