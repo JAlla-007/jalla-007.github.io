@@ -600,11 +600,11 @@ async function startGestureControls() {
                 }
             }
 
-            if (currentGesture === 'point' && direction && now - lastGestureAt > 90) {
+            if (currentGesture === 'point' && direction && now - lastGestureAt > 65) {
                 applyDirectionalGesture(direction);
                 setGestureStatus('steering', direction);
                 lastGestureAt = now;
-            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 90) {
+            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 65) {
                 applyGestureZoom(currentGesture);
                 lastGestureAt = now;
             }
