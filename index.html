@@ -143,6 +143,28 @@
             opacity: 0;
             transform: translateX(-50%) translateY(10px);
         }
+
+        #gesture-status {
+            position: fixed;
+            left: 16px;
+            bottom: 18px;
+            z-index: 140;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.82);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        #gesture-status strong {
+            color: white;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -174,21 +196,28 @@
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
 </div>
 
+<div id="gesture-status">
+    Gesture control: <strong>starting</strong>
+</div>
+
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/+esm"
   }
 }
 </script>
 
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import * as THREE from 'three';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
+const gestureStatus = document.getElementById('gesture-status');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -205,6 +234,13 @@ const initialView = {
 };
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let motionFrame = null;
+let handLandmarker = null;
+let webcamVideo = null;
+let gestureFrame = null;
+let currentGesture = 'idle';
+let lastGestureAt = 0;
+const minZoomDistance = 4;
+const maxZoomDistance = 14;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -213,33 +249,24 @@ function startAmbientMotion() {
     const basePosition = splatScene.position.clone();
     const baseQuaternion = splatScene.quaternion.clone();
     const baseScale = splatScene.scale.clone();
-    const tempEuler = new THREE.Euler();
-    const tempQuaternion = new THREE.Quaternion();
     const startTime = performance.now();
 
     const animateScene = () => {
         const t = (performance.now() - startTime) * 0.001;
         const intro = Math.min(t / 2.4, 1);
         const easedIntro = 1 - Math.pow(1 - intro, 3);
-        const breathing = 1 + Math.sin(t * 0.85) * 0.018;
 
         splatScene.position.copy(basePosition);
         splatScene.position.y += (1 - easedIntro) * 0.35;
-        splatScene.position.y += Math.sin(t * 0.9) * 0.06;
-        splatScene.position.x += Math.sin(t * 0.45) * 0.03;
-        splatScene.position.z += Math.cos(t * 0.4) * 0.02;
-
-        tempEuler.set(
-            Math.sin(t * 0.7) * 0.015,
-            Math.sin(t * 0.35) * 0.045,
-            Math.cos(t * 0.55) * 0.02
-        );
-        tempQuaternion.setFromEuler(tempEuler);
-        splatScene.quaternion.copy(baseQuaternion).multiply(tempQuaternion);
-        splatScene.scale.copy(baseScale).multiplyScalar((0.94 + easedIntro * 0.06) * breathing);
+        splatScene.quaternion.copy(baseQuaternion);
+        splatScene.scale.copy(baseScale).multiplyScalar(0.94 + easedIntro * 0.06);
 
         viewer.splatMesh.updateTransforms();
-        motionFrame = window.requestAnimationFrame(animateScene);
+        if (intro < 1) {
+            motionFrame = window.requestAnimationFrame(animateScene);
+        } else {
+            motionFrame = null;
+        }
     };
 
     motionFrame = window.requestAnimationFrame(animateScene);
@@ -328,6 +355,10 @@ function hideHint() {
     }, 350);
 }
 
+function setGestureStatus(label, detail = '') {
+    gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
+}
+
 window.setTimeout(hideHint, 4500);
 
 window.addEventListener('pointerdown', hideHint, { once: true });
@@ -357,6 +388,126 @@ nav.addEventListener('mouseleave', () => {
         nav.classList.remove('is-visible');
     }, 220);
 });
+
+function setCameraDistance(nextDistance) {
+    const controls = getControls();
+    if (!controls) return;
+
+    const offset = viewer.camera.position.clone().sub(controls.target).normalize();
+    const clampedDistance = THREE.MathUtils.clamp(nextDistance, minZoomDistance, maxZoomDistance);
+    viewer.camera.position.copy(controls.target).add(offset.multiplyScalar(clampedDistance));
+    viewer.camera.lookAt(controls.target);
+    controls.update();
+}
+
+function applyGestureZoom(gesture) {
+    const controls = getControls();
+    if (!controls) return;
+
+    const currentDistance = viewer.camera.position.distanceTo(controls.target);
+    if (gesture === 'open-palm') {
+        setCameraDistance(currentDistance * 0.985);
+    } else if (gesture === 'fist') {
+        setCameraDistance(currentDistance * 1.02);
+    }
+}
+
+function isFingerExtended(landmarks, tipIndex, pipIndex) {
+    return landmarks[tipIndex].y < landmarks[pipIndex].y;
+}
+
+function classifyGesture(landmarks) {
+    const wrist = landmarks[0];
+    const fingertips = [4, 8, 12, 16, 20];
+    const spread = fingertips.reduce((sum, index) => {
+        return sum + Math.hypot(landmarks[index].x - wrist.x, landmarks[index].y - wrist.y);
+    }, 0) / fingertips.length;
+
+    const openCount = [
+        isFingerExtended(landmarks, 8, 6),
+        isFingerExtended(landmarks, 12, 10),
+        isFingerExtended(landmarks, 16, 14),
+        isFingerExtended(landmarks, 20, 18)
+    ].filter(Boolean).length;
+
+    const thumbOpen = Math.abs(landmarks[4].x - landmarks[3].x) > 0.04;
+
+    if (openCount >= 3 && thumbOpen && spread > 0.22) return 'open-palm';
+    if (openCount <= 1 && spread < 0.16) return 'fist';
+    return 'idle';
+}
+
+async function startGestureControls() {
+    try {
+        setGestureStatus('requesting camera');
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            },
+            audio: false
+        });
+
+        webcamVideo = document.createElement('video');
+        webcamVideo.playsInline = true;
+        webcamVideo.muted = true;
+        webcamVideo.autoplay = true;
+        webcamVideo.srcObject = stream;
+        await webcamVideo.play();
+
+        const vision = await FilesetResolver.forVisionTasks(
+            'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+            baseOptions: {
+                modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
+            },
+            runningMode: 'VIDEO',
+            numHands: 1
+        });
+
+        setGestureStatus('ready', 'open palm = zoom in, fist = zoom out');
+
+        const detectGestures = () => {
+            if (!handLandmarker || !webcamVideo || webcamVideo.readyState < 2) {
+                gestureFrame = window.requestAnimationFrame(detectGestures);
+                return;
+            }
+
+            const now = performance.now();
+            const result = handLandmarker.detectForVideo(webcamVideo, now);
+            const landmarks = result.landmarks?.[0];
+            const nextGesture = landmarks ? classifyGesture(landmarks) : 'idle';
+
+            if (nextGesture !== currentGesture) {
+                currentGesture = nextGesture;
+                lastGestureAt = now;
+                if (nextGesture === 'open-palm') {
+                    setGestureStatus('zooming in');
+                } else if (nextGesture === 'fist') {
+                    setGestureStatus('zooming out');
+                } else {
+                    setGestureStatus('ready', 'open palm = zoom in, fist = zoom out');
+                }
+            }
+
+            if (currentGesture !== 'idle' && now - lastGestureAt > 80) {
+                applyGestureZoom(currentGesture);
+                lastGestureAt = now;
+            }
+
+            gestureFrame = window.requestAnimationFrame(detectGestures);
+        };
+
+        gestureFrame = window.requestAnimationFrame(detectGestures);
+    } catch (err) {
+        console.error(err);
+        setGestureStatus('camera unavailable');
+    }
+}
 
 window.addEventListener('keydown', (event) => {
     if (event.repeat) return;
@@ -417,6 +568,7 @@ async function loadScene() {
         }, 450);
         viewer.start();
         startAmbientMotion();
+        startGestureControls();
     } catch (err) {
         console.error(err);
         info.innerHTML = `
