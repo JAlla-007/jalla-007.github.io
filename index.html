@@ -1145,22 +1145,17 @@ function classifyGesture(landmarks) {
     ].filter(Boolean).length;
 
     const thumbOpen = Math.abs(landmarks[4].x - landmarks[3].x) > 0.04;
-    const indexExtended = isFingerExtended(landmarks, 8, 6);
-    const middleExtended = isFingerExtended(landmarks, 12, 10);
-    const ringExtended = isFingerExtended(landmarks, 16, 14);
-    const pinkyExtended = isFingerExtended(landmarks, 20, 18);
-
     if (openCount >= 3 && thumbOpen && spread > 0.22) return 'open-palm';
     if (openCount <= 1 && spread < 0.16) return 'fist';
-    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return 'point';
     return 'idle';
 }
 
-function getPointDirection(landmarks) {
-    const indexTip = landmarks[8];
-    const dx = indexTip.x - gestureCenter.x;
-    const dy = indexTip.y - gestureCenter.y;
-    const deadZone = 0.12;
+function getPalmDirection(landmarks) {
+    const palmCenterX = (landmarks[0].x + landmarks[5].x + landmarks[17].x) / 3;
+    const palmCenterY = (landmarks[0].y + landmarks[5].y + landmarks[17].y) / 3;
+    const dx = palmCenterX - gestureCenter.x;
+    const dy = palmCenterY - gestureCenter.y;
+    const deadZone = 0.1;
 
     if (Math.abs(dx) < deadZone && Math.abs(dy) < deadZone) return null;
     if (Math.abs(dx) > Math.abs(dy)) {
@@ -1221,7 +1216,7 @@ async function startGestureControls() {
             numHands: 1
         });
 
-        setGestureStatus('ready', 'palm = zoom in, fist = zoom out, point = steer');
+        setGestureStatus('ready', 'move palm to steer, fist = zoom out');
 
         const detectGestures = () => {
             if (!handLandmarker || !webcamVideo || webcamVideo.readyState < 2) {
@@ -1233,27 +1228,25 @@ async function startGestureControls() {
             const result = handLandmarker.detectForVideo(webcamVideo, now);
             const landmarks = result.landmarks?.[0];
             const nextGesture = landmarks ? classifyGesture(landmarks) : 'idle';
-            const direction = nextGesture === 'point' && landmarks ? getPointDirection(landmarks) : null;
+            const direction = nextGesture === 'open-palm' && landmarks ? getPalmDirection(landmarks) : null;
 
             if (nextGesture !== currentGesture) {
                 currentGesture = nextGesture;
                 lastGestureAt = now;
                 if (nextGesture === 'open-palm') {
-                    setGestureStatus('zooming in');
+                    setGestureStatus('steering', direction ? direction : 'hold near center to pause');
                 } else if (nextGesture === 'fist') {
                     setGestureStatus('zooming out');
-                } else if (nextGesture === 'point') {
-                    setGestureStatus('steering', direction ? direction : 'hold near center to pause');
                 } else {
-                    setGestureStatus('ready', 'palm = zoom in, fist = zoom out, point = steer');
+                    setGestureStatus('ready', 'move palm to steer, fist = zoom out');
                 }
             }
 
-            if (currentGesture === 'point' && direction && now - lastGestureAt > 65) {
+            if (currentGesture === 'open-palm' && direction && now - lastGestureAt > 65) {
                 applyDirectionalGesture(direction);
                 setGestureStatus('steering', direction);
                 lastGestureAt = now;
-            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 65) {
+            } else if (currentGesture === 'fist' && now - lastGestureAt > 65) {
                 applyGestureZoom(currentGesture);
                 lastGestureAt = now;
             }
