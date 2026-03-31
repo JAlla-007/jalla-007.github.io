@@ -42,9 +42,8 @@
         .nav-shell {
             position: relative;
             display: grid;
-            grid-template-columns: auto 34px auto 34px auto;
+            grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr);
             align-items: center;
-            justify-content: center;
             width: 100%;
             height: 54px;
             margin: 0;
@@ -64,14 +63,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             min-height: 34px;
             padding: 0 10px;
             border-radius: 999px;
             color: rgba(255, 255, 255, 0.92);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.12em;
+            font-size: 12px;
+            letter-spacing: 0.14em;
             text-decoration: none;
             text-transform: uppercase;
             transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
@@ -90,12 +89,12 @@
         }
 
         .nav-icon {
-            font-size: 12px;
+            font-size: 14px;
             line-height: 1;
         }
 
         .nav-connector {
-            width: 34px;
+            width: 72px;
             height: 1px;
             background: rgba(255, 255, 255, 0.58);
             justify-self: center;
@@ -586,18 +585,24 @@
             position: absolute;
             left: 0;
             top: 0;
-            max-width: 132px;
-            min-height: 34px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.05);
+            width: var(--bubble-size, 88px);
+            height: var(--bubble-size, 88px);
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background:
+                radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.16), transparent 34%),
+                rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.14);
             backdrop-filter: blur(12px);
             color: rgba(255, 255, 255, 0.95);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 10px;
-            line-height: 1.2;
-            letter-spacing: 0.08em;
+            line-height: 1.1;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             text-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
             box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
@@ -607,7 +612,6 @@
             opacity: 0;
             transition: opacity 0.45s ease, background 0.2s ease, border-color 0.2s ease;
             cursor: grab;
-            white-space: nowrap;
         }
 
         .billboard-text.visible {
@@ -624,14 +628,16 @@
         }
 
         .billboard-text.expanded {
-            max-width: 260px;
+            width: min(280px, calc(100vw - 36px));
+            height: auto;
             min-height: 0;
-            padding: 14px 16px 15px;
+            padding: 16px 18px 18px;
             border-radius: 22px;
-            white-space: normal;
             text-transform: none;
             letter-spacing: normal;
             z-index: 2;
+            display: block;
+            text-align: left;
         }
 
         .billboard-title {
@@ -641,6 +647,7 @@
             line-height: 1.1;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+            max-width: 100%;
         }
 
         .billboard-body {
@@ -910,36 +917,49 @@ const memoryBillboards = [
     {
         title: 'Departure',
         body: 'Into the Great Wilds and Misty Future!',
-        worldPosition: new THREE.Vector3(-3.9, 2.4, 1.3)
+        worldPosition: new THREE.Vector3(-3.9, 2.4, 1.3),
+        size: 118,
+        drift: { x: 0.18, y: 0.14, z: 0.08, speed: 0.72, phase: 0.3 }
     },
     {
         title: 'Corridor',
         body: 'The corridors still hum even after everyone leaves.',
-        worldPosition: new THREE.Vector3(3.6, 2.1, 1.6)
+        worldPosition: new THREE.Vector3(3.6, 2.1, 1.6),
+        size: 88,
+        drift: { x: 0.14, y: 0.1, z: 0.05, speed: 0.94, phase: 1.1 }
     },
     {
         title: 'Sea Air',
         body: 'Somewhere between sea air and song, we became ourselves.',
-        worldPosition: new THREE.Vector3(-4.4, -0.7, -0.1)
+        worldPosition: new THREE.Vector3(-4.4, -0.7, -0.1),
+        size: 104,
+        drift: { x: 0.16, y: 0.12, z: 0.07, speed: 0.81, phase: 2.4 }
     },
     {
         title: 'Promise',
         body: 'Every goodbye here sounds a little like a promise.',
-        worldPosition: new THREE.Vector3(4.2, -0.3, 0.3)
+        worldPosition: new THREE.Vector3(4.2, -0.3, 0.3),
+        size: 92,
+        drift: { x: 0.12, y: 0.18, z: 0.06, speed: 0.69, phase: 3.2 }
     },
     {
         title: 'Hilltop',
         body: 'The hill kept our footsteps long after the day was gone.',
-        worldPosition: new THREE.Vector3(-1.6, -2.3, -1.4)
+        worldPosition: new THREE.Vector3(-1.6, -2.3, -1.4),
+        size: 126,
+        drift: { x: 0.15, y: 0.13, z: 0.08, speed: 0.88, phase: 4.1 }
     },
     {
         title: 'Choir',
         body: 'Some notes still feel suspended in the air, waiting for someone to finish the phrase.',
-        worldPosition: new THREE.Vector3(1.7, -2.0, -1.1)
+        worldPosition: new THREE.Vector3(1.7, -2.0, -1.1),
+        size: 80,
+        drift: { x: 0.1, y: 0.16, z: 0.05, speed: 1.02, phase: 5.4 }
     }
 ].map((note, index) => {
     const element = document.createElement('div');
     element.className = 'billboard-text';
+    element.style.setProperty('--bubble-size', `${note.size}px`);
     element.innerHTML = `
         <span class="billboard-title">${note.title}</span>
         <span class="billboard-body">${note.body}</span>
@@ -951,6 +971,8 @@ const memoryBillboards = [
     return {
         ...note,
         element,
+        baseWorldPosition: note.worldPosition.clone(),
+        renderedWorldPosition: note.worldPosition.clone(),
         dragPlane: new THREE.Plane(),
         dragOffset: new THREE.Vector3(),
         intersectPoint: new THREE.Vector3(),
@@ -1124,8 +1146,19 @@ function setGestureStatus(label, detail = '') {
 function updateBillboardPositions() {
     if (!viewer.camera) return;
 
+    const now = performance.now() * 0.001;
+
     memoryBillboards.forEach((billboard) => {
-        const projected = billboard.worldPosition.clone().project(viewer.camera);
+        if (!activeBillboard || activeBillboard !== billboard) {
+            billboard.renderedWorldPosition.copy(billboard.baseWorldPosition);
+            billboard.renderedWorldPosition.x += Math.sin(now * billboard.drift.speed + billboard.drift.phase) * billboard.drift.x;
+            billboard.renderedWorldPosition.y += Math.cos(now * (billboard.drift.speed * 0.87) + billboard.drift.phase * 1.3) * billboard.drift.y;
+            billboard.renderedWorldPosition.z += Math.sin(now * (billboard.drift.speed * 0.63) + billboard.drift.phase * 0.8) * billboard.drift.z;
+        } else {
+            billboard.renderedWorldPosition.copy(billboard.baseWorldPosition);
+        }
+
+        const projected = billboard.renderedWorldPosition.clone().project(viewer.camera);
         const isVisible = projected.z > -1 && projected.z < 1;
 
         if (!memoriesVisible || !isVisible) {
@@ -1181,13 +1214,14 @@ function beginBillboardDrag(event, billboard) {
     dragMoved = false;
     dragStartX = event.clientX;
     dragStartY = event.clientY;
+    billboard.baseWorldPosition.copy(billboard.renderedWorldPosition);
     setBillboardPointer(event);
     billboardRaycaster.setFromCamera(billboardPointer, viewer.camera);
     const planeNormal = viewer.camera.getWorldDirection(new THREE.Vector3()).normalize();
-    billboard.dragPlane.setFromNormalAndCoplanarPoint(planeNormal, billboard.worldPosition);
+    billboard.dragPlane.setFromNormalAndCoplanarPoint(planeNormal, billboard.baseWorldPosition);
 
     if (billboardRaycaster.ray.intersectPlane(billboard.dragPlane, billboard.intersectPoint)) {
-        billboard.dragOffset.copy(billboard.worldPosition).sub(billboard.intersectPoint);
+        billboard.dragOffset.copy(billboard.baseWorldPosition).sub(billboard.intersectPoint);
     } else {
         billboard.dragOffset.set(0, 0, 0);
     }
@@ -1206,7 +1240,7 @@ function moveBillboardDrag(event) {
     billboardRaycaster.setFromCamera(billboardPointer, viewer.camera);
 
     if (billboardRaycaster.ray.intersectPlane(activeBillboard.dragPlane, activeBillboard.intersectPoint)) {
-        activeBillboard.worldPosition.copy(activeBillboard.intersectPoint).add(activeBillboard.dragOffset);
+        activeBillboard.baseWorldPosition.copy(activeBillboard.intersectPoint).add(activeBillboard.dragOffset);
     }
 }
 
