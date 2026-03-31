@@ -22,12 +22,13 @@
         }
 
         #info.hidden { opacity: 0; }
-        #nav { position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-62px); width: min(560px, calc(100vw - 28px)); z-index: 160; transition: transform 0.35s ease; }
-        #nav:hover, #nav.is-visible { transform: translateX(-50%) translateY(14px); }
-        .nav-shell { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; gap: 10px; padding: 10px; border-radius: 20px; background: rgba(15, 15, 15, 0.5); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(14px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28); }
-        .nav-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 14px; color: rgba(255,255,255,0.92); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.06em; text-decoration: none; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
+        #nav { position: fixed; top: 0; left: 0; right: 0; height: 86px; z-index: 160; }
+        #nav:hover .nav-shell, #nav:focus-within .nav-shell { transform: translateY(10px); }
+        .nav-shell { position: relative; display: grid; grid-template-columns: auto 34px auto 34px auto; align-items: center; justify-content: center; width: min(320px, calc(100vw - 12px)); margin: 0 auto; padding: 8px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.16); backdrop-filter: blur(14px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28); transform: translateY(-54px); transition: transform 0.32s ease; }
+        .nav-link { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 10px; border-radius: 999px; color: rgba(255,255,255,0.92); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.12em; text-decoration: none; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
         .nav-link:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
-        .nav-icon { font-size: 15px; line-height: 1; }
+        .nav-icon { font-size: 12px; line-height: 1; }
+        .nav-connector { width: 34px; height: 1px; background: rgba(255, 255, 255, 0.58); justify-self: center; }
         .loading-shell { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 28px; border-radius: 999px; background: radial-gradient(circle at top, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
         .loading-ring { width: 54px; height: 54px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.16); border-top-color: rgba(255,255,255,0.95); animation: spin 0.9s linear infinite; }
         .loading-text { color: rgba(255,255,255,0.94); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; padding-left: 0.28em; }
@@ -48,7 +49,9 @@
 <div id="info"><div class="loading-shell"><div class="loading-ring" aria-hidden="true"></div><div class="loading-text">Loading</div></div></div>
 <nav id="nav" aria-label="Primary"><div class="nav-shell">
     <a class="nav-link" href="./Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
     <a class="nav-link" href="../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
     <a class="nav-link" href="./Languages.html"><span class="nav-icon">?</span><span>Languages</span></a>
 </div></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Church</div><div class="hero-subtitle">A location within Atlantic College Memo</div></div></div>
@@ -69,7 +72,6 @@ const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition: [0, -8, 8], initialCameraLookAt: [0, 0, 0], sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-let navHideTimer = null;
 let audioStarted = false;
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
@@ -86,9 +88,6 @@ window.addEventListener('pointerdown', startAmbientAudio, { once: true });
 window.addEventListener('keydown', startAmbientAudio, { once: true });
 audioToggle.addEventListener('click', async () => { if (!audioStarted) { await startAmbientAudio(); return; } if (ambientAudio.paused || ambientAudio.muted) { ambientAudio.muted = false; await ambientAudio.play(); } else { ambientAudio.muted = true; } updateAudioButton(); });
 updateAudioButton();
-function showNavTemporarily() { nav.classList.add('is-visible'); if (navHideTimer) window.clearTimeout(navHideTimer); navHideTimer = window.setTimeout(() => { if (!nav.matches(':hover')) nav.classList.remove('is-visible'); }, 1600); }
-window.addEventListener('mousemove', (event) => { if (event.clientY < 90) showNavTemporarily(); });
-nav.addEventListener('mouseleave', () => { navHideTimer = window.setTimeout(() => { nav.classList.remove('is-visible'); }, 220); });
 async function loadScene() {
     try {
         const response = await fetch('../PK.ksplat');

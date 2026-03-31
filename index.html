@@ -28,42 +28,47 @@
         #nav {
             position: fixed;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(-62px);
-            width: min(560px, calc(100vw - 28px));
+            left: 0;
+            right: 0;
+            height: 86px;
             z-index: 160;
-            transition: transform 0.35s ease;
         }
 
-        #nav:hover,
-        #nav.is-visible {
-            transform: translateX(-50%) translateY(14px);
+        #nav:hover .nav-shell,
+        #nav:focus-within .nav-shell {
+            transform: translateY(10px);
         }
 
         .nav-shell {
+            position: relative;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: auto 34px auto 34px auto;
             align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 20px;
-            background: rgba(15, 15, 15, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            justify-content: center;
+            width: min(320px, calc(100vw - 12px));
+            margin: 0 auto;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.16);
             backdrop-filter: blur(14px);
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+            transform: translateY(-54px);
+            transition: transform 0.32s ease;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            min-height: 44px;
-            border-radius: 14px;
+            gap: 6px;
+            min-height: 34px;
+            padding: 0 10px;
+            border-radius: 999px;
             color: rgba(255, 255, 255, 0.92);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 13px;
-            letter-spacing: 0.06em;
+            font-size: 10px;
+            letter-spacing: 0.12em;
             text-decoration: none;
             text-transform: uppercase;
             transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
@@ -82,8 +87,15 @@
         }
 
         .nav-icon {
-            font-size: 15px;
+            font-size: 12px;
             line-height: 1;
+        }
+
+        .nav-connector {
+            width: 34px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.58);
+            justify-self: center;
         }
 
         #map-overlay {
@@ -555,6 +567,11 @@
             transform: translateX(2px);
         }
 
+        .side-tag.active {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+
         #billboard-layer {
             position: fixed;
             inset: 0;
@@ -578,15 +595,15 @@
             line-height: 1.2;
             text-shadow: 0 8px 26px rgba(0, 0, 0, 0.42);
             box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
-            cursor: grab;
             user-select: none;
-            pointer-events: auto;
+            pointer-events: none;
             transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.45s ease;
         }
 
-        .billboard-text.dragging {
-            cursor: grabbing;
-            background: rgba(255, 255, 255, 0.16);
+        .billboard-text.visible {
+            opacity: 1;
         }
 
         .billboard-caption {
@@ -670,10 +687,12 @@
             <span class="nav-icon">+</span>
             <span>Map</span>
         </button>
+        <div class="nav-connector" aria-hidden="true"></div>
         <button class="nav-link nav-button" id="home-reset" type="button" aria-label="Reset home view">
             <span class="nav-icon">⌂</span>
             <span>Home</span>
         </button>
+        <div class="nav-connector" aria-hidden="true"></div>
         <button class="nav-link nav-button" id="memo-toggle" type="button" aria-label="Open memo">
             <span class="nav-icon">?</span>
             <span>Memo</span>
@@ -759,10 +778,6 @@
 </div>
 
 <div id="billboard-layer">
-    <div class="billboard-text" id="billboard-quote">
-        Into the Great Wilds and Misty Future!
-        <span class="billboard-caption">Drag this memory through the scene</span>
-    </div>
 </div>
 
 <div id="hint">
@@ -811,7 +826,7 @@ const reviewNotesButton = document.getElementById('review-notes');
 const searchStoriesButton = document.getElementById('search-stories');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
-const billboardQuote = document.getElementById('billboard-quote');
+const billboardLayer = document.getElementById('billboard-layer');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -837,16 +852,49 @@ const minZoomDistance = 4;
 const maxZoomDistance = 22;
 const gestureCenter = { x: 0.5, y: 0.5 };
 let audioStarted = false;
-const billboardState = {
-    element: billboardQuote,
-    worldPosition: new THREE.Vector3(1.1, 0.6, -0.6),
-    dragPlane: new THREE.Plane(),
-    raycaster: new THREE.Raycaster(),
-    pointer: new THREE.Vector2(),
-    dragging: false,
-    dragOffset: new THREE.Vector3(),
-    intersectPoint: new THREE.Vector3()
-};
+const memoryBillboards = [
+    {
+        text: 'Into the Great Wilds and Misty Future!',
+        caption: 'Memory trace 01',
+        worldPosition: new THREE.Vector3(1.1, 0.6, -0.6)
+    },
+    {
+        text: 'The corridors still hum even after everyone leaves.',
+        caption: 'Memory trace 02',
+        worldPosition: new THREE.Vector3(-1.8, 1.15, 0.5)
+    },
+    {
+        text: 'Somewhere between sea air and song, we became ourselves.',
+        caption: 'Memory trace 03',
+        worldPosition: new THREE.Vector3(0.25, -1.35, 1.2)
+    },
+    {
+        text: 'Every goodbye here sounds a little like a promise.',
+        caption: 'Memory trace 04',
+        worldPosition: new THREE.Vector3(2.05, -0.25, 0.95)
+    },
+    {
+        text: 'The hill kept our footsteps long after the day was gone.',
+        caption: 'Memory trace 05',
+        worldPosition: new THREE.Vector3(-0.9, 1.9, -1.35)
+    }
+].map((note, index) => {
+    const element = document.createElement('div');
+    element.className = 'billboard-text';
+    element.innerHTML = `
+        ${note.text}
+        <span class="billboard-caption">${note.caption}</span>
+    `;
+    element.style.transitionDelay = `${index * 90}ms`;
+    billboardLayer.appendChild(element);
+
+    return {
+        ...note,
+        element
+    };
+});
+
+let memoriesVisible = false;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1003,70 +1051,42 @@ function setGestureStatus(label, detail = '') {
     gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
 }
 
-function updateBillboardPosition() {
-    if (!viewer.camera || !billboardState.element) return;
+function updateBillboardPositions() {
+    if (!viewer.camera) return;
 
-    const projected = billboardState.worldPosition.clone().project(viewer.camera);
-    const isVisible = projected.z > -1 && projected.z < 1;
+    memoryBillboards.forEach((billboard) => {
+        const projected = billboard.worldPosition.clone().project(viewer.camera);
+        const isVisible = projected.z > -1 && projected.z < 1;
 
-    if (!isVisible) {
-        billboardState.element.style.display = 'none';
-        return;
-    }
+        if (!memoriesVisible || !isVisible) {
+            billboard.element.style.display = 'none';
+            billboard.element.classList.remove('visible');
+            return;
+        }
 
-    const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
-    const y = (-projected.y * 0.5 + 0.5) * window.innerHeight;
-    billboardState.element.style.display = 'block';
-    billboardState.element.style.left = `${x}px`;
-    billboardState.element.style.top = `${y}px`;
-    const distance = viewer.camera.position.distanceTo(billboardState.worldPosition);
-    const scale = THREE.MathUtils.clamp(1.8 / distance, 0.72, 1.08);
-    billboardState.element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-projected.y * 0.5 + 0.5) * window.innerHeight;
+
+        billboard.element.style.display = 'block';
+        billboard.element.style.left = `${x}px`;
+        billboard.element.style.top = `${y}px`;
+        billboard.element.style.transform = 'translate(-50%, -50%)';
+        billboard.element.classList.add('visible');
+    });
 }
 
 function startBillboardLoop() {
     const tick = () => {
-        updateBillboardPosition();
+        updateBillboardPositions();
         window.requestAnimationFrame(tick);
     };
     window.requestAnimationFrame(tick);
 }
 
-function setBillboardPointer(event) {
-    billboardState.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-    billboardState.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
-
-function beginBillboardDrag(event) {
-    if (!viewer.camera) return;
-    event.preventDefault();
-    event.stopPropagation();
-    setBillboardPointer(event);
-    billboardState.raycaster.setFromCamera(billboardState.pointer, viewer.camera);
-    const planeNormal = viewer.camera.getWorldDirection(new THREE.Vector3()).normalize();
-    billboardState.dragPlane.setFromNormalAndCoplanarPoint(planeNormal, billboardState.worldPosition);
-    if (billboardState.raycaster.ray.intersectPlane(billboardState.dragPlane, billboardState.intersectPoint)) {
-        billboardState.dragOffset.copy(billboardState.worldPosition).sub(billboardState.intersectPoint);
-    } else {
-        billboardState.dragOffset.set(0, 0, 0);
-    }
-    billboardState.dragging = true;
-    billboardState.element.classList.add('dragging');
-}
-
-function moveBillboardDrag(event) {
-    if (!billboardState.dragging || !viewer.camera) return;
-    setBillboardPointer(event);
-    billboardState.raycaster.setFromCamera(billboardState.pointer, viewer.camera);
-    if (billboardState.raycaster.ray.intersectPlane(billboardState.dragPlane, billboardState.intersectPoint)) {
-        billboardState.worldPosition.copy(billboardState.intersectPoint).add(billboardState.dragOffset);
-    }
-}
-
-function endBillboardDrag() {
-    if (!billboardState.dragging) return;
-    billboardState.dragging = false;
-    billboardState.element.classList.remove('dragging');
+function toggleMemories() {
+    memoriesVisible = !memoriesVisible;
+    reviewMemosButton.classList.toggle('active', memoriesVisible);
+    updateBillboardPositions();
 }
 
 function updateAudioButton() {
@@ -1116,11 +1136,6 @@ audioToggle.addEventListener('click', async () => {
     updateAudioButton();
 });
 
-billboardState.element.addEventListener('pointerdown', beginBillboardDrag);
-window.addEventListener('pointermove', moveBillboardDrag);
-window.addEventListener('pointerup', endBillboardDrag);
-window.addEventListener('pointercancel', endBillboardDrag);
-
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
 mapClose.addEventListener('click', closeMapOverlay);
@@ -1139,35 +1154,11 @@ window.addEventListener('keydown', (event) => {
     }
 });
 
-reviewMemosButton.addEventListener('click', openMemoOverlay);
+reviewMemosButton.addEventListener('click', toggleMemories);
 reviewNotesButton.addEventListener('click', openMemoOverlay);
 searchStoriesButton.addEventListener('click', openMemoOverlay);
 
 updateAudioButton();
-
-let navHideTimer = null;
-
-function showNavTemporarily() {
-    nav.classList.add('is-visible');
-    if (navHideTimer) window.clearTimeout(navHideTimer);
-    navHideTimer = window.setTimeout(() => {
-        if (!nav.matches(':hover')) {
-            nav.classList.remove('is-visible');
-        }
-    }, 1600);
-}
-
-window.addEventListener('mousemove', (event) => {
-    if (event.clientY < 90) {
-        showNavTemporarily();
-    }
-});
-
-nav.addEventListener('mouseleave', () => {
-    navHideTimer = window.setTimeout(() => {
-        nav.classList.remove('is-visible');
-    }, 220);
-});
 
 function setCameraDistance(nextDistance) {
     const controls = getControls();
