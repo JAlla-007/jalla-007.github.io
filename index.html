@@ -506,6 +506,53 @@
             transform: translateY(-1px);
         }
 
+        #side-tags {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        #side-tags.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(-50%);
+        }
+
+        .side-line {
+            width: 1px;
+            height: 26px;
+            margin-left: 10px;
+            background: rgba(255, 255, 255, 0.58);
+        }
+
+        .side-tag {
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .side-tag:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(2px);
+        }
+
         #billboard-layer {
             position: fixed;
             inset: 0;
@@ -701,6 +748,14 @@
     </div>
 </div>
 
+<div id="side-tags" aria-label="Memo tools">
+    <button class="side-tag" id="review-memos" type="button">Review Memos</button>
+    <div class="side-line"></div>
+    <button class="side-tag" id="review-notes" type="button">Review Notes</button>
+    <div class="side-line"></div>
+    <button class="side-tag" id="search-stories" type="button">Search Stories</button>
+</div>
+
 <div id="billboard-layer">
     <div class="billboard-text" id="billboard-quote">
         Into the Great Wilds and Misty Future!
@@ -748,6 +803,10 @@ const memoClose = document.getElementById('memo-close');
 const homeReset = document.getElementById('home-reset');
 const gestureStatus = document.getElementById('gesture-status');
 const heroTitle = document.getElementById('hero-title');
+const sideTags = document.getElementById('side-tags');
+const reviewMemosButton = document.getElementById('review-memos');
+const reviewNotesButton = document.getElementById('review-notes');
+const searchStoriesButton = document.getElementById('search-stories');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const billboardQuote = document.getElementById('billboard-quote');
@@ -905,6 +964,7 @@ function hideHeroTitle() {
     heroTitle.classList.add('hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
+        sideTags.classList.add('visible');
     }, 2000);
 }
 
@@ -1076,6 +1136,10 @@ window.addEventListener('keydown', (event) => {
         closeMemoOverlay();
     }
 });
+
+reviewMemosButton.addEventListener('click', openMemoOverlay);
+reviewNotesButton.addEventListener('click', openMemoOverlay);
+searchStoriesButton.addEventListener('click', openMemoOverlay);
 
 updateAudioButton();
 
