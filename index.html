@@ -506,6 +506,50 @@
             transform: translateY(-1px);
         }
 
+        #billboard-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 125;
+            pointer-events: none;
+        }
+
+        .billboard-text {
+            position: absolute;
+            left: 0;
+            top: 0;
+            max-width: min(38vw, 420px);
+            padding: 14px 18px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            color: rgba(255, 255, 255, 0.95);
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(18px, 1.8vw, 28px);
+            line-height: 1.2;
+            text-shadow: 0 8px 26px rgba(0, 0, 0, 0.42);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+            cursor: grab;
+            user-select: none;
+            pointer-events: auto;
+            transform: translate(-50%, -50%);
+        }
+
+        .billboard-text.dragging {
+            cursor: grabbing;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .billboard-caption {
+            display: block;
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.62);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
         #hero-title {
             position: fixed;
             inset: 0;
@@ -657,6 +701,13 @@
     </div>
 </div>
 
+<div id="billboard-layer">
+    <div class="billboard-text" id="billboard-quote">
+        Into the Great Wilds and Misty Future!
+        <span class="billboard-caption">Drag this memory through the scene</span>
+    </div>
+</div>
+
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
 </div>
@@ -699,6 +750,7 @@ const gestureStatus = document.getElementById('gesture-status');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+const billboardQuote = document.getElementById('billboard-quote');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -724,6 +776,16 @@ const minZoomDistance = 4;
 const maxZoomDistance = 22;
 const gestureCenter = { x: 0.5, y: 0.5 };
 let audioStarted = false;
+const billboardState = {
+    element: billboardQuote,
+    worldPosition: new THREE.Vector3(1.1, 0.6, -0.6),
+    dragPlane: new THREE.Plane(),
+    raycaster: new THREE.Raycaster(),
+    pointer: new THREE.Vector2(),
+    dragging: false,
+    dragOffset: new THREE.Vector3(),
+    intersectPoint: new THREE.Vector3()
+};
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -879,6 +941,72 @@ function setGestureStatus(label, detail = '') {
     gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
 }
 
+function updateBillboardPosition() {
+    if (!viewer.camera || !billboardState.element) return;
+
+    const projected = billboardState.worldPosition.clone().project(viewer.camera);
+    const isVisible = projected.z > -1 && projected.z < 1;
+
+    if (!isVisible) {
+        billboardState.element.style.display = 'none';
+        return;
+    }
+
+    const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-projected.y * 0.5 + 0.5) * window.innerHeight;
+    billboardState.element.style.display = 'block';
+    billboardState.element.style.left = `${x}px`;
+    billboardState.element.style.top = `${y}px`;
+    const distance = viewer.camera.position.distanceTo(billboardState.worldPosition);
+    const scale = THREE.MathUtils.clamp(1.8 / distance, 0.72, 1.08);
+    billboardState.element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+}
+
+function startBillboardLoop() {
+    const tick = () => {
+        updateBillboardPosition();
+        window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
+}
+
+function setBillboardPointer(event) {
+    billboardState.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    billboardState.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+function beginBillboardDrag(event) {
+    if (!viewer.camera) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setBillboardPointer(event);
+    billboardState.raycaster.setFromCamera(billboardState.pointer, viewer.camera);
+    const planeNormal = viewer.camera.getWorldDirection(new THREE.Vector3()).normalize();
+    billboardState.dragPlane.setFromNormalAndCoplanarPoint(planeNormal, billboardState.worldPosition);
+    if (billboardState.raycaster.ray.intersectPlane(billboardState.dragPlane, billboardState.intersectPoint)) {
+        billboardState.dragOffset.copy(billboardState.worldPosition).sub(billboardState.intersectPoint);
+    } else {
+        billboardState.dragOffset.set(0, 0, 0);
+    }
+    billboardState.dragging = true;
+    billboardState.element.classList.add('dragging');
+}
+
+function moveBillboardDrag(event) {
+    if (!billboardState.dragging || !viewer.camera) return;
+    setBillboardPointer(event);
+    billboardState.raycaster.setFromCamera(billboardState.pointer, viewer.camera);
+    if (billboardState.raycaster.ray.intersectPlane(billboardState.dragPlane, billboardState.intersectPoint)) {
+        billboardState.worldPosition.copy(billboardState.intersectPoint).add(billboardState.dragOffset);
+    }
+}
+
+function endBillboardDrag() {
+    if (!billboardState.dragging) return;
+    billboardState.dragging = false;
+    billboardState.element.classList.remove('dragging');
+}
+
 function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
 }
@@ -925,6 +1053,11 @@ audioToggle.addEventListener('click', async () => {
 
     updateAudioButton();
 });
+
+billboardState.element.addEventListener('pointerdown', beginBillboardDrag);
+window.addEventListener('pointermove', moveBillboardDrag);
+window.addEventListener('pointerup', endBillboardDrag);
+window.addEventListener('pointercancel', endBillboardDrag);
 
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
@@ -1193,6 +1326,7 @@ async function loadScene() {
             info.style.display = 'none';
         }, 450);
         viewer.start();
+        startBillboardLoop();
         startAmbientMotion();
         startGestureControls();
         showHeroTitle();
