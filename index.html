@@ -608,14 +608,18 @@
             box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
             user-select: none;
             pointer-events: auto;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.9);
             opacity: 0;
-            transition: opacity 0.45s ease, background 0.2s ease, border-color 0.2s ease;
+            visibility: hidden;
+            transition: opacity 0.45s ease, transform 0.45s ease, background 0.2s ease, border-color 0.2s ease, visibility 0s linear 0.45s;
             cursor: grab;
         }
 
         .billboard-text.visible {
             opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            transition: opacity 0.45s ease, transform 0.45s ease, background 0.2s ease, border-color 0.2s ease, visibility 0s linear 0s;
         }
 
         .billboard-text:hover {
@@ -987,6 +991,7 @@ let activeBillboard = null;
 let dragMoved = false;
 let dragStartX = 0;
 let dragStartY = 0;
+let uiAudioContext = null;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1162,7 +1167,6 @@ function updateBillboardPositions() {
         const isVisible = projected.z > -1 && projected.z < 1;
 
         if (!memoriesVisible || !isVisible) {
-            billboard.element.style.display = 'none';
             billboard.element.classList.remove('visible');
             return;
         }
@@ -1170,10 +1174,8 @@ function updateBillboardPositions() {
         const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
         const y = (-projected.y * 0.5 + 0.5) * window.innerHeight;
 
-        billboard.element.style.display = 'block';
         billboard.element.style.left = `${x}px`;
         billboard.element.style.top = `${y}px`;
-        billboard.element.style.transform = 'translate(-50%, -50%)';
         billboard.element.style.zIndex = billboard.expanded ? '2' : '1';
         billboard.element.classList.add('visible');
     });
@@ -1251,13 +1253,73 @@ function endBillboardDrag() {
     billboard.element.classList.remove('dragging');
 
     if (!dragMoved) {
-        billboard.expanded = !billboard.expanded;
+        const shouldExpand = !billboard.expanded;
+        memoryBillboards.forEach((entry) => {
+            if (entry !== billboard) {
+                entry.expanded = false;
+                entry.element.classList.remove('expanded');
+            }
+        });
+
+        billboard.expanded = shouldExpand;
         billboard.element.classList.toggle('expanded', billboard.expanded);
+        playBubbleSound(billboard.expanded);
     }
 
     activeBillboard = null;
     dragMoved = false;
     updateBillboardPositions();
+}
+
+function getUiAudioContext() {
+    if (!uiAudioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        uiAudioContext = new AudioContextClass();
+    }
+
+    if (uiAudioContext.state === 'suspended') {
+        uiAudioContext.resume().catch(() => {});
+    }
+
+    return uiAudioContext;
+}
+
+function playBubbleSound(isOpening) {
+    const context = getUiAudioContext();
+    if (!context) return;
+
+    const now = context.currentTime;
+    const oscillator = context.createOscillator();
+    const overtone = context.createOscillator();
+    const gain = context.createGain();
+    const filter = context.createBiquadFilter();
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(isOpening ? 1700 : 1300, now);
+    filter.Q.setValueAtTime(1.4, now);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(isOpening ? 520 : 420, now);
+    oscillator.frequency.exponentialRampToValueAtTime(isOpening ? 300 : 220, now + 0.12);
+
+    overtone.type = 'triangle';
+    overtone.frequency.setValueAtTime(isOpening ? 760 : 620, now);
+    overtone.frequency.exponentialRampToValueAtTime(isOpening ? 410 : 300, now + 0.08);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+
+    oscillator.connect(gain);
+    overtone.connect(gain);
+    gain.connect(filter);
+    filter.connect(context.destination);
+
+    oscillator.start(now);
+    overtone.start(now);
+    oscillator.stop(now + 0.18);
+    overtone.stop(now + 0.14);
 }
 
 function updateAudioButton() {
