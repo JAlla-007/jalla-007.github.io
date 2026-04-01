@@ -243,7 +243,29 @@ const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
-initSharedChrome({ homeHref: '../index.html' });
+initSharedChrome({
+    homeHref: '../index.html',
+    regionalMap: {
+        caption: 'Seafront Regional Map',
+        center: { label: 'Seafront', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '18%', rotate: '-18deg' },
+            { left: '39%', top: '50%', width: '17%', rotate: '28deg' },
+            { left: '33%', top: '46%', width: '16%', rotate: '170deg' }
+        ],
+        nodes: [
+            { label: 'Cliff Path', href: './Cliff_Path.html', left: '58%', top: '34%' },
+            { label: 'Pebble Shore', href: './Pebble_Shore.html', left: '58%', top: '63%' },
+            { label: 'Lookout Point', href: './Lookout_Point.html', left: '14%', top: '54%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside Seafront',
+            copy: 'A coastal branch map where the shoreline breaks into smaller remembered viewpoints.',
+            actions: []
+        }
+    }
+});
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition: [0, -8, 8], initialCameraLookAt: [0, 0, 0], sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;

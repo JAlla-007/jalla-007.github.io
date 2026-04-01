@@ -408,40 +408,52 @@ function ensureTopNav(homeHref) {
     return nav;
 }
 
-function ensureOverlays() {
+function buildMapOverlayMarkup(mapConfig) {
+    const lines = (mapConfig.lines || []).map((line) => `
+        <div class="map-line" style="left: ${line.left}; top: ${line.top}; width: ${line.width}; transform: rotate(${line.rotate});"></div>
+    `).join('');
+
+    const nodes = (mapConfig.nodes || []).map((node) => `
+        <a class="map-node" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.label}</a>
+    `).join('');
+
+    const placeCard = mapConfig.placeCard ? `
+        <div class="place-card">
+            <div class="place-kicker">${mapConfig.placeCard.kicker || 'Location'}</div>
+            <h2 class="place-title">${mapConfig.placeCard.title}</h2>
+            <p class="place-copy">${mapConfig.placeCard.copy}</p>
+            ${(mapConfig.placeCard.actions || []).length ? `
+                <div class="place-actions">
+                    ${mapConfig.placeCard.actions.map((action) => `
+                        <a class="place-action" href="${action.href}"${action.target ? ` target="${action.target}" rel="noreferrer"` : ''}>${action.label}</a>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+    ` : '';
+
+    return `
+        <div class="map-panel">
+            <div class="map-grid"></div>
+            <div class="map-caption">${mapConfig.caption || 'Interactive Map'}</div>
+            <button class="map-close" id="map-close" type="button" aria-label="Close map">×</button>
+            ${lines}
+            <div class="map-node home-node" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.label}</div>
+            ${nodes}
+            ${placeCard}
+        </div>
+    `;
+}
+
+function ensureOverlays(mapConfig) {
     if (!document.getElementById('map-overlay')) {
         const mapOverlay = document.createElement('div');
         mapOverlay.id = 'map-overlay';
         mapOverlay.setAttribute('aria-hidden', 'true');
-        mapOverlay.innerHTML = `
-            <div class="map-panel">
-                <div class="map-grid"></div>
-                <div class="map-caption">Interactive Map</div>
-                <button class="map-close" id="map-close" type="button" aria-label="Close map">×</button>
-                <div class="map-line" style="left: 38%; top: 50%; width: 19%; transform: rotate(-18deg);"></div>
-                <div class="map-line" style="left: 42%; top: 52%; width: 17%; transform: rotate(28deg);"></div>
-                <div class="map-line" style="left: 32%; top: 44%; width: 20%; transform: rotate(160deg);"></div>
-                <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
-                <div class="map-node home-node" style="left: 38%; top: 45%;">Atlantic College Memo</div>
-                <a class="map-node" href="./Music_Department.html" style="left: 58%; top: 34%;">Music</a>
-                <a class="map-node" href="./Languages.html" style="left: 59%; top: 62%;">Languages</a>
-                <a class="map-node" href="./Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
-                <a class="map-node" href="./Church.html" style="left: 15%; top: 67%;">Church</a>
-                <div class="place-card">
-                    <div class="place-kicker">Location</div>
-                    <h2 class="place-title">UWC Atlantic</h2>
-                    <p class="place-copy">
-                        St Donat's Castle, Llantwit Major, CF61 1WF, Wales, UK.
-                        Rail access typically routes through Llantwit Major or Bridgend before the final taxi leg.
-                    </p>
-                    <div class="place-actions">
-                        <a class="place-action" href="https://maps.google.com/?q=UWC+Atlantic+St+Donat%27s+Castle+Llantwit+Major+CF61+1WF" target="_blank" rel="noreferrer">Open in Maps</a>
-                        <a class="place-action" href="https://www.uwcatlantic.org/contact" target="_blank" rel="noreferrer">Official Site</a>
-                    </div>
-                </div>
-            </div>
-        `;
+        mapOverlay.innerHTML = buildMapOverlayMarkup(mapConfig);
         document.body.appendChild(mapOverlay);
+    } else {
+        document.getElementById('map-overlay').innerHTML = buildMapOverlayMarkup(mapConfig);
     }
 
     if (!document.getElementById('memo-overlay')) {
@@ -569,12 +581,41 @@ function bindOverlayBehavior(homeHref) {
     });
 }
 
+const DEFAULT_MAP_CONFIG = {
+    caption: 'Interactive Map',
+    center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
+    lines: [
+        { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
+        { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
+        { left: '32%', top: '44%', width: '20%', rotate: '160deg' },
+        { left: '34%', top: '55%', width: '18%', rotate: '208deg' }
+    ],
+    nodes: [
+        { label: 'Music', href: './Music_Department.html', left: '58%', top: '34%' },
+        { label: 'Languages', href: './Languages.html', left: '59%', top: '62%' },
+        { label: 'Seafront', href: './Seafront.html', left: '14%', top: '26%' },
+        { label: 'Church', href: './Church.html', left: '15%', top: '67%' }
+    ],
+    placeCard: {
+        kicker: 'Location',
+        title: 'UWC Atlantic',
+        copy: `St Donat's Castle, Llantwit Major, CF61 1WF, Wales, UK.
+Rail access typically routes through Llantwit Major or Bridgend before the final taxi leg.`,
+        actions: [
+            { label: 'Open in Maps', href: 'https://maps.google.com/?q=UWC+Atlantic+St+Donat%27s+Castle+Llantwit+Major+CF61+1WF', target: '_blank' },
+            { label: 'Official Site', href: 'https://www.uwcatlantic.org/contact', target: '_blank' }
+        ]
+    }
+};
+
 export function initSharedChrome(options = {}) {
     const homeHref = options.homeHref || '../index.html';
+    const mapConfig = options.regionalMap || DEFAULT_MAP_CONFIG;
     document.body.dataset.sharedChrome = 'true';
     ensureStyles();
     ensureTopNav(homeHref);
-    ensureOverlays();
+    ensureOverlays(mapConfig);
     ensureSideRail();
     bindOverlayBehavior(homeHref);
+    document.getElementById('subpages-panel')?.remove();
 }

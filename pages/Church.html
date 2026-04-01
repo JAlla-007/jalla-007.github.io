@@ -84,7 +84,29 @@ const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
-initSharedChrome({ homeHref: '../index.html' });
+initSharedChrome({
+    homeHref: '../index.html',
+    regionalMap: {
+        caption: 'Church Regional Map',
+        center: { label: 'Church', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '18%', rotate: '-18deg' },
+            { left: '39%', top: '50%', width: '16%', rotate: '24deg' },
+            { left: '33%', top: '46%', width: '16%', rotate: '178deg' }
+        ],
+        nodes: [
+            { label: 'Main Hall', href: './Main_Hall.html', left: '58%', top: '34%' },
+            { label: 'Quiet Pew', href: './Quiet_Pew.html', left: '58%', top: '62%' },
+            { label: 'Stone Arch', href: './Stone_Arch.html', left: '15%', top: '56%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside Church',
+            copy: 'A smaller church map that opens into quieter interior fragments and remembered corners.',
+            actions: []
+        }
+    }
+});
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition: [0, -8, 8], initialCameraLookAt: [0, 0, 0], sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;

@@ -382,7 +382,29 @@ const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
-initSharedChrome({ homeHref: '../index.html' });
+initSharedChrome({
+    homeHref: '../index.html',
+    regionalMap: {
+        caption: 'Languages Regional Map',
+        center: { label: 'Languages', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '18%', rotate: '-20deg' },
+            { left: '39%', top: '50%', width: '17%', rotate: '24deg' },
+            { left: '33%', top: '47%', width: '16%', rotate: '182deg' }
+        ],
+        nodes: [
+            { label: 'Classroom', href: './Language_Classroom.html', left: '58%', top: '34%' },
+            { label: 'Conversation', href: './Conversation_Corner.html', left: '58%', top: '63%' },
+            { label: 'Study Nook', href: './Study_Nook.html', left: '16%', top: '56%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside Languages',
+            copy: 'A local map for the Languages branch, with smaller corners ready for their own notes and stories.',
+            actions: []
+        }
+    }
+});
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
