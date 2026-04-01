@@ -675,6 +675,20 @@
             border-color: rgba(255, 255, 255, 0.24);
         }
 
+        #focus-mask {
+            position: fixed;
+            inset: 0;
+            z-index: 124;
+            pointer-events: none;
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.36);
+            transition: opacity 0.35s ease;
+        }
+
+        #focus-mask.visible {
+            opacity: 1;
+        }
+
         #billboard-layer {
             position: fixed;
             inset: 0;
@@ -956,8 +970,10 @@
     <div class="side-line"></div>
     <button class="side-tag" id="review-notes" type="button">Find<br>Items</button>
     <div class="side-line"></div>
-    <button class="side-tag" id="search-stories" type="button">Search<br>Stories</button>
+    <button class="side-tag" id="search-stories" type="button">Regional<br>Map</button>
 </div>
+
+<div id="focus-mask" aria-hidden="true"></div>
 
 <div id="billboard-layer">
 </div>
@@ -1012,6 +1028,7 @@ const reviewNotesButton = document.getElementById('review-notes');
 const searchStoriesButton = document.getElementById('search-stories');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
@@ -1320,6 +1337,11 @@ function startBillboardLoop() {
     window.requestAnimationFrame(tick);
 }
 
+function syncFocusMask() {
+    const hasExpanded = memoriesVisible && memoryBillboards.some((billboard) => billboard.expanded);
+    focusMask.classList.toggle('visible', hasExpanded);
+}
+
 function toggleMemories() {
     memoriesVisible = !memoriesVisible;
     reviewMemosButton.classList.toggle('active', memoriesVisible);
@@ -1330,6 +1352,7 @@ function toggleMemories() {
         });
         activeBillboard = null;
     }
+    syncFocusMask();
     updateBillboardPositions();
 }
 
@@ -1395,6 +1418,7 @@ function endBillboardDrag() {
         billboard.expanded = shouldExpand;
         billboard.element.classList.toggle('expanded', billboard.expanded);
         playBubbleSound(billboard.expanded);
+        syncFocusMask();
     }
 
     activeBillboard = null;
@@ -1527,7 +1551,7 @@ window.addEventListener('keydown', (event) => {
 
 reviewMemosButton.addEventListener('click', toggleMemories);
 reviewNotesButton.addEventListener('click', openItemsOverlay);
-searchStoriesButton.addEventListener('click', openMemoOverlay);
+searchStoriesButton.addEventListener('click', openMapOverlay);
 
 memoryBillboards.forEach((billboard) => {
     billboard.element.addEventListener('pointerdown', (event) => beginBillboardDrag(event, billboard));

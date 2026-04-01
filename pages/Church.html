@@ -29,6 +29,14 @@
         .nav-link:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
         .nav-icon { font-size: 14px; line-height: 1; }
         .nav-connector { width: 72px; height: 1px; background: rgba(255, 255, 255, 0.58); justify-self: center; }
+        #subpages-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%), rgba(10, 10, 10, 0.66); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28); }
+        .subpages-kicker { color: rgba(255, 255, 255, 0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+        .subpages-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
+        .subpages-copy { margin: 0 0 16px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
+        .subpages-list { display: grid; gap: 10px; }
+        .subpage-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.92); text-decoration: none; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
+        .subpage-link:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(2px); }
+        .subpage-link span:last-child { color: rgba(255, 255, 255, 0.54); font-size: 13px; letter-spacing: normal; }
         .loading-shell { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 28px; border-radius: 999px; background: radial-gradient(circle at top, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
         .loading-ring { width: 54px; height: 54px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.16); border-top-color: rgba(255,255,255,0.95); animation: spin 0.9s linear infinite; }
         .loading-text { color: rgba(255,255,255,0.94); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; padding-left: 0.28em; }
@@ -56,6 +64,11 @@
 </div></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Church</div><div class="hero-subtitle">A location within Atlantic College Memo</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
+<div id="subpages-panel"><div class="subpages-kicker">Inside Church</div><h2 class="subpages-title">Sub-Locations</h2><p class="subpages-copy">Split the church into quieter interior fragments so each corner can become its own remembered stop.</p><div class="subpages-list">
+    <a class="subpage-link" href="./Main_Hall.html"><span>Main Hall</span><span>↗</span></a>
+    <a class="subpage-link" href="./Quiet_Pew.html"><span>Quiet Pew</span><span>↗</span></a>
+    <a class="subpage-link" href="./Stone_Arch.html"><span>Stone Arch</span><span>↗</span></a>
+</div></div>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../logoss%20(3).mp3" type="audio/mpeg"></audio>
 <script type="importmap">
