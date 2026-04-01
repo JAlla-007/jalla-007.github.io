@@ -445,7 +445,31 @@ function buildMapOverlayMarkup(mapConfig) {
     `;
 }
 
-function ensureOverlays(mapConfig) {
+function buildItemsOverlayMarkup(itemsConfig = {}) {
+    const kicker = itemsConfig.kicker || 'Find Items';
+    const title = itemsConfig.title || 'Meaning hides inside objects.';
+    const copy = itemsConfig.copy || `
+        Items contain memories, and some of them carry a little more meaning than the rest.
+        Would you like to discover the items and the stories behind them?
+    `;
+    const primaryLabel = itemsConfig.primaryLabel || 'Yes';
+    const secondaryLabel = itemsConfig.secondaryLabel || 'Hell Yes';
+
+    return `
+        <div class="items-panel">
+            <button class="map-close" id="items-close" type="button" aria-label="Close items prompt">×</button>
+            <div class="items-kicker">${kicker}</div>
+            <h2 class="items-title">${title}</h2>
+            <p class="items-copy">${copy}</p>
+            <div class="items-actions">
+                <button class="items-action" id="items-yes" type="button">${primaryLabel}</button>
+                <button class="items-action" id="items-hell-yes" type="button">${secondaryLabel}</button>
+            </div>
+        </div>
+    `;
+}
+
+function ensureOverlays(mapConfig, itemsConfig = {}) {
     if (!document.getElementById('map-overlay')) {
         const mapOverlay = document.createElement('div');
         mapOverlay.id = 'map-overlay';
@@ -484,22 +508,10 @@ function ensureOverlays(mapConfig) {
         const itemsOverlay = document.createElement('div');
         itemsOverlay.id = 'items-overlay';
         itemsOverlay.setAttribute('aria-hidden', 'true');
-        itemsOverlay.innerHTML = `
-            <div class="items-panel">
-                <button class="map-close" id="items-close" type="button" aria-label="Close items prompt">×</button>
-                <div class="items-kicker">Find Items</div>
-                <h2 class="items-title">Meaning hides inside objects.</h2>
-                <p class="items-copy">
-                    Items contain memories, and some of them carry a little more meaning than the rest.
-                    Would you like to discover the items and the stories behind them?
-                </p>
-                <div class="items-actions">
-                    <button class="items-action" id="items-yes" type="button">Yes</button>
-                    <button class="items-action" id="items-hell-yes" type="button">Hell Yes</button>
-                </div>
-            </div>
-        `;
+        itemsOverlay.innerHTML = buildItemsOverlayMarkup(itemsConfig);
         document.body.appendChild(itemsOverlay);
+    } else {
+        document.getElementById('items-overlay').innerHTML = buildItemsOverlayMarkup(itemsConfig);
     }
 }
 
@@ -523,7 +535,7 @@ function ensureSideRail() {
     }
 }
 
-function bindOverlayBehavior(homeHref) {
+function bindOverlayBehavior(homeHref, itemsConfig = {}) {
     const mapOverlay = document.getElementById('map-overlay');
     const memoOverlay = document.getElementById('memo-overlay');
     const itemsOverlay = document.getElementById('items-overlay');
@@ -556,8 +568,18 @@ function bindOverlayBehavior(homeHref) {
     mapClose?.addEventListener('click', () => close(mapOverlay));
     memoClose?.addEventListener('click', () => close(memoOverlay));
     itemsClose?.addEventListener('click', () => close(itemsOverlay));
-    itemsYes?.addEventListener('click', () => close(itemsOverlay));
-    itemsHellYes?.addEventListener('click', () => close(itemsOverlay));
+    itemsYes?.addEventListener('click', () => {
+        close(itemsOverlay);
+        if (itemsConfig.primaryHref) window.location.href = itemsConfig.primaryHref;
+    });
+    itemsHellYes?.addEventListener('click', () => {
+        close(itemsOverlay);
+        if (itemsConfig.secondaryHref) {
+            window.location.href = itemsConfig.secondaryHref;
+            return;
+        }
+        if (itemsConfig.primaryHref) window.location.href = itemsConfig.primaryHref;
+    });
 
     reviewMemosButton?.addEventListener('click', () => open(memoOverlay));
     reviewNotesButton?.addEventListener('click', () => open(itemsOverlay));
@@ -611,11 +633,15 @@ Rail access typically routes through Llantwit Major or Bridgend before the final
 export function initSharedChrome(options = {}) {
     const homeHref = options.homeHref || '../index.html';
     const mapConfig = options.regionalMap || DEFAULT_MAP_CONFIG;
+    const itemsConfig = options.itemsExperience || {};
+    const keepSubpagesPanel = Boolean(options.keepSubpagesPanel);
     document.body.dataset.sharedChrome = 'true';
     ensureStyles();
     ensureTopNav(homeHref);
-    ensureOverlays(mapConfig);
+    ensureOverlays(mapConfig, itemsConfig);
     ensureSideRail();
-    bindOverlayBehavior(homeHref);
-    document.getElementById('subpages-panel')?.remove();
+    bindOverlayBehavior(homeHref, itemsConfig);
+    if (!keepSubpagesPanel) {
+        document.getElementById('subpages-panel')?.remove();
+    }
 }

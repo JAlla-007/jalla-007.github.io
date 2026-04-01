@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ukulele - Atlantic College Memo</title>
+    <style>
+        :root {
+            --bg-top: #120b08;
+            --bg-bottom: #050505;
+            --panel: rgba(20, 12, 8, 0.78);
+            --panel-border: rgba(255, 219, 173, 0.16);
+            --panel-glow: rgba(255, 170, 101, 0.18);
+            --text: rgba(255, 246, 232, 0.94);
+            --muted: rgba(255, 232, 203, 0.68);
+            --accent: #f6a357;
+            --accent-soft: rgba(246, 163, 87, 0.22);
+            --active: #ffd38e;
+            --string: rgba(255, 232, 203, 0.82);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, rgba(255, 186, 120, 0.14), transparent 26%),
+                radial-gradient(circle at 20% 80%, rgba(255, 120, 70, 0.1), transparent 28%),
+                linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        #nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            z-index: 160;
+        }
+
+        #nav:hover .nav-shell,
+        #nav:focus-within .nav-shell {
+            transform: translateY(0);
+        }
+
+        .nav-shell {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr);
+            align-items: center;
+            width: 100%;
+            height: 54px;
+            margin: 0;
+            padding: 0 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)), rgba(10,10,10,0.26);
+            border-bottom: 1px solid rgba(255,255,255,0.14);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.24);
+            transform: translateY(-38px);
+            transition: transform 0.32s ease;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 34px;
+            padding: 0 10px;
+            border-radius: 999px;
+            color: rgba(255,255,255,0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .nav-icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .nav-connector {
+            width: 72px;
+            height: 1px;
+            background: rgba(255,255,255,0.58);
+            justify-self: center;
+        }
+
+        main {
+            position: relative;
+            width: min(1240px, calc(100vw - 32px));
+            margin: 0 auto;
+            padding: 96px 0 40px;
+        }
+
+        .hero {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+            align-items: start;
+        }
+
+        .intro-card,
+        .controls-card,
+        .keyboard-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 30px;
+            background:
+                radial-gradient(circle at top left, var(--panel-glow), transparent 32%),
+                var(--panel);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+            backdrop-filter: blur(18px);
+        }
+
+        .intro-card {
+            padding: 28px 28px 24px;
+        }
+
+        .eyebrow,
+        .section-kicker,
+        .string-name,
+        .keycap,
+        .status-line,
+        .tip {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow,
+        .section-kicker,
+        .tip {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        h1 {
+            margin: 12px 0 12px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(48px, 7vw, 94px);
+            line-height: 0.94;
+        }
+
+        .lead,
+        .tip-body,
+        .status-body {
+            margin: 0;
+            color: rgba(255, 243, 224, 0.82);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .tip-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 22px;
+        }
+
+        .tip-block {
+            padding: 14px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tip {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .ukulele-shell {
+            position: relative;
+            min-height: 620px;
+            padding: 24px;
+        }
+
+        .ukulele-visual {
+            position: relative;
+            width: 100%;
+            min-height: 570px;
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(255, 192, 128, 0.12), transparent 18%),
+                linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+
+        .body-glow {
+            position: absolute;
+            inset: auto auto 28px 18px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(247, 161, 88, 0.38), rgba(91, 42, 14, 0.18) 54%, transparent 72%);
+            filter: blur(4px);
+        }
+
+        .sound-hole {
+            position: absolute;
+            left: 140px;
+            top: 215px;
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            background: rgba(15, 8, 4, 0.92);
+            border: 8px solid rgba(71, 34, 15, 0.7);
+            box-shadow: 0 0 0 3px rgba(255, 207, 146, 0.08);
+        }
+
+        .bridge {
+            position: absolute;
+            left: 210px;
+            top: 242px;
+            width: 58px;
+            height: 22px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #3c2214, #1a0f09);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+        }
+
+        .neck {
+            position: absolute;
+            left: 240px;
+            top: 164px;
+            width: calc(100% - 300px);
+            height: 162px;
+            border-radius: 26px;
+            background: linear-gradient(180deg, rgba(74, 46, 27, 0.92), rgba(44, 25, 12, 0.98));
+            border: 1px solid rgba(255, 213, 162, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        .headstock {
+            position: absolute;
+            right: 24px;
+            top: 178px;
+            width: 120px;
+            height: 136px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(87, 52, 28, 0.98), rgba(46, 24, 11, 0.98));
+            transform: rotate(7deg);
+            box-shadow: 0 18px 28px rgba(0, 0, 0, 0.26);
+        }
+
+        .fret-markers {
+            position: absolute;
+            left: 268px;
+            right: 110px;
+            top: 181px;
+            height: 130px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            pointer-events: none;
+        }
+
+        .fret {
+            position: relative;
+            border-right: 2px solid rgba(255, 230, 203, 0.26);
+        }
+
+        .fret::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 236, 212, 0.12);
+            transform: translateX(-50%);
+        }
+
+        .string-layer {
+            position: absolute;
+            left: 90px;
+            right: 48px;
+            top: 182px;
+            display: grid;
+            gap: 29px;
+            pointer-events: none;
+        }
+
+        .string-line {
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255, 230, 203, 0.85), rgba(255, 246, 233, 0.55));
+            box-shadow: 0 0 10px rgba(255, 226, 196, 0.22);
+            transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
+        }
+
+        .string-line.active {
+            background: linear-gradient(90deg, rgba(255, 241, 196, 0.95), rgba(255, 208, 111, 0.9));
+            box-shadow: 0 0 18px rgba(255, 208, 111, 0.42);
+            transform: scaleY(1.6);
+        }
+
+        .controls-card,
+        .keyboard-card {
+            margin-top: 24px;
+            padding: 22px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-top: 18px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 14px rgba(246, 163, 87, 0.6);
+        }
+
+        .string-board {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .string-row {
+            display: grid;
+            grid-template-columns: 92px repeat(8, minmax(0, 1fr));
+            gap: 10px;
+            align-items: center;
+        }
+
+        .string-name {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .note-button {
+            position: relative;
+            min-height: 66px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            padding: 10px 8px 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+        }
+
+        .note-button:hover,
+        .note-button:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(255, 211, 142, 0.44);
+            box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+            outline: none;
+        }
+
+        .note-button.active {
+            background: linear-gradient(180deg, rgba(255, 211, 142, 0.22), rgba(246, 163, 87, 0.14));
+            border-color: rgba(255, 211, 142, 0.6);
+            box-shadow: 0 0 0 1px rgba(255, 211, 142, 0.24), 0 14px 28px rgba(246, 163, 87, 0.16);
+            transform: translateY(-2px);
+        }
+
+        .keycap {
+            display: block;
+            color: var(--active);
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+
+        .note-name {
+            display: block;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .fret-label {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        .keyboard-card {
+            padding-bottom: 18px;
+        }
+
+        .keyboard-grid {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .keyboard-row {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+
+        .key-box {
+            min-height: 54px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            display: grid;
+            place-items: center;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text);
+            transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+        }
+
+        .key-box.active {
+            transform: translateY(-2px);
+            border-color: rgba(255, 211, 142, 0.58);
+            background: rgba(246, 163, 87, 0.18);
+        }
+
+        .status-panel {
+            margin-top: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .status-line {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .status-body {
+            min-height: 24px;
+        }
+
+        @media (max-width: 1080px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .ukulele-shell {
+                min-height: 520px;
+            }
+
+            .ukulele-visual {
+                min-height: 480px;
+            }
+
+            .neck {
+                left: 180px;
+                width: calc(100% - 228px);
+            }
+
+            .fret-markers {
+                left: 204px;
+            }
+
+            .sound-hole {
+                left: 92px;
+            }
+
+            .bridge {
+                left: 164px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            main {
+                width: min(100vw - 20px, 100%);
+                padding-top: 82px;
+            }
+
+            .intro-card,
+            .controls-card,
+            .keyboard-card {
+                border-radius: 24px;
+            }
+
+            .tip-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ukulele-shell,
+            .ukulele-visual {
+                min-height: auto;
+            }
+
+            .ukulele-visual {
+                padding-bottom: 20px;
+            }
+
+            .body-glow,
+            .sound-hole,
+            .bridge,
+            .neck,
+            .headstock,
+            .fret-markers,
+            .string-layer {
+                position: static;
+            }
+
+            .body-glow,
+            .sound-hole,
+            .bridge,
+            .headstock {
+                display: none;
+            }
+
+            .neck {
+                width: 100%;
+                height: auto;
+                padding: 18px;
+                margin-top: 14px;
+            }
+
+            .fret-markers {
+                display: none;
+            }
+
+            .string-layer {
+                display: none;
+            }
+
+            .string-row {
+                grid-template-columns: 1fr;
+            }
+
+            .keyboard-row {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+<nav id="nav" aria-label="Primary">
+    <div class="nav-shell">
+        <a class="nav-link" href="./Music_Department.html"><span class="nav-icon">←</span><span>Music</span></a>
+        <div class="nav-connector" aria-hidden="true"></div>
+        <a class="nav-link" href="../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+        <div class="nav-connector" aria-hidden="true"></div>
+        <a class="nav-link" href="./Music_Classroom.html"><span class="nav-icon">→</span><span>Next</span></a>
+    </div>
+</nav>
+
+<main>
+    <section class="hero">
+        <div class="intro-card">
+            <div class="eyebrow">Music Department / Item</div>
+            <h1>Virtual Ukulele</h1>
+            <p class="lead">
+                Play notes directly from your keyboard. Each row maps to one string, from top to bottom:
+                G, C, E, A. Tap the printed keys or click the frets to pluck.
+            </p>
+            <div class="status-pill">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span class="status-body" id="audio-status">Press any mapped key to wake the instrument.</span>
+            </div>
+            <div class="tip-grid">
+                <div class="tip-block">
+                    <span class="tip">Strings</span>
+                    <p class="tip-body">Number row is G. `Q` row is C. `A` row is E. `Z` row is A.</p>
+                </div>
+                <div class="tip-block">
+                    <span class="tip">Range</span>
+                    <p class="tip-body">Each string has eight frets, so you can sketch melodies instead of just open strings.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ukulele-shell">
+            <div class="ukulele-visual" aria-hidden="true">
+                <div class="body-glow"></div>
+                <div class="sound-hole"></div>
+                <div class="bridge"></div>
+                <div class="neck"></div>
+                <div class="headstock"></div>
+                <div class="fret-markers">
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                    <div class="fret"></div>
+                </div>
+                <div class="string-layer">
+                    <div class="string-line" data-string-line="0"></div>
+                    <div class="string-line" data-string-line="1"></div>
+                    <div class="string-line" data-string-line="2"></div>
+                    <div class="string-line" data-string-line="3"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="controls-card">
+        <div class="section-kicker">Fretboard</div>
+        <div class="string-board" id="string-board"></div>
+    </section>
+
+    <section class="keyboard-card">
+        <div class="section-kicker">Keyboard Layout</div>
+        <div class="keyboard-grid" id="keyboard-grid"></div>
+        <div class="status-panel">
+            <div class="status-line">Current note</div>
+            <p class="status-body" id="note-status">Waiting for the first pluck.</p>
+        </div>
+    </section>
+</main>
+
+<script type="module">
+import { initSharedChrome } from './shared-chrome.js';
+
+initSharedChrome({
+    homeHref: '../index.html',
+    regionalMap: {
+        caption: 'Music Regional Map',
+        center: { label: 'Ukulele', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '18%', rotate: '-16deg' },
+            { left: '39%', top: '50%', width: '17%', rotate: '20deg' },
+            { left: '33%', top: '46%', width: '16%', rotate: '180deg' }
+        ],
+        nodes: [
+            { label: 'Music', href: './Music_Department.html', left: '58%', top: '34%' },
+            { label: 'Classroom', href: './Music_Classroom.html', left: '57%', top: '62%' },
+            { label: 'Practice Room', href: './Practice_Room.html', left: '15%', top: '54%' }
+        ],
+        placeCard: {
+            kicker: 'Item',
+            title: 'Playable Ukulele',
+            copy: 'A keyboard-controlled instrument hidden inside the Music branch.',
+            actions: []
+        }
+    }
+});
+
+const STRINGS = [
+    { name: 'G String', short: 'G', octave: 4, keys: ['1', '2', '3', '4', '5', '6', '7', '8'] },
+    { name: 'C String', short: 'C', octave: 4, keys: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i'] },
+    { name: 'E String', short: 'E', octave: 4, keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'] },
+    { name: 'A String', short: 'A', octave: 4, keys: ['z', 'x', 'c', 'v', 'b', 'n', 'm', ','] }
+];
+
+const NOTE_ORDER = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const BASE_INDEX = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+const keyToCell = new Map();
+const keyToData = new Map();
+const activeTimers = new Map();
+const pressedKeys = new Set();
+
+const stringBoard = document.getElementById('string-board');
+const keyboardGrid = document.getElementById('keyboard-grid');
+const noteStatus = document.getElementById('note-status');
+const audioStatus = document.getElementById('audio-status');
+const stringLines = Array.from(document.querySelectorAll('[data-string-line]'));
+
+let audioContext;
+let masterGain;
+
+function getNoteData(noteName, octave, fret) {
+    const semitone = BASE_INDEX[noteName] + (octave * 12) + fret;
+    const noteIndex = semitone % 12;
+    const targetOctave = Math.floor(semitone / 12);
+    const label = `${NOTE_ORDER[noteIndex]}${targetOctave}`;
+    const midi = semitone + 12;
+    const frequency = 440 * (2 ** ((midi - 69) / 12));
+    return { label, frequency };
+}
+
+function ensureAudio() {
+    if (!audioContext) {
+        audioContext = new window.AudioContext();
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.78;
+        masterGain.connect(audioContext.destination);
+    }
+
+    if (audioContext.state === 'suspended') audioContext.resume();
+    audioStatus.textContent = 'Instrument awake. Use the keyboard or click a fret.';
+}
+
+function pluckFrequency(frequency) {
+    ensureAudio();
+
+    const now = audioContext.currentTime;
+    const gain = audioContext.createGain();
+    const filter = audioContext.createBiquadFilter();
+    const osc = audioContext.createOscillator();
+    const body = audioContext.createOscillator();
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(3200, now);
+    filter.Q.setValueAtTime(0.9, now);
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(frequency, now);
+    osc.detune.setValueAtTime((Math.random() - 0.5) * 8, now);
+
+    body.type = 'sine';
+    body.frequency.setValueAtTime(frequency * 2, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.24, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+
+    osc.connect(filter);
+    body.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(now);
+    body.start(now);
+    osc.stop(now + 1.6);
+    body.stop(now + 1.2);
+}
+
+function flashActive(key, stringIndex, noteLabel) {
+    const cell = keyToCell.get(key);
+    const keyBox = document.querySelector(`[data-key-box="${CSS.escape(key)}"]`);
+    const stringLine = stringLines[stringIndex];
+
+    if (cell) cell.classList.add('active');
+    if (keyBox) keyBox.classList.add('active');
+    if (stringLine) stringLine.classList.add('active');
+
+    noteStatus.textContent = `${noteLabel} on ${STRINGS[stringIndex].name}`;
+
+    window.clearTimeout(activeTimers.get(key));
+    const timeoutId = window.setTimeout(() => {
+        cell?.classList.remove('active');
+        keyBox?.classList.remove('active');
+        stringLine?.classList.remove('active');
+        activeTimers.delete(key);
+    }, 180);
+    activeTimers.set(key, timeoutId);
+}
+
+function playKey(key) {
+    const data = keyToData.get(key);
+    if (!data) return;
+    pluckFrequency(data.frequency);
+    flashActive(key, data.stringIndex, data.noteLabel);
+}
+
+function renderBoards() {
+    STRINGS.forEach((stringData, stringIndex) => {
+        const row = document.createElement('div');
+        row.className = 'string-row';
+
+        const label = document.createElement('div');
+        label.className = 'string-name';
+        label.textContent = `${stringData.short} / ${stringData.name}`;
+        row.appendChild(label);
+
+        stringData.keys.forEach((key, fret) => {
+            const note = getNoteData(stringData.short, stringData.octave, fret);
+
+            keyToData.set(key, {
+                stringIndex,
+                fret,
+                noteLabel: note.label,
+                frequency: note.frequency
+            });
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'note-button';
+            button.dataset.key = key;
+            button.innerHTML = `
+                <span class="keycap">${key === ',' ? 'comma' : key}</span>
+                <span class="note-name">${note.label}</span>
+                <span class="fret-label">Fret ${fret}</span>
+            `;
+            button.addEventListener('click', () => playKey(key));
+            row.appendChild(button);
+            keyToCell.set(key, button);
+        });
+
+        stringBoard.appendChild(row);
+    });
+
+    STRINGS.forEach((stringData) => {
+        const row = document.createElement('div');
+        row.className = 'keyboard-row';
+        stringData.keys.forEach((key) => {
+            const box = document.createElement('div');
+            box.className = 'key-box';
+            box.dataset.keyBox = key;
+            box.textContent = key === ',' ? ',' : key.toUpperCase();
+            row.appendChild(box);
+        });
+        keyboardGrid.appendChild(row);
+    });
+}
+
+window.addEventListener('keydown', (event) => {
+    const key = event.key.toLowerCase();
+    if (!keyToData.has(key)) return;
+    if (pressedKeys.has(key)) return;
+    pressedKeys.add(key);
+    event.preventDefault();
+    playKey(key);
+});
+
+window.addEventListener('keyup', (event) => {
+    pressedKeys.delete(event.key.toLowerCase());
+});
+
+window.addEventListener('pointerdown', () => ensureAudio(), { once: true });
+
+renderBoards();
+</script>
+</body>
+</html>

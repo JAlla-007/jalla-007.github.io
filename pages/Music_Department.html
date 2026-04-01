@@ -351,6 +351,10 @@
         The department can branch into smaller memory rooms. Start here and keep layering details as you scan more spaces.
     </p>
     <div class="subpages-list">
+        <a class="subpage-link" href="./Ukulele.html">
+            <span>Ukulele</span>
+            <span>↗</span>
+        </a>
         <a class="subpage-link" href="./Music_Classroom.html">
             <span>Music Classroom</span>
             <span>↗</span>
@@ -393,6 +397,16 @@ const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 initSharedChrome({
     homeHref: '../index.html',
+    keepSubpagesPanel: true,
+    itemsExperience: {
+        kicker: 'Find Items',
+        title: 'The ukulele is ready to play.',
+        copy: 'Open a keyboard-controlled virtual ukulele inside the Music branch and pluck notes directly from your keys.',
+        primaryLabel: 'Play Ukulele',
+        secondaryLabel: 'Take Me There',
+        primaryHref: './Ukulele.html',
+        secondaryHref: './Ukulele.html'
+    },
     regionalMap: {
         caption: 'Music Regional Map',
         center: { label: 'Music Department', left: '38%', top: '45%' },
@@ -410,7 +424,9 @@ initSharedChrome({
             kicker: 'Branch',
             title: 'Inside Music',
             copy: 'A smaller map of the music area, where each room can branch into its own memory layer and scan.',
-            actions: []
+            actions: [
+                { label: 'Play Ukulele', href: './Ukulele.html' }
+            ]
         }
     }
 });
