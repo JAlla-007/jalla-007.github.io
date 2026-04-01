@@ -236,12 +236,14 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
+import { initSharedChrome } from './shared-chrome.js';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+initSharedChrome({ homeHref: '../index.html' });
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition: [0, -8, 8], initialCameraLookAt: [0, 0, 0], sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
