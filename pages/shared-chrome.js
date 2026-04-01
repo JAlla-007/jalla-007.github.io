@@ -398,9 +398,9 @@ function ensureTopNav(homeHref) {
                 <span>Home</span>
             </button>
             <div class="nav-connector" aria-hidden="true"></div>
-            <button class="nav-link nav-button" id="memo-toggle" type="button" aria-label="Open memo">
+            <button class="nav-link nav-button" id="memo-toggle" type="button" aria-label="Open about panel">
                 <span class="nav-icon">?</span>
-                <span>Memo</span>
+                <span>About</span>
             </button>
         </div>
     `;
@@ -462,7 +462,7 @@ function ensureOverlays(mapConfig) {
         memoOverlay.setAttribute('aria-hidden', 'true');
         memoOverlay.innerHTML = `
             <div class="memo-panel">
-                <button class="map-close" id="memo-close" type="button" aria-label="Close memo">×</button>
+                <button class="map-close" id="memo-close" type="button" aria-label="Close about panel">×</button>
                 <div class="memo-kicker">Atlantic College Memo</div>
                 <h2 class="memo-title">Farewell Transmission</h2>
                 <p class="memo-intro">
