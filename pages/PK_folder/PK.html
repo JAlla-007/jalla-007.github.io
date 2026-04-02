@@ -54,6 +54,43 @@
         .view-indicator-label { display: block; color: rgba(255,255,255,0.54); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
         .view-indicator-value { display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.04em; line-height: 1.45; }
         .view-indicator-row + .view-indicator-row { margin-top: 10px; }
+        #coordinate-popover {
+            position: fixed;
+            top: 168px;
+            right: 18px;
+            z-index: 151;
+            min-width: 260px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(0,0,0,0.66);
+            border: 1px solid rgba(255,255,255,0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.24);
+            color: rgba(255,255,255,0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        #coordinate-popover.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .coordinate-popover-label {
+            display: block;
+            color: rgba(255,255,255,0.54);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .coordinate-popover-value {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            line-height: 1.5;
+        }
         .scene-beacon {
             position: fixed;
             left: 0;
@@ -269,6 +306,7 @@
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">PK</div><div class="hero-subtitle">A place that is warm enough to call home......</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
 <div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
+<div id="coordinate-popover" aria-live="polite"><span class="coordinate-popover-label">Picked Point</span><span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span></div>
 <button id="scene-hotspot" class="scene-beacon" type="button" aria-label="Open regional map from PK hotspot"><span class="scene-beacon-core" aria-hidden="true"></span><span class="scene-beacon-label">Reveal Map</span></button>
 <div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-image-placeholder">Image Placeholder</div></div></div>
 <button id="audio-toggle" type="button">Sound Off</button>
@@ -287,6 +325,8 @@ const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
+const coordinatePopover = document.getElementById('coordinate-popover');
+const coordinatePopoverValue = document.getElementById('coordinate-popover-value');
 const sceneHotspot = document.getElementById('scene-hotspot');
 const memoryOverlay = document.getElementById('memory-overlay');
 const memoryClose = document.getElementById('memory-close');
@@ -333,6 +373,7 @@ const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.P
 let audioStarted = false;
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
+let coordinatePopoverTimer = null;
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
     const cameraPosition = viewer.camera.position;
@@ -347,6 +388,44 @@ function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hi
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
 function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
+function showCoordinatePopover(message) {
+    coordinatePopoverValue.textContent = message;
+    coordinatePopover.classList.add('visible');
+    if (coordinatePopoverTimer) window.clearTimeout(coordinatePopoverTimer);
+    coordinatePopoverTimer = window.setTimeout(() => {
+        coordinatePopover.classList.remove('visible');
+    }, 2600);
+}
+async function copyPickedCoordinates(message) {
+    try {
+        await navigator.clipboard.writeText(message);
+        showCoordinatePopover(`${message} Copied.`);
+    } catch (err) {
+        showCoordinatePopover(message);
+    }
+}
+function bindCoordinatePicker() {
+    const canvas = viewer.renderer?.domElement;
+    if (!canvas || canvas.dataset.coordinatePickerBound === 'true') return;
+    canvas.dataset.coordinatePickerBound = 'true';
+    canvas.addEventListener('dblclick', async (event) => {
+        if (!viewer.camera || !viewer.splatMesh) return;
+        const rect = canvas.getBoundingClientRect();
+        const mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
+        const renderDimensions = new THREE.Vector2();
+        const hits = [];
+        viewer.getRenderDimensions(renderDimensions);
+        viewer.raycaster.setFromCameraAndScreenPosition(viewer.camera, mousePosition, renderDimensions);
+        viewer.raycaster.intersectSplatMesh(viewer.splatMesh, hits);
+        if (!hits.length) {
+            showCoordinatePopover('No splat hit found at that point.');
+            return;
+        }
+        const { x, y, z } = hits[0].origin;
+        const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
+        await copyPickedCoordinates(coordinateMessage);
+    });
+}
 function projectSceneBeacon(anchor, element) {
     const projectedPoint = anchor.clone().project(viewer.camera);
     const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
@@ -462,6 +541,7 @@ async function loadScene() {
         info.classList.add('hidden');
         window.setTimeout(() => { info.style.display = 'none'; }, 450);
         viewer.start();
+        bindCoordinatePicker();
         showHeroTitle();
     } catch (err) {
         console.error(err);
