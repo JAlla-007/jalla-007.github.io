@@ -10,6 +10,19 @@
             overflow: hidden;
         }
 
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 125;
+            pointer-events: none;
+            opacity: 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.68) 28%, rgba(0, 0, 0, 0.24) 58%, rgba(0, 0, 0, 0) 100%);
+            transition: opacity 2s ease;
+        }
+
+        body.intro-mask-hidden::before { opacity: 0; }
+
         #info {
             position: fixed;
             inset: 0;
@@ -67,7 +80,7 @@
 <div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
 <div id="branch-panel"><div class="branch-kicker">Boarding House</div><h2 class="branch-title">PK</h2><p class="branch-copy">A boarding-house branch for living spaces, shared routines, and the quieter emotional geography of the campus.</p></div>
 <button id="audio-toggle" type="button">Sound Off</button>
-<audio id="ambient-audio" loop preload="auto"><source src="../../logoss%20(3).mp3" type="audio/mpeg"></audio>
+<audio id="ambient-audio" loop preload="auto"><source src="../../Music/logoss%20(3).mp3" type="audio/mpeg"></audio>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
 </script>
@@ -97,7 +110,13 @@ initSharedChrome({
             { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
             { label: 'Languages', href: '../Languages_folder/Languages.html', left: '60%', top: '62%' }
         ],
-
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside PK',
+            copy: 'A boarding-house branch ready for room memories, daily rituals, and quieter domestic scenes.',
+            actions: []
+        }
+    }
 });
 const initialCameraPosition = [4.5, -2.27, 29.05];
 const initialCameraLookAt = [0, 0, 0];
@@ -123,8 +142,8 @@ function enforceCameraConstraints() {
     if (viewer.controls) viewer.controls.update();
 }
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
-function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
-function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
+function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
+function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
 function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
 function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
 async function startAmbientAudio() { if (audioStarted) return; audioStarted = true; try { ambientAudio.muted = false; ambientAudio.volume = 0.6; await ambientAudio.play(); } catch (err) { console.error(err); ambientAudio.muted = true; } updateAudioButton(); }

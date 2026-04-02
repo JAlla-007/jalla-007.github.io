@@ -10,6 +10,21 @@
             overflow: hidden;
         }
 
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 125;
+            pointer-events: none;
+            opacity: 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.68) 28%, rgba(0, 0, 0, 0.24) 58%, rgba(0, 0, 0, 0) 100%);
+            transition: opacity 2s ease;
+        }
+
+        body.intro-mask-hidden::before {
+            opacity: 0;
+        }
+
         #info {
             position: fixed;
             inset: 0;
@@ -496,6 +511,7 @@ function hideHint() {
 function hideHeroTitle() {
     if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
     heroTitle.classList.add('hidden');
+    document.body.classList.add('intro-mask-hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
     }, 2000);
@@ -504,6 +520,7 @@ function hideHeroTitle() {
 function showHeroTitle() {
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
+    document.body.classList.remove('intro-mask-hidden');
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
