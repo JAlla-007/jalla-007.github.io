@@ -105,18 +105,34 @@ initSharedChrome({
         }
     }
 });
-const initialCameraPosition = [0, -8, 8];
+const initialCameraPosition = [4.5, -2.27, 29.05];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const DEFAULT_ZOOM_PERCENT = 38;
+const MIN_ZOOM_PERCENT = 29;
+const MIN_CAMERA_Y = -3.51;
+const MAX_CAMERA_Y = 6.82;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
+const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
+function enforceCameraConstraints() {
+    if (!viewer.camera?.position) return;
+    const cameraPosition = viewer.camera.position;
+    cameraPosition.y = THREE.MathUtils.clamp(cameraPosition.y, MIN_CAMERA_Y, MAX_CAMERA_Y);
+    const distanceFromCenter = cameraPosition.distanceTo(initialLookAtVector);
+    if (distanceFromCenter > maxCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(maxCameraDistance).add(initialLookAtVector);
+    }
+    if (viewer.controls) viewer.controls.update();
+}
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
 function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
-function updateViewIndicator() { if (viewer.camera?.position) { const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
+function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
 async function startAmbientAudio() { if (audioStarted) return; audioStarted = true; try { ambientAudio.muted = false; ambientAudio.volume = 0.6; await ambientAudio.play(); } catch (err) { console.error(err); ambientAudio.muted = true; } updateAudioButton(); }
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
@@ -136,7 +152,8 @@ async function loadScene() {
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         await viewer.addSplatScene(blobUrl, { format: GaussianSplats3D.SceneFormat.KSplat, rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w], showLoadingUI: false, progressiveLoad: false });
-        if (viewer.controls) { viewer.controls.minPolarAngle = 0; viewer.controls.maxPolarAngle = Math.PI; viewer.controls.enablePan = true; viewer.controls.update(); }
+        if (viewer.controls) { viewer.controls.minPolarAngle = 0; viewer.controls.maxPolarAngle = Math.PI; viewer.controls.enablePan = true; viewer.controls.maxDistance = maxCameraDistance; viewer.controls.update(); }
+        enforceCameraConstraints();
         info.classList.add('hidden');
         window.setTimeout(() => { info.style.display = 'none'; }, 450);
         viewer.start();
