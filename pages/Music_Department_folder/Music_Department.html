@@ -323,12 +323,12 @@
             <span>Music</span>
         </a>
         <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../index.html" aria-label="Homepage">
+        <a class="nav-link" href="../../index.html" aria-label="Homepage">
             <span class="nav-icon">⌂</span>
             <span>Home</span>
         </a>
         <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="./Languages.html" aria-label="Languages location">
+        <a class="nav-link" href="../Languages.html" aria-label="Languages location">
             <span class="nav-icon">?</span>
             <span>Languages</span>
         </a>
@@ -387,7 +387,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome } from './shared-chrome.js';
+import { initSharedChrome } from '../shared-chrome.js';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -396,7 +396,7 @@ const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 initSharedChrome({
-    homeHref: '../index.html',
+    homeHref: '../../index.html',
     keepSubpagesPanel: true,
     itemsExperience: {
         kicker: 'Find Items',

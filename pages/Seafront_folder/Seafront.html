@@ -215,11 +215,11 @@
 <body>
 <div id="info"><div class="loading-shell"><div class="loading-ring" aria-hidden="true"></div><div class="loading-text">Loading</div></div></div>
 <nav id="nav" aria-label="Primary"><div class="nav-shell">
-    <a class="nav-link" href="./Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
+    <a class="nav-link" href="../Music_Department_folder/Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
     <div class="nav-connector" aria-hidden="true"></div>
-    <a class="nav-link" href="../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <a class="nav-link" href="../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
     <div class="nav-connector" aria-hidden="true"></div>
-    <a class="nav-link" href="./Languages.html"><span class="nav-icon">?</span><span>Languages</span></a>
+    <a class="nav-link" href="../Languages.html"><span class="nav-icon">?</span><span>Languages</span></a>
 </div></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Seafront</div><div class="hero-subtitle">A location within Atlantic College Memo</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
@@ -236,7 +236,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome } from './shared-chrome.js';
+import { initSharedChrome } from '../shared-chrome.js';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
@@ -244,7 +244,7 @@ const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 initSharedChrome({
-    homeHref: '../index.html',
+    homeHref: '../../index.html',
     regionalMap: {
         caption: 'Seafront Regional Map',
         center: { label: 'Seafront', left: '38%', top: '45%' },

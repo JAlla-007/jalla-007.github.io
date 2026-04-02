@@ -613,9 +613,9 @@ const DEFAULT_MAP_CONFIG = {
         { left: '34%', top: '55%', width: '18%', rotate: '208deg' }
     ],
     nodes: [
-        { label: 'Music', href: './Music_Department.html', left: '58%', top: '34%' },
+        { label: 'Music', href: './Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
         { label: 'Languages', href: './Languages.html', left: '59%', top: '62%' },
-        { label: 'Seafront', href: './Seafront.html', left: '14%', top: '26%' },
+        { label: 'Seafront', href: './Seafront_folder/Seafront.html', left: '14%', top: '26%' },
         { label: 'Church', href: './Church.html', left: '15%', top: '67%' }
     ],
     placeCard: {
