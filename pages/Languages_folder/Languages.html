@@ -177,6 +177,42 @@
             cursor: pointer;
         }
 
+        #view-indicator {
+            position: fixed;
+            top: 68px;
+            right: 18px;
+            z-index: 150;
+            min-width: 228px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .view-indicator-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.54);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .view-indicator-value {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            line-height: 1.45;
+        }
+
+        .view-indicator-row + .view-indicator-row {
+            margin-top: 10px;
+        }
+
         #subpages-panel {
             position: fixed;
             left: 24px;
@@ -344,6 +380,17 @@
 
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
 
+<div id="view-indicator" aria-live="polite">
+    <div class="view-indicator-row">
+        <span class="view-indicator-label">Coordinates</span>
+        <span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span>
+    </div>
+    <div class="view-indicator-row">
+        <span class="view-indicator-label">Zoom</span>
+        <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
+    </div>
+</div>
+
 <div id="subpages-panel">
     <div class="subpages-kicker">Inside Languages</div>
     <h2 class="subpages-title">Sub-Locations</h2>
@@ -382,6 +429,8 @@ const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+const viewIndicatorCoords = document.getElementById('view-indicator-coords');
+const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -406,9 +455,14 @@ initSharedChrome({
     }
 });
 
+const initialCameraPosition = [0, -8, 8];
+const initialCameraLookAt = [0, 0, 0];
+const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+
 const viewer = new GaussianSplats3D.Viewer({
-    initialCameraPosition: [0, -8, 8],
-    initialCameraLookAt: [0, 0, 0],
+    initialCameraPosition,
+    initialCameraLookAt,
     sharedMemoryForWorkers: false,
     gpuAcceleratedSort: false,
     dynamicScene: true,
@@ -418,6 +472,18 @@ const viewer = new GaussianSplats3D.Viewer({
 
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
+
+function updateViewIndicator() {
+    if (viewer.camera?.position) {
+        const { x, y, z } = viewer.camera.position;
+        viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
+        const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
+        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        viewIndicatorZoom.textContent = `${zoomPercent}%`;
+    }
+
+    window.requestAnimationFrame(updateViewIndicator);
+}
 
 function hideHint() {
     if (!hint || hint.classList.contains('hidden')) return;
@@ -486,6 +552,7 @@ audioToggle.addEventListener('click', async () => {
 });
 
 updateAudioButton();
+updateViewIndicator();
 
 async function loadScene() {
     try {
