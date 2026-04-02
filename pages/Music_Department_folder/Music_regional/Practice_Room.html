@@ -209,6 +209,7 @@ const initialCameraPosition = [0, -8, 8];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
     initialCameraLookAt,
@@ -271,6 +272,7 @@ async function loadScene() {
         const blobUrl = URL.createObjectURL(blob);
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
+            rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
             showLoadingUI: false,
             progressiveLoad: false
         });
