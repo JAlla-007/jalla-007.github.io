@@ -614,9 +614,9 @@ const DEFAULT_MAP_CONFIG = {
     ],
     nodes: [
         { label: 'Music', href: './Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
-        { label: 'Languages', href: './Languages.html', left: '59%', top: '62%' },
+        { label: 'Languages', href: './Languages_folder/Languages.html', left: '59%', top: '62%' },
         { label: 'Seafront', href: './Seafront_folder/Seafront.html', left: '14%', top: '26%' },
-        { label: 'Church', href: './Church.html', left: '15%', top: '67%' }
+        { label: 'Church', href: './Church_folder/Church.html', left: '15%', top: '67%' }
     ],
     placeCard: {
         kicker: 'Location',
