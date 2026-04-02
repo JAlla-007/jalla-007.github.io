@@ -554,7 +554,7 @@
 <body>
 <nav id="nav" aria-label="Primary">
     <div class="nav-shell">
-        <a class="nav-link" href="./Music_Department.html"><span class="nav-icon">←</span><span>Music</span></a>
+        <a class="nav-link" href="../Music_Department.html"><span class="nav-icon">←</span><span>Music</span></a>
         <div class="nav-connector" aria-hidden="true"></div>
         <a class="nav-link" href="../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
         <div class="nav-connector" aria-hidden="true"></div>
@@ -630,10 +630,10 @@
 </main>
 
 <script type="module">
-import { initSharedChrome } from '../shared-chrome.js';
+import { initSharedChrome } from '../../shared-chrome.js';
 
 initSharedChrome({
-    homeHref: '../../index.html',
+    homeHref: '../../../index.html',
     regionalMap: {
         caption: 'Music Regional Map',
         center: { label: 'Ukulele', left: '38%', top: '45%' },
@@ -643,7 +643,7 @@ initSharedChrome({
             { left: '33%', top: '46%', width: '16%', rotate: '180deg' }
         ],
         nodes: [
-            { label: 'Music', href: './Music_Department.html', left: '58%', top: '34%' },
+            { label: 'Music', href: '../Music_Department.html', left: '58%', top: '34%' },
             { label: 'Classroom', href: './Music_Classroom.html', left: '57%', top: '62%' },
             { label: 'Practice Room', href: './Practice_Room.html', left: '15%', top: '54%' }
         ],
