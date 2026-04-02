@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PK - Atlantic College Memo</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+
+        #info {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+
+        #info.hidden { opacity: 0; }
+        #nav { position: fixed; top: 0; left: 0; right: 0; height: 54px; z-index: 160; }
+        #nav:hover .nav-shell, #nav:focus-within .nav-shell { transform: translateY(0); }
+        .nav-shell { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr); align-items: center; width: 100%; height: 54px; margin: 0; padding: 0 18px; border-radius: 0; background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)), rgba(10,10,10,0.26); border-bottom: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(16px); box-shadow: 0 10px 26px rgba(0,0,0,0.24); transform: translateY(-38px); transition: transform 0.32s ease; }
+        .nav-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 0 10px; border-radius: 999px; color: rgba(255,255,255,0.92); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 0.14em; text-decoration: none; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
+        .nav-link:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+        .nav-icon { font-size: 14px; line-height: 1; }
+        .nav-connector { width: 72px; height: 1px; background: rgba(255,255,255,0.58); justify-self: center; }
+        .loading-shell { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 28px; border-radius: 999px; background: radial-gradient(circle at top, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+        .loading-ring { width: 54px; height: 54px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.16); border-top-color: rgba(255,255,255,0.95); animation: spin 0.9s linear infinite; }
+        .loading-text { color: rgba(255,255,255,0.94); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; padding-left: 0.28em; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #hint, #audio-toggle { position: fixed; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); color: rgba(255,255,255,0.88); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        #hint { left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 120; max-width: min(92vw, 420px); padding: 12px 16px; font-size: 12px; text-align: center; transition: opacity 0.35s ease, transform 0.35s ease; }
+        #hint.hidden { opacity: 0; transform: translateX(-50%) translateY(10px); }
+        #audio-toggle { right: 16px; bottom: 18px; z-index: 145; min-width: 132px; min-height: 42px; padding: 0 16px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+        #view-indicator { position: fixed; top: 68px; right: 18px; z-index: 150; min-width: 228px; padding: 12px 14px; border-radius: 18px; background: rgba(0,0,0,0.58); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(0,0,0,0.24); color: rgba(255,255,255,0.92); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        .view-indicator-label { display: block; color: rgba(255,255,255,0.54); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+        .view-indicator-value { display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.04em; line-height: 1.45; }
+        .view-indicator-row + .view-indicator-row { margin-top: 10px; }
+        #hero-title { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 130; pointer-events: none; opacity: 0; transform: translateY(16px); transition: opacity 2s ease, transform 2s ease; }
+        #hero-title.visible { opacity: 1; transform: translateY(0); }
+        #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
+        .hero-text { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: min(92vw, 980px); padding: 0 24px; color: rgba(255,255,255,0.94); font-family: "Times New Roman", Times, serif; text-align: center; }
+        .hero-title-line { font-size: clamp(40px, 7vw, 92px); font-weight: 700; letter-spacing: 0.03em; line-height: 0.95; text-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 12px 24px rgba(0,0,0,0.42), 0 24px 60px rgba(0,0,0,0.48); }
+        .hero-subtitle { color: rgba(255,255,255,0.76); font-size: clamp(14px, 1.4vw, 22px); font-weight: 400; letter-spacing: 0.18em; line-height: 1.2; text-shadow: 0 8px 22px rgba(0,0,0,0.35); }
+        #branch-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%), rgba(10,10,10,0.66); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0,0,0,0.28); }
+        .branch-kicker { color: rgba(255,255,255,0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+        .branch-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
+        .branch-copy { margin: 0; color: rgba(255,255,255,0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<div id="info"><div class="loading-shell"><div class="loading-ring" aria-hidden="true"></div><div class="loading-text">Loading</div></div></div>
+<nav id="nav" aria-label="Primary"><div class="nav-shell">
+    <a class="nav-link" href="../Church_folder/Church.html"><span class="nav-icon">+</span><span>Church</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../Languages_folder/Languages.html"><span class="nav-icon">?</span><span>Languages</span></a>
+</div></nav>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">PK</div><div class="hero-subtitle">A boarding house within Atlantic College Memo</div></div></div>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
+<div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
+<div id="branch-panel"><div class="branch-kicker">Boarding House</div><h2 class="branch-title">PK</h2><p class="branch-copy">A boarding-house branch for living spaces, shared routines, and the quieter emotional geography of the campus.</p></div>
+<button id="audio-toggle" type="button">Sound Off</button>
+<audio id="ambient-audio" loop preload="auto"><source src="../../logoss%20(3).mp3" type="audio/mpeg"></audio>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import * as THREE from 'three';
+import { initSharedChrome } from '../shared-chrome.js';
+const info = document.getElementById('info');
+const hint = document.getElementById('hint');
+const heroTitle = document.getElementById('hero-title');
+const audioToggle = document.getElementById('audio-toggle');
+const ambientAudio = document.getElementById('ambient-audio');
+const viewIndicatorCoords = document.getElementById('view-indicator-coords');
+const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
+initSharedChrome({
+    homeHref: '../../index.html',
+    regionalMap: {
+        caption: 'PK Boarding House Map',
+        center: { label: 'PK', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '18%', rotate: '-18deg' },
+            { left: '40%', top: '48%', width: '18%', rotate: '8deg' },
+            { left: '34%', top: '47%', width: '16%', rotate: '176deg' }
+        ],
+        nodes: [
+            { label: 'Church', href: '../Church_folder/Church.html', left: '16%', top: '60%' },
+            { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
+            { label: 'Languages', href: '../Languages_folder/Languages.html', left: '60%', top: '62%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside PK',
+            copy: 'A boarding-house branch ready for room memories, daily rituals, and quieter domestic scenes.',
+            actions: []
+        }
+    }
+});
+const initialCameraPosition = [0, -8, 8];
+const initialCameraLookAt = [0, 0, 0];
+const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+let audioStarted = false;
+function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
+function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
+function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
+function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
+function updateViewIndicator() { if (viewer.camera?.position) { const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
+async function startAmbientAudio() { if (audioStarted) return; audioStarted = true; try { ambientAudio.muted = false; ambientAudio.volume = 0.6; await ambientAudio.play(); } catch (err) { console.error(err); ambientAudio.muted = true; } updateAudioButton(); }
+window.addEventListener('pointerdown', hideHint, { once: true });
+window.addEventListener('wheel', hideHint, { once: true });
+window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', hideHeroTitle, { once: true });
+window.addEventListener('wheel', hideHeroTitle, { once: true });
+window.addEventListener('keydown', hideHeroTitle, { once: true });
+window.addEventListener('pointerdown', startAmbientAudio, { once: true });
+window.addEventListener('keydown', startAmbientAudio, { once: true });
+audioToggle.addEventListener('click', async () => { if (!audioStarted) { await startAmbientAudio(); return; } if (ambientAudio.paused || ambientAudio.muted) { ambientAudio.muted = false; await ambientAudio.play(); } else { ambientAudio.muted = true; } updateAudioButton(); });
+updateAudioButton();
+updateViewIndicator();
+async function loadScene() {
+    try {
+        const response = await fetch('../../PK.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        await viewer.addSplatScene(blobUrl, { format: GaussianSplats3D.SceneFormat.KSplat, rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w], showLoadingUI: false, progressiveLoad: false });
+        if (viewer.controls) { viewer.controls.minPolarAngle = 0; viewer.controls.maxPolarAngle = Math.PI; viewer.controls.enablePan = true; viewer.controls.update(); }
+        info.classList.add('hidden');
+        window.setTimeout(() => { info.style.display = 'none'; }, 450);
+        viewer.start();
+        showHeroTitle();
+    } catch (err) {
+        console.error(err);
+        info.innerHTML = '<div class="loading-shell"><div class="loading-text">Load failed</div></div>';
+    }
+}
+loadScene();
+</script>
+</body>
+</html>

@@ -1,6 +1,20 @@
 const SHARED_CHROME_STYLE_ID = 'shared-subpage-chrome';
 
 const SHARED_CHROME_CSS = `
+body[data-shared-chrome="true"]::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at top left, rgba(0, 0, 0, 0.48), transparent 28%),
+        radial-gradient(circle at top right, rgba(0, 0, 0, 0.48), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.52), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.52), transparent 30%),
+        radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.18) 100%);
+}
+
 body[data-shared-chrome="true"] #nav {
     position: fixed;
     top: 0;
@@ -610,13 +624,15 @@ const DEFAULT_MAP_CONFIG = {
         { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
         { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
         { left: '32%', top: '44%', width: '20%', rotate: '160deg' },
-        { left: '34%', top: '55%', width: '18%', rotate: '208deg' }
+        { left: '34%', top: '55%', width: '18%', rotate: '208deg' },
+        { left: '47%', top: '44%', width: '20%', rotate: '350deg' }
     ],
     nodes: [
         { label: 'Music', href: './Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
         { label: 'Languages', href: './Languages_folder/Languages.html', left: '59%', top: '62%' },
         { label: 'Seafront', href: './Seafront_folder/Seafront.html', left: '14%', top: '26%' },
-        { label: 'Church', href: './Church_folder/Church.html', left: '15%', top: '67%' }
+        { label: 'Church', href: './Church_folder/Church.html', left: '15%', top: '67%' },
+        { label: 'PK', href: './PK_folder/PK.html', left: '76%', top: '44%' }
     ],
     placeCard: {
         kicker: 'Location',
