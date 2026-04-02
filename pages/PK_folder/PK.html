@@ -54,6 +54,38 @@
         .view-indicator-label { display: block; color: rgba(255,255,255,0.54); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
         .view-indicator-value { display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.04em; line-height: 1.45; }
         .view-indicator-row + .view-indicator-row { margin-top: 10px; }
+        #scene-hotspot {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 155;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.68);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+            color: rgba(255,255,255,0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.92);
+            transition: opacity 0.22s ease, transform 0.22s ease, background 0.22s ease;
+        }
+        #scene-hotspot.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #scene-hotspot:hover { background: rgba(255,255,255,0.12); }
         #hero-title { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 130; pointer-events: none; opacity: 0; transform: translateY(16px); transition: opacity 2s ease, transform 2s ease; }
         #hero-title.visible { opacity: 1; transform: translateY(0); }
         #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
@@ -78,6 +110,7 @@
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">PK</div><div class="hero-subtitle">A place that is warm enough to call home......</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
 <div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
+<button id="scene-hotspot" type="button" aria-label="Open regional map from PK hotspot">Regional Map</button>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../../Music/logoss%20(3).mp3" type="audio/mpeg"></audio>
 <script type="importmap">
@@ -94,6 +127,8 @@ const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
+const sceneHotspot = document.getElementById('scene-hotspot');
+const hotspotAnchor = new THREE.Vector3(-2.45, 0.43, -1.58);
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -138,6 +173,27 @@ function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hi
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
 function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
+function updateSceneHotspot() {
+    if (!sceneHotspot || !viewer.camera) {
+        window.requestAnimationFrame(updateSceneHotspot);
+        return;
+    }
+    const projectedPoint = hotspotAnchor.clone().project(viewer.camera);
+    const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+        && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+        && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+    if (!isVisible) {
+        sceneHotspot.classList.remove('visible');
+        window.requestAnimationFrame(updateSceneHotspot);
+        return;
+    }
+    const x = ((projectedPoint.x + 1) / 2) * window.innerWidth;
+    const y = ((-projectedPoint.y + 1) / 2) * window.innerHeight;
+    sceneHotspot.style.left = `${x}px`;
+    sceneHotspot.style.top = `${y}px`;
+    sceneHotspot.classList.add('visible');
+    window.requestAnimationFrame(updateSceneHotspot);
+}
 function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
 async function startAmbientAudio() { if (audioStarted) return; audioStarted = true; try { ambientAudio.muted = false; ambientAudio.volume = 0.6; await ambientAudio.play(); } catch (err) { console.error(err); ambientAudio.muted = true; } updateAudioButton(); }
 window.addEventListener('pointerdown', hideHint, { once: true });
@@ -149,8 +205,13 @@ window.addEventListener('keydown', hideHeroTitle, { once: true });
 window.addEventListener('pointerdown', startAmbientAudio, { once: true });
 window.addEventListener('keydown', startAmbientAudio, { once: true });
 audioToggle.addEventListener('click', async () => { if (!audioStarted) { await startAmbientAudio(); return; } if (ambientAudio.paused || ambientAudio.muted) { ambientAudio.muted = false; await ambientAudio.play(); } else { ambientAudio.muted = true; } updateAudioButton(); });
+sceneHotspot.addEventListener('click', () => {
+    const mapToggle = document.getElementById('map-toggle');
+    if (mapToggle) mapToggle.click();
+});
 updateAudioButton();
 updateViewIndicator();
+updateSceneHotspot();
 async function loadScene() {
     try {
         const response = await fetch('../../PK.ksplat');
