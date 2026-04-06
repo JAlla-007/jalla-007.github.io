@@ -1248,14 +1248,15 @@ const initialView = {
 const initialLookAtVector = initialView.target.clone();
 const initialDistance = initialView.position.distanceTo(initialLookAtVector);
 const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-const acOrientationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const defaultCameraUp = new THREE.Vector3(0, 1, 0);
+const flippedCameraUp = new THREE.Vector3(0, -1, 0);
 const sceneCatalog = [
-    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null },
-    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null },
-    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null }
+    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: flippedCameraUp },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: flippedCameraUp },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp },
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp }
 ];
 let motionFrame = null;
 let currentSceneIndex = null;
@@ -1721,6 +1722,22 @@ function getSceneRotation(scene) {
     return rotation;
 }
 
+function applySceneCamera(scene) {
+    const controls = getControls();
+    const cameraUp = scene.cameraUp || defaultCameraUp;
+
+    viewer.camera.up.copy(cameraUp);
+    viewer.camera.position.copy(initialView.position);
+
+    if (controls) {
+        controls.target.copy(initialView.target);
+        viewer.camera.lookAt(controls.target);
+        controls.update();
+    } else {
+        viewer.camera.lookAt(initialView.target);
+    }
+}
+
 function getDefaultHomepageSceneId() {
     const londonHour = Number(new Intl.DateTimeFormat('en-GB', {
         hour: 'numeric',
@@ -1919,7 +1936,7 @@ async function loadScene(sceneId = currentSceneId) {
             viewer.controls.update();
         }
 
-        resetView();
+        applySceneCamera(scene);
 
         if (!viewerStarted) {
             info.classList.add('hidden');
