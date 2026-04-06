@@ -634,92 +634,6 @@
             stroke-linejoin: round;
         }
 
-        #scene-switcher {
-            position: fixed;
-            left: 16px;
-            bottom: 64px;
-            z-index: 146;
-            width: min(360px, calc(100vw - 32px));
-            padding: 16px 16px 14px;
-            border-radius: 24px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
-                rgba(0, 0, 0, 0.56);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
-            backdrop-filter: blur(18px);
-        }
-
-        .scene-switcher-kicker {
-            color: rgba(255, 255, 255, 0.54);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-        }
-
-        .scene-switcher-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-top: 8px;
-        }
-
-        .scene-switcher-title {
-            color: rgba(255, 255, 255, 0.94);
-            font-family: "Times New Roman", Times, serif;
-            font-size: 24px;
-            line-height: 1;
-        }
-
-        .scene-switcher-status {
-            color: rgba(255, 255, 255, 0.58);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .scene-switcher-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 14px;
-        }
-
-        .scene-chip {
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            color: rgba(255, 255, 255, 0.88);
-            padding: 10px 14px;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-        }
-
-        .scene-chip:hover {
-            transform: translateY(-1px);
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .scene-chip.active {
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.28);
-            color: white;
-        }
-
-        .scene-chip:disabled {
-            opacity: 0.5;
-            cursor: wait;
-            transform: none;
-        }
-
         #side-tags {
             position: fixed;
             left: 20px;
@@ -1001,56 +915,6 @@
             margin-top: 10px;
         }
 
-        #camera-tune-panel {
-            position: fixed;
-            top: 182px;
-            right: 18px;
-            z-index: 150;
-            width: min(228px, calc(100vw - 36px));
-            padding: 12px 14px;
-            border-radius: 18px;
-            background: rgba(0, 0, 0, 0.58);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
-            color: rgba(255, 255, 255, 0.92);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        }
-
-        .camera-tune-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .camera-tune-button {
-            min-height: 34px;
-            padding: 0 10px;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            color: rgba(255, 255, 255, 0.9);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .camera-tune-button:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-1px);
-        }
-
-        .camera-tune-hint {
-            margin-top: 10px;
-            color: rgba(255, 255, 255, 0.56);
-            font-size: 10px;
-            letter-spacing: 0.08em;
-            line-height: 1.4;
-        }
 
         #page-identity-card {
             position: fixed;
@@ -1263,39 +1127,6 @@
     </div>
 </div>
 
-<section id="camera-tune-panel" aria-label="Camera tuning">
-    <div class="view-indicator-label">Camera Tune</div>
-    <div class="camera-tune-grid">
-        <button class="camera-tune-button" type="button" data-camera-action="x-minus">X -</button>
-        <button class="camera-tune-button" type="button" data-camera-action="x-plus">X +</button>
-        <button class="camera-tune-button" type="button" data-camera-action="y-minus">Y -</button>
-        <button class="camera-tune-button" type="button" data-camera-action="y-plus">Y +</button>
-        <button class="camera-tune-button" type="button" data-camera-action="z-minus">Z -</button>
-        <button class="camera-tune-button" type="button" data-camera-action="z-plus">Z +</button>
-        <button class="camera-tune-button" type="button" data-camera-action="roll-left">Roll -</button>
-        <button class="camera-tune-button" type="button" data-camera-action="roll-right">Roll +</button>
-        <button class="camera-tune-button" type="button" data-camera-action="flip-180">Flip 180</button>
-        <button class="camera-tune-button" type="button" data-camera-action="reset-view">Reset</button>
-    </div>
-    <div class="camera-tune-hint">Nudge the camera in X / Y / Z or roll the view if AC loads upside down.</div>
-</section>
-
-<section id="scene-switcher" aria-label="Scene switcher">
-    <div class="scene-switcher-kicker">Scene Study</div>
-    <div class="scene-switcher-row">
-        <div class="scene-switcher-title" id="scene-switcher-title">PK</div>
-        <div class="scene-switcher-status" id="scene-switcher-status">Ready</div>
-    </div>
-    <div class="scene-switcher-grid">
-        <button class="scene-chip active" type="button" data-scene-id="pk">PK</button>
-        <button class="scene-chip" type="button" data-scene-id="ac-day">AC Day</button>
-        <button class="scene-chip" type="button" data-scene-id="ac-night">AC Night</button>
-        <button class="scene-chip" type="button" data-scene-id="ac-alt">AC 2</button>
-        <button class="scene-chip" type="button" data-scene-id="ac-close">AC Close</button>
-        <button class="scene-chip" type="button" data-scene-id="music-dep">Music Dep</button>
-    </div>
-</section>
-
 <button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
 <audio id="ambient-audio" loop preload="auto">
@@ -1339,10 +1170,6 @@ const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
-const cameraTuneButtons = Array.from(document.querySelectorAll('[data-camera-action]'));
-const sceneSwitcherTitle = document.getElementById('scene-switcher-title');
-const sceneSwitcherStatus = document.getElementById('scene-switcher-status');
-const sceneButtons = Array.from(document.querySelectorAll('.scene-chip'));
 const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
@@ -1360,18 +1187,15 @@ const initialView = {
     position: new THREE.Vector3(0, -8, 8),
     target: new THREE.Vector3(0, 0, 0)
 };
-const initialLookAtVector = initialView.target.clone();
-const initialDistance = initialView.position.distanceTo(initialLookAtVector);
-const identityRotation = new THREE.Quaternion();
 const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
 const sceneCatalog = [
-    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true }
+    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(13.47, 6.74, -14.51), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-5.46, 1.66, -9.31), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.29, 1.11, 11.63), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
 let motionFrame = null;
 let currentSceneIndex = null;
@@ -1456,8 +1280,6 @@ let dragMoved = false;
 let dragStartX = 0;
 let dragStartY = 0;
 let uiAudioContext = null;
-let manualCameraRoll = 0;
-let manualCameraUpFlipped = false;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1551,8 +1373,6 @@ function zoom(direction) {
 }
 
 function resetView() {
-    manualCameraRoll = 0;
-    manualCameraUpFlipped = false;
     applySceneCamera(getActiveScene());
 }
 
@@ -1839,7 +1659,7 @@ function updateAudioButton() {
 }
 
 function getSceneRotation(scene) {
-    const rotation = scene.useBaseRotation === false ? identityRotation.clone() : baseModelRotation.clone();
+    const rotation = baseModelRotation.clone();
     if (scene.rotationCorrection) {
         rotation.multiply(scene.rotationCorrection);
     }
@@ -1848,12 +1668,8 @@ function getSceneRotation(scene) {
 
 function applySceneCamera(scene) {
     const controls = getControls();
-    const cameraUp = (scene.cameraUp || defaultCameraUp).clone();
+    const cameraUp = scene.cameraUp || defaultCameraUp;
     const sceneView = getSceneView(scene);
-
-    if (manualCameraUpFlipped) {
-        cameraUp.multiplyScalar(-1);
-    }
 
     viewer.camera.up.copy(cameraUp);
     viewer.camera.position.copy(sceneView.position);
@@ -1864,52 +1680,6 @@ function applySceneCamera(scene) {
         controls.update();
     } else {
         viewer.camera.lookAt(sceneView.target);
-    }
-
-    if (manualCameraRoll) {
-        viewer.camera.rotateZ(manualCameraRoll);
-    }
-}
-
-function nudgeCameraPosition(axis, delta) {
-    const controls = getControls();
-    if (!viewer.camera) return;
-
-    viewer.camera.position[axis] += delta;
-    if (controls?.target) {
-        viewer.camera.lookAt(controls.target);
-        controls.update();
-    } else {
-        viewer.camera.lookAt(getSceneView().target);
-    }
-}
-
-function adjustCameraRoll(delta) {
-    if (!viewer.camera) return;
-    manualCameraRoll += delta;
-    viewer.camera.rotateZ(delta);
-}
-
-function toggleCameraFlip() {
-    manualCameraUpFlipped = !manualCameraUpFlipped;
-    applySceneCamera(getActiveScene());
-}
-
-function handleCameraTune(action) {
-    const positionStep = 0.6;
-    const rollStep = Math.PI / 12;
-
-    switch (action) {
-        case 'x-minus': nudgeCameraPosition('x', -positionStep); break;
-        case 'x-plus': nudgeCameraPosition('x', positionStep); break;
-        case 'y-minus': nudgeCameraPosition('y', -positionStep); break;
-        case 'y-plus': nudgeCameraPosition('y', positionStep); break;
-        case 'z-minus': nudgeCameraPosition('z', -positionStep); break;
-        case 'z-plus': nudgeCameraPosition('z', positionStep); break;
-        case 'roll-left': adjustCameraRoll(-rollStep); break;
-        case 'roll-right': adjustCameraRoll(rollStep); break;
-        case 'flip-180': toggleCameraFlip(); break;
-        case 'reset-view': resetView(); break;
     }
 }
 
@@ -1953,20 +1723,15 @@ function getDefaultHomepageSceneId() {
         timeZone: 'Europe/London'
     }).format(new Date()));
 
-    return londonHour >= 7 && londonHour < 19 ? 'ac-day' : 'ac-night';
-}
+    if (londonHour >= 7 && londonHour < 19) {
+        const daytimeScenes = ['ac-day', 'ac-alt', 'ac-close'];
+        return daytimeScenes[Math.floor(Math.random() * daytimeScenes.length)];
+    }
 
-function syncSceneButtons(isLoading = false) {
-    sceneButtons.forEach((button) => {
-        const isActive = button.dataset.sceneId === currentSceneId;
-        button.classList.toggle('active', isActive);
-        button.disabled = isLoading;
-    });
+    return 'ac-night';
 }
 
 function applySceneUi(scene, isLoading = false) {
-    sceneSwitcherTitle.textContent = scene.label;
-    sceneSwitcherStatus.textContent = isLoading ? 'Loading' : 'Ready';
     reviewMemosButton.disabled = !scene.memories;
     reviewMemosButton.style.opacity = scene.memories ? '1' : '0.45';
     reviewMemosButton.style.cursor = scene.memories ? 'pointer' : 'not-allowed';
@@ -1981,8 +1746,6 @@ function applySceneUi(scene, isLoading = false) {
         activeBillboard = null;
         syncFocusMask();
     }
-
-    syncSceneButtons(isLoading);
 }
 
 async function startAmbientAudio() {
@@ -2029,11 +1792,6 @@ audioToggle.addEventListener('click', async () => {
 });
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
-cameraTuneButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        handleCameraTune(button.dataset.cameraAction);
-    });
-});
 
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
@@ -2118,8 +1876,6 @@ window.addEventListener('keydown', (event) => {
 async function loadScene(sceneId = currentSceneId) {
     const scene = sceneCatalog.find(({ id }) => id === sceneId) || sceneCatalog[0];
     const sceneRotation = getSceneRotation(scene);
-    manualCameraRoll = 0;
-    manualCameraUpFlipped = false;
     currentSceneId = scene.id;
     applySceneUi(scene, true);
 
@@ -2147,8 +1903,8 @@ async function loadScene(sceneId = currentSceneId) {
         URL.revokeObjectURL(blobUrl);
 
         if (viewer.controls) {
-            viewer.controls.minPolarAngle = -Math.PI;
-            viewer.controls.maxPolarAngle = Math.PI * 2;
+            viewer.controls.minPolarAngle = 0;
+            viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
             viewer.controls.update();
         }
@@ -2178,18 +1934,6 @@ async function loadScene(sceneId = currentSceneId) {
         `;
     }
 }
-
-sceneButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        const nextSceneId = button.dataset.sceneId;
-        if (!nextSceneId) return;
-        if (nextSceneId === currentSceneId) {
-            resetView();
-            return;
-        }
-        loadScene(nextSceneId);
-    });
-});
 
 currentSceneId = getDefaultHomepageSceneId();
 loadScene(currentSceneId);
