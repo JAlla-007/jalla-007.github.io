@@ -1297,17 +1297,16 @@ const acInitialView = {
 };
 const initialLookAtVector = initialView.target.clone();
 const initialDistance = initialView.position.distanceTo(initialLookAtVector);
+const identityRotation = new THREE.Quaternion();
 const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
-const acSceneRotationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-const acCameraYawCorrection = Math.PI;
 const sceneCatalog = [
-    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, cameraYawCorrection: 0, cameraRollCorrection: 0 },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acSceneRotationCorrection, cameraUp: defaultCameraUp, initialView: acInitialView, cameraYawCorrection: acCameraYawCorrection, cameraRollCorrection: Math.PI },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acSceneRotationCorrection, cameraUp: defaultCameraUp, initialView: acInitialView, cameraYawCorrection: acCameraYawCorrection, cameraRollCorrection: Math.PI },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, cameraYawCorrection: 0, cameraRollCorrection: 0 },
-    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, cameraYawCorrection: 0, cameraRollCorrection: 0 },
-    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, cameraYawCorrection: 0, cameraRollCorrection: 0 }
+    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: acInitialView, useBaseRotation: false },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: acInitialView, useBaseRotation: false },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true }
 ];
 let motionFrame = null;
 let currentSceneIndex = null;
@@ -1771,7 +1770,7 @@ function updateAudioButton() {
 }
 
 function getSceneRotation(scene) {
-    const rotation = baseModelRotation.clone();
+    const rotation = scene.useBaseRotation === false ? identityRotation.clone() : baseModelRotation.clone();
     if (scene.rotationCorrection) {
         rotation.multiply(scene.rotationCorrection);
     }
@@ -1782,18 +1781,9 @@ function applySceneCamera(scene) {
     const controls = getControls();
     const cameraUp = scene.cameraUp || defaultCameraUp;
     const sceneView = getSceneView(scene);
-    const yawCorrection = scene.cameraYawCorrection || 0;
-    const rollCorrection = scene.cameraRollCorrection || 0;
-    const cameraPosition = sceneView.position.clone();
-
-    if (yawCorrection) {
-        const offset = cameraPosition.sub(sceneView.target);
-        offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), yawCorrection);
-        cameraPosition.copy(sceneView.target).add(offset);
-    }
 
     viewer.camera.up.copy(cameraUp);
-    viewer.camera.position.copy(cameraPosition);
+    viewer.camera.position.copy(sceneView.position);
 
     if (controls) {
         controls.target.copy(sceneView.target);
@@ -1801,10 +1791,6 @@ function applySceneCamera(scene) {
         controls.update();
     } else {
         viewer.camera.lookAt(sceneView.target);
-    }
-
-    if (rollCorrection) {
-        viewer.camera.rotateZ(rollCorrection);
     }
 }
 
@@ -2070,7 +2056,11 @@ async function loadScene(sceneId = currentSceneId) {
 sceneButtons.forEach((button) => {
     button.addEventListener('click', () => {
         const nextSceneId = button.dataset.sceneId;
-        if (!nextSceneId || nextSceneId === currentSceneId) return;
+        if (!nextSceneId) return;
+        if (nextSceneId === currentSceneId) {
+            resetView();
+            return;
+        }
         loadScene(nextSceneId);
     });
 });
