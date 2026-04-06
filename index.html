@@ -1001,6 +1001,57 @@
             margin-top: 10px;
         }
 
+        #camera-tune-panel {
+            position: fixed;
+            top: 182px;
+            right: 18px;
+            z-index: 150;
+            width: min(228px, calc(100vw - 36px));
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .camera-tune-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .camera-tune-button {
+            min-height: 34px;
+            padding: 0 10px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .camera-tune-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .camera-tune-hint {
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.56);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            line-height: 1.4;
+        }
+
         #page-identity-card {
             position: fixed;
             left: 20px;
@@ -1212,6 +1263,23 @@
     </div>
 </div>
 
+<section id="camera-tune-panel" aria-label="Camera tuning">
+    <div class="view-indicator-label">Camera Tune</div>
+    <div class="camera-tune-grid">
+        <button class="camera-tune-button" type="button" data-camera-action="x-minus">X -</button>
+        <button class="camera-tune-button" type="button" data-camera-action="x-plus">X +</button>
+        <button class="camera-tune-button" type="button" data-camera-action="y-minus">Y -</button>
+        <button class="camera-tune-button" type="button" data-camera-action="y-plus">Y +</button>
+        <button class="camera-tune-button" type="button" data-camera-action="z-minus">Z -</button>
+        <button class="camera-tune-button" type="button" data-camera-action="z-plus">Z +</button>
+        <button class="camera-tune-button" type="button" data-camera-action="roll-left">Roll -</button>
+        <button class="camera-tune-button" type="button" data-camera-action="roll-right">Roll +</button>
+        <button class="camera-tune-button" type="button" data-camera-action="flip-180">Flip 180</button>
+        <button class="camera-tune-button" type="button" data-camera-action="reset-view">Reset</button>
+    </div>
+    <div class="camera-tune-hint">Nudge the camera in X / Y / Z or roll the view if AC loads upside down.</div>
+</section>
+
 <section id="scene-switcher" aria-label="Scene switcher">
     <div class="scene-switcher-kicker">Scene Study</div>
     <div class="scene-switcher-row">
@@ -1271,6 +1339,7 @@ const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
+const cameraTuneButtons = Array.from(document.querySelectorAll('[data-camera-action]'));
 const sceneSwitcherTitle = document.getElementById('scene-switcher-title');
 const sceneSwitcherStatus = document.getElementById('scene-switcher-status');
 const sceneButtons = Array.from(document.querySelectorAll('.scene-chip'));
@@ -1391,6 +1460,7 @@ let dragMoved = false;
 let dragStartX = 0;
 let dragStartY = 0;
 let uiAudioContext = null;
+let manualCameraRoll = 0;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1484,6 +1554,7 @@ function zoom(direction) {
 }
 
 function resetView() {
+    manualCameraRoll = 0;
     applySceneCamera(getActiveScene());
 }
 
@@ -1792,6 +1863,47 @@ function applySceneCamera(scene) {
     } else {
         viewer.camera.lookAt(sceneView.target);
     }
+
+    if (manualCameraRoll) {
+        viewer.camera.rotateZ(manualCameraRoll);
+    }
+}
+
+function nudgeCameraPosition(axis, delta) {
+    const controls = getControls();
+    if (!viewer.camera) return;
+
+    viewer.camera.position[axis] += delta;
+    if (controls?.target) {
+        viewer.camera.lookAt(controls.target);
+        controls.update();
+    } else {
+        viewer.camera.lookAt(getSceneView().target);
+    }
+}
+
+function adjustCameraRoll(delta) {
+    if (!viewer.camera) return;
+    manualCameraRoll += delta;
+    viewer.camera.rotateZ(delta);
+}
+
+function handleCameraTune(action) {
+    const positionStep = 0.6;
+    const rollStep = Math.PI / 12;
+
+    switch (action) {
+        case 'x-minus': nudgeCameraPosition('x', -positionStep); break;
+        case 'x-plus': nudgeCameraPosition('x', positionStep); break;
+        case 'y-minus': nudgeCameraPosition('y', -positionStep); break;
+        case 'y-plus': nudgeCameraPosition('y', positionStep); break;
+        case 'z-minus': nudgeCameraPosition('z', -positionStep); break;
+        case 'z-plus': nudgeCameraPosition('z', positionStep); break;
+        case 'roll-left': adjustCameraRoll(-rollStep); break;
+        case 'roll-right': adjustCameraRoll(rollStep); break;
+        case 'flip-180': adjustCameraRoll(Math.PI); break;
+        case 'reset-view': resetView(); break;
+    }
 }
 
 async function captureSceneScreenshot() {
@@ -1910,6 +2022,11 @@ audioToggle.addEventListener('click', async () => {
 });
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
+cameraTuneButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        handleCameraTune(button.dataset.cameraAction);
+    });
+});
 
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
@@ -2021,8 +2138,8 @@ async function loadScene(sceneId = currentSceneId) {
         URL.revokeObjectURL(blobUrl);
 
         if (viewer.controls) {
-            viewer.controls.minPolarAngle = 0;
-            viewer.controls.maxPolarAngle = Math.PI;
+            viewer.controls.minPolarAngle = -Math.PI;
+            viewer.controls.maxPolarAngle = Math.PI * 2;
             viewer.controls.enablePan = true;
             viewer.controls.update();
         }
