@@ -46,6 +46,7 @@
             right: 0;
             height: 54px;
             z-index: 160;
+            transition: opacity 0.3s ease;
         }
 
         #nav:hover .nav-shell,
@@ -591,7 +592,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
+            transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
         }
 
         #audio-toggle:hover {
@@ -615,7 +616,7 @@
             background: rgba(255, 255, 255, 0.04);
             color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
         }
 
         #screenshot-button:hover {
@@ -819,7 +820,7 @@
             pointer-events: none;
             opacity: 0;
             transform: translateY(16px);
-            transition: opacity 2s ease, transform 2s ease;
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
         #hero-title.visible {
@@ -872,7 +873,7 @@
             pointer-events: none;
             background: rgba(0, 0, 0, 0.46);
             opacity: 1;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.35s ease;
         }
 
         #intro-scrim.hidden {
@@ -893,6 +894,7 @@
             box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
             color: rgba(255, 255, 255, 0.92);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            transition: opacity 0.3s ease;
         }
 
         .view-indicator-label {
@@ -1004,6 +1006,29 @@
             font-size: 12px;
             letter-spacing: 0.04em;
             line-height: 1.45;
+        }
+
+        body:not(.ui-visible):not(.nav-peek) #nav {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body:not(.ui-visible) #screenshot-button,
+        body:not(.ui-visible) #view-indicator,
+        body:not(.ui-visible) #audio-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body:not(.ui-visible) #side-tags {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        body:not(.ui-visible) #page-identity-card {
+            opacity: 0 !important;
+            pointer-events: none;
+            transform: translateY(12px);
         }
     </style>
 </head>
@@ -1240,6 +1265,8 @@ let currentSceneIndex = null;
 let currentSceneId = 'pk';
 let billboardLoopStarted = false;
 let viewerStarted = false;
+let uiRevealArmed = false;
+let navPeekTimer = null;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
 let audioStarted = false;
@@ -1469,7 +1496,9 @@ function hideHeroTitle() {
         heroTitle.style.display = 'none';
         pageIdentityCard?.classList.add('visible');
         sideTags.classList.add('visible');
-    }, 2000);
+        peekHomepageNav();
+        armHomepageUiReveal();
+    }, 850);
 }
 
 function showHeroTitle() {
@@ -1477,10 +1506,41 @@ function showHeroTitle() {
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
     introScrim?.classList.remove('hidden');
+    setHomepageUiVisible(false);
     pageIdentityCard?.classList.remove('visible');
+    sideTags.classList.remove('visible');
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
+}
+
+function setHomepageUiVisible(visible) {
+    document.body.classList.toggle('ui-visible', visible);
+}
+
+function peekHomepageNav() {
+    document.body.classList.add('nav-peek');
+    if (navPeekTimer) window.clearTimeout(navPeekTimer);
+    navPeekTimer = window.setTimeout(() => {
+        document.body.classList.remove('nav-peek');
+    }, 1000);
+}
+
+function revealHomepageUi() {
+    if (heroTitle && heroTitle.style.display !== 'none') return;
+    setHomepageUiVisible(true);
+    uiRevealArmed = false;
+    window.removeEventListener('pointerdown', revealHomepageUi);
+    window.removeEventListener('wheel', revealHomepageUi);
+    window.removeEventListener('keydown', revealHomepageUi);
+}
+
+function armHomepageUiReveal() {
+    if (uiRevealArmed) return;
+    uiRevealArmed = true;
+    window.addEventListener('pointerdown', revealHomepageUi);
+    window.addEventListener('wheel', revealHomepageUi, { passive: true });
+    window.addEventListener('keydown', revealHomepageUi);
 }
 
 function openMapOverlay() {
