@@ -1361,7 +1361,7 @@ const initialView = {
     target: new THREE.Vector3(0, 0, 0)
 };
 const acInitialView = {
-    position: new THREE.Vector3(7.28, 2.05, 17.33),
+    position: new THREE.Vector3(-3.59, -0.47, 10.72),
     target: new THREE.Vector3(0, 0, 0)
 };
 const initialLookAtVector = initialView.target.clone();
@@ -1461,6 +1461,7 @@ let dragStartX = 0;
 let dragStartY = 0;
 let uiAudioContext = null;
 let manualCameraRoll = 0;
+let manualCameraUpFlipped = false;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1555,6 +1556,7 @@ function zoom(direction) {
 
 function resetView() {
     manualCameraRoll = 0;
+    manualCameraUpFlipped = false;
     applySceneCamera(getActiveScene());
 }
 
@@ -1850,8 +1852,12 @@ function getSceneRotation(scene) {
 
 function applySceneCamera(scene) {
     const controls = getControls();
-    const cameraUp = scene.cameraUp || defaultCameraUp;
+    const cameraUp = (scene.cameraUp || defaultCameraUp).clone();
     const sceneView = getSceneView(scene);
+
+    if (manualCameraUpFlipped) {
+        cameraUp.multiplyScalar(-1);
+    }
 
     viewer.camera.up.copy(cameraUp);
     viewer.camera.position.copy(sceneView.position);
@@ -1888,6 +1894,11 @@ function adjustCameraRoll(delta) {
     viewer.camera.rotateZ(delta);
 }
 
+function toggleCameraFlip() {
+    manualCameraUpFlipped = !manualCameraUpFlipped;
+    applySceneCamera(getActiveScene());
+}
+
 function handleCameraTune(action) {
     const positionStep = 0.6;
     const rollStep = Math.PI / 12;
@@ -1901,7 +1912,7 @@ function handleCameraTune(action) {
         case 'z-plus': nudgeCameraPosition('z', positionStep); break;
         case 'roll-left': adjustCameraRoll(-rollStep); break;
         case 'roll-right': adjustCameraRoll(rollStep); break;
-        case 'flip-180': adjustCameraRoll(Math.PI); break;
+        case 'flip-180': toggleCameraFlip(); break;
         case 'reset-view': resetView(); break;
     }
 }
