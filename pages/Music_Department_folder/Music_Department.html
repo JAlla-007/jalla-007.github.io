@@ -192,41 +192,6 @@
             cursor: pointer;
         }
 
-        #screenshot-button {
-            position: fixed;
-            top: 68px;
-            left: 14px;
-            z-index: 166;
-            width: 42px;
-            height: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.34);
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            color: rgba(255, 255, 255, 0.92);
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        #screenshot-button:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.58);
-            transform: translateY(-1px);
-        }
-
-        #screenshot-button svg {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 1.7;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
         #view-indicator {
             position: fixed;
             top: 68px;
@@ -261,10 +226,6 @@
 
         .view-indicator-row + .view-indicator-row {
             margin-top: 10px;
-        }
-
-        body.nav-peek #nav .nav-shell {
-            transform: translateY(0);
         }
 
         #hero-title {
@@ -350,13 +311,6 @@
     </div>
 </nav>
 
-<button id="screenshot-button" type="button" aria-label="Take scene screenshot" title="Take scene screenshot">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 8.5h3l1.6-2h6.8l1.6 2H20a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 20 18.5H4A1.5 1.5 0 0 1 2.5 17v-7A1.5 1.5 0 0 1 4 8.5Z"></path>
-        <circle cx="12" cy="13.2" r="3.2"></circle>
-    </svg>
-</button>
-
 <div id="hero-title">
     <div class="hero-text">
         <div class="hero-title-line">Music</div>
@@ -401,7 +355,6 @@ const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
-const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
@@ -464,8 +417,6 @@ const viewer = new GaussianSplats3D.Viewer({
 
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
-let navPeekTimer = null;
-let navPeekCooldown = false;
 
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
@@ -517,7 +468,6 @@ function hideHeroTitle() {
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
     }, 2000);
-    queueNavPeek();
 }
 
 function showHeroTitle() {
@@ -529,50 +479,6 @@ function showHeroTitle() {
     });
 }
 
-function queueNavPeek() {
-    if (navPeekCooldown) return;
-    navPeekCooldown = true;
-    window.setTimeout(() => {
-        document.body.classList.add('nav-peek');
-        navPeekTimer = window.setTimeout(() => {
-            document.body.classList.remove('nav-peek');
-        }, 1600);
-    }, 1450);
-}
-
-async function captureSceneScreenshot() {
-    const sceneCanvas = viewer.renderer?.domElement;
-    if (!sceneCanvas) return;
-
-    viewer.forceRenderNextFrame?.();
-    await new Promise((resolve) => window.requestAnimationFrame(resolve));
-
-    const filename = `music-scene-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
-    const downloadBlob = (blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    };
-
-    if (sceneCanvas.toBlob) {
-        sceneCanvas.toBlob(downloadBlob, 'image/png');
-        return;
-    }
-
-    const dataUrl = sceneCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
 
 function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
@@ -615,8 +521,6 @@ audioToggle.addEventListener('click', async () => {
     }
     updateAudioButton();
 });
-
-screenshotButton.addEventListener('click', captureSceneScreenshot);
 
 updateAudioButton();
 updateViewIndicator();

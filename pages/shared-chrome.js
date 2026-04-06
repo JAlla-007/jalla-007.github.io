@@ -29,6 +29,10 @@ body[data-shared-chrome="true"] #nav:focus-within .nav-shell {
     transform: translateY(0);
 }
 
+body[data-shared-chrome="true"].nav-peek #nav .nav-shell {
+    transform: translateY(0);
+}
+
 body[data-shared-chrome="true"] .nav-shell {
     position: relative;
     display: grid;
@@ -88,6 +92,47 @@ body[data-shared-chrome="true"] .nav-connector {
     height: 1px;
     background: rgba(255, 255, 255, 0.58);
     justify-self: center;
+}
+
+body[data-shared-chrome="true"] #screenshot-button {
+    position: fixed;
+    top: 68px;
+    left: 14px;
+    z-index: 166;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    color: rgba(255, 255, 255, 0.92);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+body[data-shared-chrome="true"] #screenshot-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.58);
+    transform: translateY(-1px);
+}
+
+body[data-shared-chrome="true"] #screenshot-button[disabled] {
+    opacity: 0.42;
+    cursor: default;
+    transform: none;
+}
+
+body[data-shared-chrome="true"] #screenshot-button svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 body[data-shared-chrome="true"] #map-overlay,
@@ -393,15 +438,8 @@ body[data-shared-chrome="true"] .page-identity-card {
     left: 18px;
     bottom: 18px;
     z-index: 148;
-    width: min(340px, calc(100vw - 36px));
-    padding: 16px 16px 14px;
-    border-radius: 24px;
-    background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 24%),
-        rgba(10, 10, 10, 0.42);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(14px);
+    width: min(240px, calc(100vw - 36px));
+    padding: 0;
     opacity: 0;
     transform: translateY(12px);
     pointer-events: none;
@@ -416,32 +454,32 @@ body[data-shared-chrome="true"] .page-identity-card.visible {
 body[data-shared-chrome="true"] .page-identity-kicker {
     color: rgba(255, 255, 255, 0.54);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 10px;
-    letter-spacing: 0.22em;
+    font-size: 9px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
 }
 
 body[data-shared-chrome="true"] .page-identity-title {
-    margin: 10px 0 10px;
+    margin: 6px 0 6px;
     color: rgba(255, 255, 255, 0.96);
     font-family: "Times New Roman", Times, serif;
-    font-size: clamp(24px, 3vw, 34px);
+    font-size: clamp(17px, 2vw, 22px);
     font-weight: 700;
-    line-height: 0.98;
+    line-height: 1;
 }
 
 body[data-shared-chrome="true"] .page-identity-rule {
-    width: 72px;
+    width: 48px;
     height: 1px;
     background: rgba(255, 255, 255, 0.82);
 }
 
 body[data-shared-chrome="true"] .page-identity-copy {
-    margin: 12px 0 0;
+    margin: 8px 0 0;
     color: rgba(255, 255, 255, 0.72);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.45;
 }
 `;
 
@@ -605,6 +643,25 @@ function ensureSideRail() {
     }
 }
 
+function ensureScreenshotButton() {
+    let button = document.getElementById('screenshot-button');
+    if (!button) {
+        button = document.createElement('button');
+        button.id = 'screenshot-button';
+        button.type = 'button';
+        button.setAttribute('aria-label', 'Take scene screenshot');
+        button.title = 'Take scene screenshot';
+        button.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 8.5h3l1.6-2h6.8l1.6 2H20a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 20 18.5H4A1.5 1.5 0 0 1 2.5 17v-7A1.5 1.5 0 0 1 4 8.5Z"></path>
+                <circle cx="12" cy="13.2" r="3.2"></circle>
+            </svg>
+        `;
+        document.body.appendChild(button);
+    }
+    return button;
+}
+
 function getPageIdentityContent() {
     const heroTitle = document.getElementById('hero-title');
     const heroTitleLine = heroTitle?.querySelector('.hero-title-line')?.textContent?.trim();
@@ -661,14 +718,68 @@ function ensurePageIdentityCard() {
         return;
     }
 
+    let navPeekUsed = false;
+    let navPeekTimer = null;
+    const queueNavPeek = () => {
+        if (navPeekUsed) return;
+        navPeekUsed = true;
+        window.setTimeout(() => {
+            document.body.classList.add('nav-peek');
+            navPeekTimer = window.setTimeout(() => {
+                document.body.classList.remove('nav-peek');
+            }, 1600);
+        }, 1450);
+    };
+
     const syncVisibility = () => {
         const isHidden = heroTitle.classList.contains('hidden') || heroTitle.style.display === 'none';
         card.classList.toggle('visible', isHidden);
+        if (isHidden) queueNavPeek();
     };
 
     const observer = new MutationObserver(syncVisibility);
     observer.observe(heroTitle, { attributes: true, attributeFilter: ['class', 'style'] });
     syncVisibility();
+}
+
+function bindScreenshotBehavior() {
+    const button = ensureScreenshotButton();
+    if (!button || button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+
+    const getSceneCanvas = () => document.querySelector('canvas');
+
+    button.addEventListener('click', async () => {
+        const sceneCanvas = getSceneCanvas();
+        if (!sceneCanvas) return;
+
+        await new Promise((resolve) => window.requestAnimationFrame(resolve));
+        const filename = `${document.title.replace(/\s+-\s+Atlantic College Memo$/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scene'}-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+
+        const downloadBlob = (blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        };
+
+        if (sceneCanvas.toBlob) {
+            sceneCanvas.toBlob(downloadBlob, 'image/png');
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.href = sceneCanvas.toDataURL('image/png');
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    });
 }
 
 function bindOverlayBehavior(homeHref, itemsConfig = {}) {
@@ -778,8 +889,10 @@ export function initSharedChrome(options = {}) {
     ensureTopNav(homeHref);
     ensureOverlays(mapConfig, itemsConfig);
     ensureSideRail();
+    ensureScreenshotButton();
     ensurePageIdentityCard();
     bindOverlayBehavior(homeHref, itemsConfig);
+    bindScreenshotBehavior();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }
