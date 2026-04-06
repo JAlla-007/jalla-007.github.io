@@ -1360,10 +1360,6 @@ const initialView = {
     position: new THREE.Vector3(0, -8, 8),
     target: new THREE.Vector3(0, 0, 0)
 };
-const acInitialView = {
-    position: new THREE.Vector3(-3.59, -0.47, 10.72),
-    target: new THREE.Vector3(0, 0, 0)
-};
 const initialLookAtVector = initialView.target.clone();
 const initialDistance = initialView.position.distanceTo(initialLookAtVector);
 const identityRotation = new THREE.Quaternion();
@@ -1371,8 +1367,8 @@ const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Ma
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: acInitialView, useBaseRotation: false },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: acInitialView, useBaseRotation: false },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, useBaseRotation: true }
@@ -2122,6 +2118,8 @@ window.addEventListener('keydown', (event) => {
 async function loadScene(sceneId = currentSceneId) {
     const scene = sceneCatalog.find(({ id }) => id === sceneId) || sceneCatalog[0];
     const sceneRotation = getSceneRotation(scene);
+    manualCameraRoll = 0;
+    manualCameraUpFlipped = false;
     currentSceneId = scene.id;
     applySceneUi(scene, true);
 
