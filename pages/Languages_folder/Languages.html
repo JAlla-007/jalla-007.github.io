@@ -436,7 +436,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome } from '../shared-chrome.js';
+import { initSharedChrome, bindSceneCoordinatePicker } from '../shared-chrome.js';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -598,6 +598,7 @@ async function loadScene() {
             info.style.display = 'none';
         }, 450);
         viewer.start();
+        bindSceneCoordinatePicker({ viewer, THREE });
         showHeroTitle();
     } catch (err) {
         console.error(err);

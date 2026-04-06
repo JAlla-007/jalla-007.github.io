@@ -922,10 +922,7 @@
             bottom: 18px;
             z-index: 147;
             width: min(240px, calc(100vw - 36px));
-            padding: 10px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.04);
+            padding: 0;
             opacity: 0;
             transform: translateY(12px);
             pointer-events: none;
@@ -965,6 +962,47 @@
             color: rgba(255, 255, 255, 0.72);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 11px;
+            line-height: 1.45;
+        }
+
+        #coordinate-popover {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 151;
+            max-width: min(320px, calc(100vw - 36px));
+            padding: 10px 12px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.62);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        #coordinate-popover.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .coordinate-popover-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.54);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .coordinate-popover-value {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
             line-height: 1.45;
         }
     </style>
@@ -1144,6 +1182,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
+import { bindSceneCoordinatePicker } from './pages/shared-chrome.js';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -1192,7 +1231,7 @@ const defaultCameraUp = new THREE.Vector3(0, 1, 0);
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
     { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(3.01, 2.41, -14.94), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-5.46, 1.66, -9.31), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-6.78, 0.99, -8.41), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.53, 1.86, 11.58), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
@@ -1328,6 +1367,25 @@ function getSceneView(scene = getActiveScene()) {
     return scene?.initialView || initialView;
 }
 
+function getSceneDistanceBounds(scene = getActiveScene()) {
+    const sceneView = getSceneView(scene);
+    const defaultDistance = sceneView.position.distanceTo(sceneView.target);
+    return {
+        minDistance: Math.max(2.5, defaultDistance * 0.6),
+        maxDistance: defaultDistance
+    };
+}
+
+function getSceneAzimuthBounds(scene = getActiveScene()) {
+    const sceneView = getSceneView(scene);
+    const offset = sceneView.position.clone().sub(sceneView.target);
+    const initialTheta = new THREE.Spherical().setFromVector3(offset).theta;
+    return {
+        minAzimuthAngle: initialTheta - (Math.PI / 2),
+        maxAzimuthAngle: initialTheta + (Math.PI / 2)
+    };
+}
+
 function orbit(deltaTheta = 0, deltaPhi = 0) {
     const controls = getControls();
     if (!controls) return;
@@ -1367,6 +1425,9 @@ function zoom(direction) {
     const offset = viewer.camera.position.clone().sub(controls.target);
     const scale = direction > 0 ? 0.85 : 1.15;
     offset.multiplyScalar(scale);
+    const { minDistance, maxDistance } = getSceneDistanceBounds();
+    const clampedDistance = THREE.MathUtils.clamp(offset.length(), minDistance, maxDistance);
+    offset.setLength(clampedDistance);
     viewer.camera.position.copy(controls.target).add(offset);
     viewer.camera.lookAt(controls.target);
     controls.update();
@@ -1838,7 +1899,8 @@ function setCameraDistance(nextDistance) {
     if (!controls) return;
 
     const offset = viewer.camera.position.clone().sub(controls.target).normalize();
-    const clampedDistance = THREE.MathUtils.clamp(nextDistance, minZoomDistance, maxZoomDistance);
+    const { minDistance, maxDistance } = getSceneDistanceBounds();
+    const clampedDistance = THREE.MathUtils.clamp(nextDistance, minDistance, maxDistance);
     viewer.camera.position.copy(controls.target).add(offset.multiplyScalar(clampedDistance));
     viewer.camera.lookAt(controls.target);
     controls.update();
@@ -1905,6 +1967,12 @@ async function loadScene(sceneId = currentSceneId) {
         if (viewer.controls) {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
+            const { minAzimuthAngle, maxAzimuthAngle } = getSceneAzimuthBounds(scene);
+            const { minDistance, maxDistance } = getSceneDistanceBounds(scene);
+            viewer.controls.minAzimuthAngle = minAzimuthAngle;
+            viewer.controls.maxAzimuthAngle = maxAzimuthAngle;
+            viewer.controls.minDistance = minDistance;
+            viewer.controls.maxDistance = maxDistance;
             viewer.controls.enablePan = true;
             viewer.controls.update();
         }
@@ -1917,6 +1985,7 @@ async function loadScene(sceneId = currentSceneId) {
                 info.style.display = 'none';
             }, 450);
             viewer.start();
+            bindSceneCoordinatePicker({ viewer, THREE });
             viewerStarted = true;
         }
 

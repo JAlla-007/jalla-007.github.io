@@ -439,10 +439,7 @@ body[data-shared-chrome="true"] .page-identity-card {
     bottom: 18px;
     z-index: 148;
     width: min(240px, calc(100vw - 36px));
-    padding: 10px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.04);
+    padding: 0;
     opacity: 0;
     transform: translateY(12px);
     pointer-events: none;
@@ -482,6 +479,47 @@ body[data-shared-chrome="true"] .page-identity-copy {
     color: rgba(255, 255, 255, 0.72);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 11px;
+    line-height: 1.45;
+}
+
+body[data-shared-chrome="true"] #coordinate-popover {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 151;
+    max-width: min(320px, calc(100vw - 36px));
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+    color: rgba(255, 255, 255, 0.92);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+body[data-shared-chrome="true"] #coordinate-popover.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body[data-shared-chrome="true"] .coordinate-popover-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+body[data-shared-chrome="true"] .coordinate-popover-value {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
     line-height: 1.45;
 }
 `;
@@ -899,4 +937,62 @@ export function initSharedChrome(options = {}) {
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }
+}
+
+export function bindSceneCoordinatePicker({ viewer, THREE }) {
+    if (!viewer || !THREE) return;
+
+    let coordinatePopover = document.getElementById('coordinate-popover');
+    if (!coordinatePopover) {
+        coordinatePopover = document.createElement('div');
+        coordinatePopover.id = 'coordinate-popover';
+        coordinatePopover.setAttribute('aria-live', 'polite');
+        coordinatePopover.innerHTML = `
+            <span class="coordinate-popover-label">Picked Point</span>
+            <span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span>
+        `;
+        document.body.appendChild(coordinatePopover);
+    }
+
+    const coordinatePopoverValue = document.getElementById('coordinate-popover-value');
+    let coordinatePopoverTimer = null;
+
+    const showCoordinatePopover = (message) => {
+        coordinatePopoverValue.textContent = message;
+        coordinatePopover.classList.add('visible');
+        if (coordinatePopoverTimer) window.clearTimeout(coordinatePopoverTimer);
+        coordinatePopoverTimer = window.setTimeout(() => {
+            coordinatePopover.classList.remove('visible');
+        }, 2600);
+    };
+
+    const copyPickedCoordinates = async (message) => {
+        try {
+            await navigator.clipboard.writeText(message);
+            showCoordinatePopover(`${message} Copied.`);
+        } catch (err) {
+            showCoordinatePopover(message);
+        }
+    };
+
+    const canvas = viewer.renderer?.domElement;
+    if (!canvas || canvas.dataset.coordinatePickerBound === 'true') return;
+    canvas.dataset.coordinatePickerBound = 'true';
+    canvas.addEventListener('dblclick', async (event) => {
+        if (!viewer.camera || !viewer.splatMesh) return;
+        const rect = canvas.getBoundingClientRect();
+        const mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
+        const renderDimensions = new THREE.Vector2();
+        const hits = [];
+        viewer.getRenderDimensions(renderDimensions);
+        viewer.raycaster.setFromCameraAndScreenPosition(viewer.camera, mousePosition, renderDimensions);
+        viewer.raycaster.intersectSplatMesh(viewer.splatMesh, hits);
+        if (!hits.length) {
+            showCoordinatePopover('No splat hit found at that point.');
+            return;
+        }
+        const { x, y, z } = hits[0].origin;
+        const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
+        await copyPickedCoordinates(coordinateMessage);
+    });
 }
