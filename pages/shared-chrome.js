@@ -97,24 +97,24 @@ body[data-shared-chrome="true"] .nav-connector {
 body[data-shared-chrome="true"] #screenshot-button {
     position: fixed;
     top: 68px;
-    left: 14px;
+    left: 20px;
     z-index: 166;
-    width: 42px;
+    min-width: 52px;
     height: 42px;
+    padding: 0 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(8px);
-    color: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.9);
     cursor: pointer;
     transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 body[data-shared-chrome="true"] #screenshot-button:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.58);
     transform: translateY(-1px);
 }
@@ -435,11 +435,14 @@ body[data-shared-chrome="true"] .side-tag:hover {
 
 body[data-shared-chrome="true"] .page-identity-card {
     position: fixed;
-    left: 18px;
+    left: 20px;
     bottom: 18px;
     z-index: 148;
     width: min(240px, calc(100vw - 36px));
-    padding: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.04);
     opacity: 0;
     transform: translateY(12px);
     pointer-events: none;
