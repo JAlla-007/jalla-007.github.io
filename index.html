@@ -569,28 +569,6 @@
             transform: translateX(-50%) translateY(10px);
         }
 
-        #gesture-status {
-            position: fixed;
-            left: 16px;
-            bottom: 18px;
-            z-index: 140;
-            padding: 10px 14px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(10px);
-            color: rgba(255, 255, 255, 0.82);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        #gesture-status strong {
-            color: white;
-            font-weight: 600;
-        }
-
         #audio-toggle {
             position: fixed;
             right: 16px;
@@ -938,6 +916,20 @@
             text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
         }
 
+        #intro-scrim {
+            position: fixed;
+            inset: 0;
+            z-index: 126;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.46);
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+
+        #intro-scrim.hidden {
+            opacity: 0;
+        }
+
         #page-identity-card {
             position: fixed;
             left: 18px;
@@ -1109,6 +1101,8 @@
     </div>
 </div>
 
+<div id="intro-scrim" aria-hidden="true"></div>
+
 <aside id="page-identity-card" aria-label="Page identity">
     <div class="page-identity-kicker">Memo</div>
     <div class="page-identity-title">Atlantic College Memo</div>
@@ -1131,10 +1125,6 @@
 
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
-</div>
-
-<div id="gesture-status">
-    Gesture control: <strong>starting</strong>
 </div>
 
 <section id="scene-switcher" aria-label="Scene switcher">
@@ -1162,15 +1152,13 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/+esm"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
   }
 }
 </script>
 
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import * as THREE from 'three';
 
 const info = document.getElementById('info');
@@ -1187,8 +1175,8 @@ const itemsClose = document.getElementById('items-close');
 const itemsYes = document.getElementById('items-yes');
 const itemsHellYes = document.getElementById('items-hell-yes');
 const homeReset = document.getElementById('home-reset');
-const gestureStatus = document.getElementById('gesture-status');
 const heroTitle = document.getElementById('hero-title');
+const introScrim = document.getElementById('intro-scrim');
 const sideTags = document.getElementById('side-tags');
 const reviewMemosButton = document.getElementById('review-memos');
 const reviewNotesButton = document.getElementById('review-notes');
@@ -1215,29 +1203,23 @@ const initialView = {
     position: new THREE.Vector3(0, -8, 8),
     target: new THREE.Vector3(0, 0, 0)
 };
-const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const acOrientationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
 const sceneCatalog = [
-    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false },
-    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false },
-    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false }
+    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null },
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null }
 ];
 let motionFrame = null;
-let handLandmarker = null;
-let webcamVideo = null;
-let gestureFrame = null;
-let currentGesture = 'idle';
-let lastGestureAt = 0;
 let currentSceneIndex = null;
 let currentSceneId = 'pk';
 let billboardLoopStarted = false;
-let gestureControlsStarted = false;
 let viewerStarted = false;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
-const gestureCenter = { x: 0.5, y: 0.5 };
 let audioStarted = false;
 const memoryBillboards = [
     {
@@ -1436,6 +1418,7 @@ function hideHint() {
 function hideHeroTitle() {
     if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
     heroTitle.classList.add('hidden');
+    introScrim?.classList.add('hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
         pageIdentityCard?.classList.add('visible');
@@ -1447,6 +1430,7 @@ function showHeroTitle() {
     if (!heroTitle) return;
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
+    introScrim?.classList.remove('hidden');
     pageIdentityCard?.classList.remove('visible');
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
@@ -1481,10 +1465,6 @@ function openItemsOverlay() {
 function closeItemsOverlay() {
     itemsOverlay.classList.remove('visible');
     itemsOverlay.setAttribute('aria-hidden', 'true');
-}
-
-function setGestureStatus(label, detail = '') {
-    gestureStatus.innerHTML = `Gesture control: <strong>${label}</strong>${detail ? ` ${detail}` : ''}`;
 }
 
 function updateBillboardPositions() {
@@ -1677,6 +1657,24 @@ function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
 }
 
+function getSceneRotation(scene) {
+    const rotation = baseModelRotation.clone();
+    if (scene.rotationCorrection) {
+        rotation.multiply(scene.rotationCorrection);
+    }
+    return rotation;
+}
+
+function getDefaultHomepageSceneId() {
+    const londonHour = Number(new Intl.DateTimeFormat('en-GB', {
+        hour: 'numeric',
+        hour12: false,
+        timeZone: 'Europe/London'
+    }).format(new Date()));
+
+    return londonHour >= 7 && londonHour < 19 ? 'ac-day' : 'ac-night';
+}
+
 function syncSceneButtons(isLoading = false) {
     sceneButtons.forEach((button) => {
         const isActive = button.dataset.sceneId === currentSceneId;
@@ -1799,162 +1797,6 @@ function setCameraDistance(nextDistance) {
     controls.update();
 }
 
-function applyGestureZoom(gesture) {
-    const controls = getControls();
-    if (!controls) return;
-
-    const currentDistance = viewer.camera.position.distanceTo(controls.target);
-    if (gesture === 'open-palm') {
-        setCameraDistance(currentDistance * 0.975);
-    } else if (gesture === 'fist') {
-        setCameraDistance(currentDistance * 1.03);
-    }
-}
-
-function isFingerExtended(landmarks, tipIndex, pipIndex) {
-    return landmarks[tipIndex].y < landmarks[pipIndex].y;
-}
-
-function classifyGesture(landmarks) {
-    const wrist = landmarks[0];
-    const fingertips = [4, 8, 12, 16, 20];
-    const spread = fingertips.reduce((sum, index) => {
-        return sum + Math.hypot(landmarks[index].x - wrist.x, landmarks[index].y - wrist.y);
-    }, 0) / fingertips.length;
-
-    const openCount = [
-        isFingerExtended(landmarks, 8, 6),
-        isFingerExtended(landmarks, 12, 10),
-        isFingerExtended(landmarks, 16, 14),
-        isFingerExtended(landmarks, 20, 18)
-    ].filter(Boolean).length;
-
-    const thumbOpen = Math.abs(landmarks[4].x - landmarks[3].x) > 0.04;
-    const indexExtended = isFingerExtended(landmarks, 8, 6);
-    const middleExtended = isFingerExtended(landmarks, 12, 10);
-    const ringExtended = isFingerExtended(landmarks, 16, 14);
-    const pinkyExtended = isFingerExtended(landmarks, 20, 18);
-
-    if (openCount >= 3 && thumbOpen && spread > 0.22) return 'open-palm';
-    if (openCount <= 1 && spread < 0.16) return 'fist';
-    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return 'point';
-    return 'idle';
-}
-
-function getPointDirection(landmarks) {
-    const indexTip = landmarks[8];
-    const dx = indexTip.x - gestureCenter.x;
-    const dy = indexTip.y - gestureCenter.y;
-    const deadZone = 0.1;
-
-    if (Math.abs(dx) < deadZone && Math.abs(dy) < deadZone) return null;
-    if (Math.abs(dx) > Math.abs(dy)) {
-        return dx > 0 ? 'right' : 'left';
-    }
-    return dy > 0 ? 'down' : 'up';
-}
-
-function applyDirectionalGesture(direction) {
-    if (!direction) return;
-
-    const orbitStep = 0.025;
-    switch (direction) {
-        case 'left':
-            orbit(-orbitStep, 0);
-            break;
-        case 'right':
-            orbit(orbitStep, 0);
-            break;
-        case 'up':
-            orbit(0, -orbitStep);
-            break;
-        case 'down':
-            orbit(0, orbitStep);
-            break;
-    }
-}
-
-async function startGestureControls() {
-    if (gestureControlsStarted) return;
-    gestureControlsStarted = true;
-    try {
-        setGestureStatus('requesting camera');
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'user',
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            },
-            audio: false
-        });
-
-        webcamVideo = document.createElement('video');
-        webcamVideo.playsInline = true;
-        webcamVideo.muted = true;
-        webcamVideo.autoplay = true;
-        webcamVideo.srcObject = stream;
-        await webcamVideo.play();
-
-        const vision = await FilesetResolver.forVisionTasks(
-            'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
-        );
-
-        handLandmarker = await HandLandmarker.createFromOptions(vision, {
-            baseOptions: {
-                modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
-            },
-            runningMode: 'VIDEO',
-            numHands: 1
-        });
-
-        setGestureStatus('ready', 'palm = zoom in, fist = zoom out, point = steer');
-
-        const detectGestures = () => {
-            if (!handLandmarker || !webcamVideo || webcamVideo.readyState < 2) {
-                gestureFrame = window.requestAnimationFrame(detectGestures);
-                return;
-            }
-
-            const now = performance.now();
-            const result = handLandmarker.detectForVideo(webcamVideo, now);
-            const landmarks = result.landmarks?.[0];
-            const nextGesture = landmarks ? classifyGesture(landmarks) : 'idle';
-            const direction = nextGesture === 'point' && landmarks ? getPointDirection(landmarks) : null;
-
-            if (nextGesture !== currentGesture) {
-                currentGesture = nextGesture;
-                lastGestureAt = now;
-                if (nextGesture === 'open-palm') {
-                    setGestureStatus('zooming in');
-                } else if (nextGesture === 'fist') {
-                    setGestureStatus('zooming out');
-                } else if (nextGesture === 'point') {
-                    setGestureStatus('steering', direction ? direction : 'hold near center to pause');
-                } else {
-                    setGestureStatus('ready', 'palm = zoom in, fist = zoom out, point = steer');
-                }
-            }
-
-            if (currentGesture === 'point' && direction && now - lastGestureAt > 65) {
-                applyDirectionalGesture(direction);
-                setGestureStatus('steering', direction);
-                lastGestureAt = now;
-            } else if ((currentGesture === 'open-palm' || currentGesture === 'fist') && now - lastGestureAt > 65) {
-                applyGestureZoom(currentGesture);
-                lastGestureAt = now;
-            }
-
-            gestureFrame = window.requestAnimationFrame(detectGestures);
-        };
-
-        gestureFrame = window.requestAnimationFrame(detectGestures);
-    } catch (err) {
-        console.error(err);
-        setGestureStatus('camera unavailable');
-    }
-}
-
 window.addEventListener('keydown', (event) => {
     if (event.repeat) return;
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
@@ -1986,6 +1828,7 @@ window.addEventListener('keydown', (event) => {
 
 async function loadScene(sceneId = currentSceneId) {
     const scene = sceneCatalog.find(({ id }) => id === sceneId) || sceneCatalog[0];
+    const sceneRotation = getSceneRotation(scene);
     currentSceneId = scene.id;
     applySceneUi(scene, true);
 
@@ -2005,7 +1848,7 @@ async function loadScene(sceneId = currentSceneId) {
 
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
-            rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
+            rotation: [sceneRotation.x, sceneRotation.y, sceneRotation.z, sceneRotation.w],
             showLoadingUI: false,
             progressiveLoad: false
         });
@@ -2032,7 +1875,6 @@ async function loadScene(sceneId = currentSceneId) {
 
         startBillboardLoop();
         startAmbientMotion();
-        startGestureControls();
         showHeroTitle();
         applySceneUi(scene, false);
     } catch (err) {
@@ -2054,6 +1896,7 @@ sceneButtons.forEach((button) => {
     });
 });
 
+currentSceneId = getDefaultHomepageSceneId();
 loadScene(currentSceneId);
 </script>
 
