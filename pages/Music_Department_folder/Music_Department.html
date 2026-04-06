@@ -192,6 +192,41 @@
             cursor: pointer;
         }
 
+        #screenshot-button {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 166;
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.34);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            color: rgba(255, 255, 255, 0.92);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        #screenshot-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.58);
+            transform: translateY(-1px);
+        }
+
+        #screenshot-button svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         #view-indicator {
             position: fixed;
             top: 68px;
@@ -228,79 +263,8 @@
             margin-top: 10px;
         }
 
-        #subpages-panel {
-            position: fixed;
-            left: 24px;
-            bottom: 24px;
-            z-index: 135;
-            width: min(360px, calc(100vw - 48px));
-            padding: 20px 18px 18px;
-            border-radius: 24px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
-                rgba(10, 10, 10, 0.66);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
-        }
-
-        .subpages-kicker {
-            color: rgba(255, 255, 255, 0.56);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-        }
-
-        .subpages-title {
-            margin: 10px 0 8px;
-            color: white;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 30px;
-            line-height: 1;
-        }
-
-        .subpages-copy {
-            margin: 0 0 16px;
-            color: rgba(255, 255, 255, 0.72);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .subpages-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .subpage-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            min-height: 46px;
-            padding: 0 14px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: rgba(255, 255, 255, 0.92);
-            text-decoration: none;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .subpage-link:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateX(2px);
-        }
-
-        .subpage-link span:last-child {
-            color: rgba(255, 255, 255, 0.54);
-            font-size: 13px;
-            letter-spacing: normal;
+        body.nav-peek #nav .nav-shell {
+            transform: translateY(0);
         }
 
         #hero-title {
@@ -386,6 +350,13 @@
     </div>
 </nav>
 
+<button id="screenshot-button" type="button" aria-label="Take scene screenshot" title="Take scene screenshot">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 8.5h3l1.6-2h6.8l1.6 2H20a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 20 18.5H4A1.5 1.5 0 0 1 2.5 17v-7A1.5 1.5 0 0 1 4 8.5Z"></path>
+        <circle cx="12" cy="13.2" r="3.2"></circle>
+    </svg>
+</button>
+
 <div id="hero-title">
     <div class="hero-text">
         <div class="hero-title-line">Music</div>
@@ -398,37 +369,11 @@
 <div id="view-indicator" aria-live="polite">
     <div class="view-indicator-row">
         <span class="view-indicator-label">Coordinates</span>
-        <span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span>
+        <span class="view-indicator-value" id="view-indicator-coords">X 7.28 Y 2.05 Z 17.33</span>
     </div>
     <div class="view-indicator-row">
         <span class="view-indicator-label">Zoom</span>
         <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
-    </div>
-</div>
-
-<div id="subpages-panel">
-    <div class="subpages-kicker">Inside Music</div>
-    <h2 class="subpages-title">Sub-Locations</h2>
-    <p class="subpages-copy">
-        The department can branch into smaller memory rooms. Start here and keep layering details as you scan more spaces.
-    </p>
-    <div class="subpages-list">
-        <a class="subpage-link" href="./Music_regional/Ukulele.html">
-            <span>Ukulele</span>
-            <span>↗</span>
-        </a>
-        <a class="subpage-link" href="./Music_regional/Music_Classroom.html">
-            <span>Music Classroom</span>
-            <span>↗</span>
-        </a>
-        <a class="subpage-link" href="./Music_regional/Practice_Room.html">
-            <span>Practice Room</span>
-            <span>↗</span>
-        </a>
-        <a class="subpage-link" href="./Music_regional/My_Corner.html">
-            <span>My Corner</span>
-            <span>↗</span>
-        </a>
     </div>
 </div>
 
@@ -456,12 +401,12 @@ const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
+const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
     homeHref: '../../index.html',
-    keepSubpagesPanel: true,
     itemsExperience: {
         kicker: 'Find Items',
         title: 'The ukulele is ready to play.',
@@ -495,10 +440,17 @@ initSharedChrome({
     }
 });
 
-const initialCameraPosition = [0, -8, 8];
+const initialCameraPosition = [7.28, 2.05, 17.33];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const DEFAULT_ZOOM_PERCENT = 100;
+const MIN_ZOOM_PERCENT = 72;
+const MIN_CAMERA_Y = -0.5;
+const MAX_CAMERA_Y = 7.5;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
+const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
+const minCameraDistance = zoomReferenceDistance / 1.28;
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -512,13 +464,38 @@ const viewer = new GaussianSplats3D.Viewer({
 
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
+let navPeekTimer = null;
+let navPeekCooldown = false;
+
+function enforceCameraConstraints() {
+    if (!viewer.camera?.position) return;
+
+    const cameraPosition = viewer.camera.position;
+    cameraPosition.y = THREE.MathUtils.clamp(cameraPosition.y, MIN_CAMERA_Y, MAX_CAMERA_Y);
+
+    const distanceFromCenter = cameraPosition.distanceTo(initialLookAtVector);
+    if (distanceFromCenter > maxCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(maxCameraDistance).add(initialLookAtVector);
+    } else if (distanceFromCenter < minCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(minCameraDistance).add(initialLookAtVector);
+    }
+
+    if (viewer.controls?.target) {
+        viewer.controls.target.x = THREE.MathUtils.clamp(viewer.controls.target.x, -3.5, 3.5);
+        viewer.controls.target.y = THREE.MathUtils.clamp(viewer.controls.target.y, -1.2, 3.8);
+        viewer.controls.target.z = THREE.MathUtils.clamp(viewer.controls.target.z, -3.5, 3.5);
+    }
+
+    if (viewer.controls) viewer.controls.update();
+}
 
 function updateViewIndicator() {
     if (viewer.camera?.position) {
+        enforceCameraConstraints();
         const { x, y, z } = viewer.camera.position;
         viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
-        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100));
         viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
@@ -540,6 +517,7 @@ function hideHeroTitle() {
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
     }, 2000);
+    queueNavPeek();
 }
 
 function showHeroTitle() {
@@ -549,6 +527,51 @@ function showHeroTitle() {
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
+}
+
+function queueNavPeek() {
+    if (navPeekCooldown) return;
+    navPeekCooldown = true;
+    window.setTimeout(() => {
+        document.body.classList.add('nav-peek');
+        navPeekTimer = window.setTimeout(() => {
+            document.body.classList.remove('nav-peek');
+        }, 1600);
+    }, 1450);
+}
+
+async function captureSceneScreenshot() {
+    const sceneCanvas = viewer.renderer?.domElement;
+    if (!sceneCanvas) return;
+
+    viewer.forceRenderNextFrame?.();
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+
+    const filename = `music-scene-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+    const downloadBlob = (blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    if (sceneCanvas.toBlob) {
+        sceneCanvas.toBlob(downloadBlob, 'image/png');
+        return;
+    }
+
+    const dataUrl = sceneCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 }
 
 function updateAudioButton() {
@@ -593,6 +616,8 @@ audioToggle.addEventListener('click', async () => {
     updateAudioButton();
 });
 
+screenshotButton.addEventListener('click', captureSceneScreenshot);
+
 updateAudioButton();
 updateViewIndicator();
 
@@ -615,9 +640,12 @@ async function loadScene() {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
+            viewer.controls.minDistance = minCameraDistance;
+            viewer.controls.maxDistance = maxCameraDistance;
             viewer.controls.update();
         }
 
+        enforceCameraConstraints();
         info.classList.add('hidden');
         window.setTimeout(() => {
             info.style.display = 'none';

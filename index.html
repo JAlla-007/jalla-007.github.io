@@ -1249,11 +1249,11 @@ const initialLookAtVector = initialView.target.clone();
 const initialDistance = initialView.position.distanceTo(initialLookAtVector);
 const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
-const flippedCameraUp = new THREE.Vector3(0, -1, 0);
+const acSceneRotationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: flippedCameraUp },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: flippedCameraUp },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acSceneRotationCorrection, cameraUp: defaultCameraUp },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acSceneRotationCorrection, cameraUp: defaultCameraUp },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp }
