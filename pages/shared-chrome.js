@@ -8,11 +8,11 @@ body[data-shared-chrome="true"]::after {
     z-index: 90;
     pointer-events: none;
     background:
-        radial-gradient(circle at top left, rgba(0, 0, 0, 0.48), transparent 28%),
-        radial-gradient(circle at top right, rgba(0, 0, 0, 0.48), transparent 28%),
-        radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.52), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.52), transparent 30%),
-        radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.18) 100%);
+        radial-gradient(circle at top left, rgba(0, 0, 0, 0.62), transparent 30%),
+        radial-gradient(circle at top right, rgba(0, 0, 0, 0.62), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.68), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.68), transparent 32%),
+        radial-gradient(circle at center, transparent 38%, rgba(0, 0, 0, 0.28) 100%);
 }
 
 body[data-shared-chrome="true"] #nav {
