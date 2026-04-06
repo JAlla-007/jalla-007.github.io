@@ -1,0 +1,13 @@
+{
+  "name": "jalla-007-scene-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local tools for converting Gaussian splat scene assets.",
+  "scripts": {
+    "convert:ply": "node scripts/convert-ply-to-ksplat.cjs"
+  },
+  "dependencies": {
+    "@mkkellogg/gaussian-splats-3d": "0.4.7",
+    "three": "0.160.0"
+  }
+}

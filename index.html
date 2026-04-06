@@ -621,6 +621,92 @@
             transform: translateY(-1px);
         }
 
+        #scene-switcher {
+            position: fixed;
+            left: 16px;
+            bottom: 64px;
+            z-index: 146;
+            width: min(360px, calc(100vw - 32px));
+            padding: 16px 16px 14px;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
+                rgba(0, 0, 0, 0.56);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+            backdrop-filter: blur(18px);
+        }
+
+        .scene-switcher-kicker {
+            color: rgba(255, 255, 255, 0.54);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+        }
+
+        .scene-switcher-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .scene-switcher-title {
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .scene-switcher-status {
+            color: rgba(255, 255, 255, 0.58);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .scene-switcher-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .scene-chip {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.88);
+            padding: 10px 14px;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .scene-chip:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .scene-chip.active {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.28);
+            color: white;
+        }
+
+        .scene-chip:disabled {
+            opacity: 0.5;
+            cursor: wait;
+            transform: none;
+        }
+
         #side-tags {
             position: fixed;
             left: 20px;
@@ -851,6 +937,62 @@
             text-transform: none;
             text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
         }
+
+        #page-identity-card {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            z-index: 147;
+            width: min(340px, calc(100vw - 36px));
+            padding: 16px 16px 14px;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 24%),
+                rgba(10, 10, 10, 0.42);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+            backdrop-filter: blur(14px);
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+
+        #page-identity-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-identity-kicker {
+            color: rgba(255, 255, 255, 0.54);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .page-identity-title {
+            margin: 10px 0 10px;
+            color: rgba(255, 255, 255, 0.96);
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(24px, 3vw, 34px);
+            font-weight: 700;
+            line-height: 0.98;
+        }
+
+        .page-identity-rule {
+            width: 72px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .page-identity-copy {
+            margin: 12px 0 0;
+            color: rgba(255, 255, 255, 0.72);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -967,6 +1109,13 @@
     </div>
 </div>
 
+<aside id="page-identity-card" aria-label="Page identity">
+    <div class="page-identity-kicker">Memo</div>
+    <div class="page-identity-title">Atlantic College Memo</div>
+    <div class="page-identity-rule" aria-hidden="true"></div>
+    <p class="page-identity-copy">To the past and future.</p>
+</aside>
+
 <div id="side-tags" aria-label="Memo tools">
     <button class="side-tag" id="review-memos" type="button">Reveal<br>Memories</button>
     <div class="side-line"></div>
@@ -987,6 +1136,22 @@
 <div id="gesture-status">
     Gesture control: <strong>starting</strong>
 </div>
+
+<section id="scene-switcher" aria-label="Scene switcher">
+    <div class="scene-switcher-kicker">Scene Study</div>
+    <div class="scene-switcher-row">
+        <div class="scene-switcher-title" id="scene-switcher-title">PK</div>
+        <div class="scene-switcher-status" id="scene-switcher-status">Ready</div>
+    </div>
+    <div class="scene-switcher-grid">
+        <button class="scene-chip active" type="button" data-scene-id="pk">PK</button>
+        <button class="scene-chip" type="button" data-scene-id="ac-day">AC Day</button>
+        <button class="scene-chip" type="button" data-scene-id="ac-night">AC Night</button>
+        <button class="scene-chip" type="button" data-scene-id="ac-alt">AC 2</button>
+        <button class="scene-chip" type="button" data-scene-id="ac-close">AC Close</button>
+        <button class="scene-chip" type="button" data-scene-id="music-dep">Music Dep</button>
+    </div>
+</section>
 
 <button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
@@ -1030,6 +1195,10 @@ const reviewNotesButton = document.getElementById('review-notes');
 const searchStoriesButton = document.getElementById('search-stories');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+const sceneSwitcherTitle = document.getElementById('scene-switcher-title');
+const sceneSwitcherStatus = document.getElementById('scene-switcher-status');
+const sceneButtons = Array.from(document.querySelectorAll('.scene-chip'));
+const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
 const viewer = new GaussianSplats3D.Viewer({
@@ -1047,12 +1216,25 @@ const initialView = {
     target: new THREE.Vector3(0, 0, 0)
 };
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const sceneCatalog = [
+    { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false },
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false }
+];
 let motionFrame = null;
 let handLandmarker = null;
 let webcamVideo = null;
 let gestureFrame = null;
 let currentGesture = 'idle';
 let lastGestureAt = 0;
+let currentSceneIndex = null;
+let currentSceneId = 'pk';
+let billboardLoopStarted = false;
+let gestureControlsStarted = false;
+let viewerStarted = false;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
 const gestureCenter = { x: 0.5, y: 0.5 };
@@ -1136,6 +1318,11 @@ let uiAudioContext = null;
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
     if (!splatScene) return;
+
+    if (motionFrame) {
+        window.cancelAnimationFrame(motionFrame);
+        motionFrame = null;
+    }
 
     const basePosition = splatScene.position.clone();
     const baseQuaternion = splatScene.quaternion.clone();
@@ -1251,6 +1438,7 @@ function hideHeroTitle() {
     heroTitle.classList.add('hidden');
     window.setTimeout(() => {
         heroTitle.style.display = 'none';
+        pageIdentityCard?.classList.add('visible');
         sideTags.classList.add('visible');
     }, 2000);
 }
@@ -1259,6 +1447,7 @@ function showHeroTitle() {
     if (!heroTitle) return;
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
+    pageIdentityCard?.classList.remove('visible');
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
@@ -1332,6 +1521,8 @@ function updateBillboardPositions() {
 }
 
 function startBillboardLoop() {
+    if (billboardLoopStarted) return;
+    billboardLoopStarted = true;
     const tick = () => {
         updateBillboardPositions();
         window.requestAnimationFrame(tick);
@@ -1345,6 +1536,9 @@ function syncFocusMask() {
 }
 
 function toggleMemories() {
+    const scene = sceneCatalog.find(({ id }) => id === currentSceneId);
+    if (!scene?.memories) return;
+
     memoriesVisible = !memoriesVisible;
     reviewMemosButton.classList.toggle('active', memoriesVisible);
     if (!memoriesVisible) {
@@ -1481,6 +1675,35 @@ function playBubbleSound(isOpening) {
 
 function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
+}
+
+function syncSceneButtons(isLoading = false) {
+    sceneButtons.forEach((button) => {
+        const isActive = button.dataset.sceneId === currentSceneId;
+        button.classList.toggle('active', isActive);
+        button.disabled = isLoading;
+    });
+}
+
+function applySceneUi(scene, isLoading = false) {
+    sceneSwitcherTitle.textContent = scene.label;
+    sceneSwitcherStatus.textContent = isLoading ? 'Loading' : 'Ready';
+    reviewMemosButton.disabled = !scene.memories;
+    reviewMemosButton.style.opacity = scene.memories ? '1' : '0.45';
+    reviewMemosButton.style.cursor = scene.memories ? 'pointer' : 'not-allowed';
+
+    if (!scene.memories && memoriesVisible) {
+        memoriesVisible = false;
+        reviewMemosButton.classList.remove('active');
+        memoryBillboards.forEach((billboard) => {
+            billboard.expanded = false;
+            billboard.element.classList.remove('expanded', 'dragging', 'visible');
+        });
+        activeBillboard = null;
+        syncFocusMask();
+    }
+
+    syncSceneButtons(isLoading);
 }
 
 async function startAmbientAudio() {
@@ -1652,6 +1875,8 @@ function applyDirectionalGesture(direction) {
 }
 
 async function startGestureControls() {
+    if (gestureControlsStarted) return;
+    gestureControlsStarted = true;
     try {
         setGestureStatus('requesting camera');
 
@@ -1759,15 +1984,24 @@ window.addEventListener('keydown', (event) => {
     event.preventDefault();
 });
 
-async function loadScene() {
+async function loadScene(sceneId = currentSceneId) {
+    const scene = sceneCatalog.find(({ id }) => id === sceneId) || sceneCatalog[0];
+    currentSceneId = scene.id;
+    applySceneUi(scene, true);
+
     try {
-        const response = await fetch('./PK.ksplat');
+        const response = await fetch(scene.path);
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+            throw new Error(`HTTP ${response.status} while fetching ${scene.path}`);
         }
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
+
+        if (currentSceneIndex !== null && viewer.getSceneCount() > 0) {
+            await viewer.removeSplatScene(currentSceneIndex, false);
+            currentSceneIndex = null;
+        }
 
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
@@ -1775,6 +2009,8 @@ async function loadScene() {
             showLoadingUI: false,
             progressiveLoad: false
         });
+        currentSceneIndex = viewer.getSceneCount() - 1;
+        URL.revokeObjectURL(blobUrl);
 
         if (viewer.controls) {
             viewer.controls.minPolarAngle = 0;
@@ -1783,17 +2019,25 @@ async function loadScene() {
             viewer.controls.update();
         }
 
-        info.classList.add('hidden');
-        window.setTimeout(() => {
-            info.style.display = 'none';
-        }, 450);
-        viewer.start();
+        resetView();
+
+        if (!viewerStarted) {
+            info.classList.add('hidden');
+            window.setTimeout(() => {
+                info.style.display = 'none';
+            }, 450);
+            viewer.start();
+            viewerStarted = true;
+        }
+
         startBillboardLoop();
         startAmbientMotion();
         startGestureControls();
         showHeroTitle();
+        applySceneUi(scene, false);
     } catch (err) {
         console.error(err);
+        applySceneUi(scene, false);
         info.innerHTML = `
             <div class="loading-shell">
                 <div class="loading-text">Load failed</div>
@@ -1802,7 +2046,15 @@ async function loadScene() {
     }
 }
 
-loadScene();
+sceneButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const nextSceneId = button.dataset.sceneId;
+        if (!nextSceneId || nextSceneId === currentSceneId) return;
+        loadScene(nextSceneId);
+    });
+});
+
+loadScene(currentSceneId);
 </script>
 
 </body>

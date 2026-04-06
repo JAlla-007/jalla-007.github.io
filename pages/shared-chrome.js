@@ -387,6 +387,62 @@ body[data-shared-chrome="true"] .side-tag:hover {
     background: rgba(255, 255, 255, 0.12);
     transform: translateX(2px);
 }
+
+body[data-shared-chrome="true"] .page-identity-card {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 148;
+    width: min(340px, calc(100vw - 36px));
+    padding: 16px 16px 14px;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 24%),
+        rgba(10, 10, 10, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+body[data-shared-chrome="true"] .page-identity-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body[data-shared-chrome="true"] .page-identity-kicker {
+    color: rgba(255, 255, 255, 0.54);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+body[data-shared-chrome="true"] .page-identity-title {
+    margin: 10px 0 10px;
+    color: rgba(255, 255, 255, 0.96);
+    font-family: "Times New Roman", Times, serif;
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 700;
+    line-height: 0.98;
+}
+
+body[data-shared-chrome="true"] .page-identity-rule {
+    width: 72px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+body[data-shared-chrome="true"] .page-identity-copy {
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+}
 `;
 
 function ensureStyles() {
@@ -549,6 +605,72 @@ function ensureSideRail() {
     }
 }
 
+function getPageIdentityContent() {
+    const heroTitle = document.getElementById('hero-title');
+    const heroTitleLine = heroTitle?.querySelector('.hero-title-line')?.textContent?.trim();
+    const heroSubtitle = heroTitle?.querySelector('.hero-subtitle')?.textContent?.trim();
+
+    if (heroTitleLine) {
+        return {
+            kicker: document.title?.replace(' - Atlantic College Memo', '').trim() === heroTitleLine ? 'Location' : 'Memo',
+            title: heroTitleLine,
+            copy: heroSubtitle || 'A smaller marker for this page, held just off the edge of the main scene.'
+        };
+    }
+
+    const pageCard = document.querySelector('.page-card');
+    const kicker = pageCard?.querySelector('.kicker')?.textContent?.trim();
+    const title = pageCard?.querySelector('h1')?.textContent?.trim();
+    const copy = pageCard?.querySelector('p')?.textContent?.trim();
+
+    if (title) {
+        return {
+            kicker: kicker || 'Subpage',
+            title,
+            copy: copy || 'A smaller marker for this page, held just off the edge of the main scene.'
+        };
+    }
+
+    return null;
+}
+
+function ensurePageIdentityCard() {
+    const content = getPageIdentityContent();
+    if (!content) return;
+
+    let card = document.getElementById('page-identity-card');
+    if (!card) {
+        card = document.createElement('aside');
+        card.id = 'page-identity-card';
+        card.className = 'page-identity-card';
+        document.body.appendChild(card);
+    }
+
+    card.innerHTML = `
+        <div class="page-identity-kicker">${content.kicker}</div>
+        <div class="page-identity-title">${content.title}</div>
+        <div class="page-identity-rule" aria-hidden="true"></div>
+        <p class="page-identity-copy">${content.copy}</p>
+    `;
+
+    const heroTitle = document.getElementById('hero-title');
+    if (!heroTitle) {
+        window.requestAnimationFrame(() => {
+            card.classList.add('visible');
+        });
+        return;
+    }
+
+    const syncVisibility = () => {
+        const isHidden = heroTitle.classList.contains('hidden') || heroTitle.style.display === 'none';
+        card.classList.toggle('visible', isHidden);
+    };
+
+    const observer = new MutationObserver(syncVisibility);
+    observer.observe(heroTitle, { attributes: true, attributeFilter: ['class', 'style'] });
+    syncVisibility();
+}
+
 function bindOverlayBehavior(homeHref, itemsConfig = {}) {
     const mapOverlay = document.getElementById('map-overlay');
     const memoOverlay = document.getElementById('memo-overlay');
@@ -656,6 +778,7 @@ export function initSharedChrome(options = {}) {
     ensureTopNav(homeHref);
     ensureOverlays(mapConfig, itemsConfig);
     ensureSideRail();
+    ensurePageIdentityCard();
     bindOverlayBehavior(homeHref, itemsConfig);
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
