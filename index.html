@@ -930,20 +930,49 @@
             opacity: 0;
         }
 
+        #view-indicator {
+            position: fixed;
+            top: 68px;
+            right: 18px;
+            z-index: 150;
+            min-width: 228px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .view-indicator-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.54);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .view-indicator-value {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            line-height: 1.45;
+        }
+
+        .view-indicator-row + .view-indicator-row {
+            margin-top: 10px;
+        }
+
         #page-identity-card {
             position: fixed;
             left: 18px;
             bottom: 18px;
             z-index: 147;
-            width: min(340px, calc(100vw - 36px));
-            padding: 16px 16px 14px;
-            border-radius: 24px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 24%),
-                rgba(10, 10, 10, 0.42);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
-            backdrop-filter: blur(14px);
+            width: min(240px, calc(100vw - 36px));
+            padding: 0;
             opacity: 0;
             transform: translateY(12px);
             pointer-events: none;
@@ -958,32 +987,32 @@
         .page-identity-kicker {
             color: rgba(255, 255, 255, 0.54);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.22em;
+            font-size: 9px;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
         }
 
         .page-identity-title {
-            margin: 10px 0 10px;
+            margin: 6px 0 6px;
             color: rgba(255, 255, 255, 0.96);
             font-family: "Times New Roman", Times, serif;
-            font-size: clamp(24px, 3vw, 34px);
+            font-size: clamp(17px, 2vw, 22px);
             font-weight: 700;
-            line-height: 0.98;
+            line-height: 1;
         }
 
         .page-identity-rule {
-            width: 72px;
+            width: 48px;
             height: 1px;
             background: rgba(255, 255, 255, 0.82);
         }
 
         .page-identity-copy {
-            margin: 12px 0 0;
+            margin: 8px 0 0;
             color: rgba(255, 255, 255, 0.72);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 13px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.45;
         }
     </style>
 </head>
@@ -1127,6 +1156,17 @@
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
 </div>
 
+<div id="view-indicator" aria-live="polite">
+    <div class="view-indicator-row">
+        <span class="view-indicator-label">Coordinates</span>
+        <span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span>
+    </div>
+    <div class="view-indicator-row">
+        <span class="view-indicator-label">Zoom</span>
+        <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
+    </div>
+</div>
+
 <section id="scene-switcher" aria-label="Scene switcher">
     <div class="scene-switcher-kicker">Scene Study</div>
     <div class="scene-switcher-row">
@@ -1183,6 +1223,8 @@ const reviewNotesButton = document.getElementById('review-notes');
 const searchStoriesButton = document.getElementById('search-stories');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
+const viewIndicatorCoords = document.getElementById('view-indicator-coords');
+const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const sceneSwitcherTitle = document.getElementById('scene-switcher-title');
 const sceneSwitcherStatus = document.getElementById('scene-switcher-status');
 const sceneButtons = Array.from(document.querySelectorAll('.scene-chip'));
@@ -1203,12 +1245,14 @@ const initialView = {
     position: new THREE.Vector3(0, -8, 8),
     target: new THREE.Vector3(0, 0, 0)
 };
+const initialLookAtVector = initialView.target.clone();
+const initialDistance = initialView.position.distanceTo(initialLookAtVector);
 const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-const acOrientationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
+const acOrientationCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: acOrientationCorrection },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null }
@@ -1500,6 +1544,18 @@ function updateBillboardPositions() {
     });
 }
 
+function updateViewIndicator() {
+    if (viewer.camera?.position) {
+        const { x, y, z } = viewer.camera.position;
+        viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
+        const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
+        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        viewIndicatorZoom.textContent = `${zoomPercent}%`;
+    }
+
+    window.requestAnimationFrame(updateViewIndicator);
+}
+
 function startBillboardLoop() {
     if (billboardLoopStarted) return;
     billboardLoopStarted = true;
@@ -1785,6 +1841,7 @@ window.addEventListener('pointerup', endBillboardDrag);
 window.addEventListener('pointercancel', endBillboardDrag);
 
 updateAudioButton();
+updateViewIndicator();
 
 function setCameraDistance(nextDistance) {
     const controls = getControls();

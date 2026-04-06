@@ -598,8 +598,8 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../PK.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+        const response = await fetch('../../Scenes/musicdep_1.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching musicdep_1.ksplat`);
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
