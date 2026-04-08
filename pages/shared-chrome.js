@@ -1,4 +1,17 @@
 const SHARED_CHROME_STYLE_ID = 'shared-subpage-chrome';
+const BUTTON_CLICK_SOUND_URL = new URL('../Sound_effects/Clickbutton.wav', import.meta.url).href;
+const MEMO_CLICK_SOUND_URL = new URL('../Sound_effects/Clickmemo.wav', import.meta.url).href;
+
+function createSoundPlayer(url, volume = 0.55) {
+    return () => {
+        const audio = new Audio(url);
+        audio.volume = volume;
+        audio.play().catch(() => {});
+    };
+}
+
+const playButtonClickSound = createSoundPlayer(BUTTON_CLICK_SOUND_URL, 0.52);
+const playMemoClickSound = createSoundPlayer(MEMO_CLICK_SOUND_URL, 0.58);
 
 const SHARED_CHROME_CSS = `
 body[data-shared-chrome="true"]::after {
@@ -891,6 +904,16 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}) {
     });
 }
 
+function bindUiButtonSounds() {
+    if (document.body.dataset.uiButtonSoundsBound === 'true') return;
+    document.body.dataset.uiButtonSoundsBound = 'true';
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('.billboard-text')) return;
+        if (!event.target.closest('button, a.nav-link, a.map-node')) return;
+        playButtonClickSound();
+    });
+}
+
 const DEFAULT_MAP_CONFIG = {
     caption: 'Interactive Map',
     center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
@@ -934,10 +957,13 @@ export function initSharedChrome(options = {}) {
     ensurePageIdentityCard();
     bindOverlayBehavior(homeHref, itemsConfig);
     bindScreenshotBehavior();
+    bindUiButtonSounds();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }
 }
+
+export { playButtonClickSound, playMemoClickSound };
 
 export function bindSceneCoordinatePicker({ viewer, THREE }) {
     if (!viewer || !THREE) return;
@@ -979,6 +1005,8 @@ export function bindSceneCoordinatePicker({ viewer, THREE }) {
     if (!canvas || canvas.dataset.coordinatePickerBound === 'true') return;
     canvas.dataset.coordinatePickerBound = 'true';
     canvas.addEventListener('dblclick', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
         if (!viewer.camera || !viewer.splatMesh) return;
         const rect = canvas.getBoundingClientRect();
         const mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);

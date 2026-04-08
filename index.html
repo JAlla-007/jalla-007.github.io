@@ -1207,7 +1207,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { bindSceneCoordinatePicker } from './pages/shared-chrome.js';
+import { bindSceneCoordinatePicker, playButtonClickSound, playMemoClickSound } from './pages/shared-chrome.js';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -1245,6 +1245,7 @@ const viewer = new GaussianSplats3D.Viewer({
     dynamicScene: true,
     sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant
 });
+viewer.onMouseClick = () => {};
 
 const initialView = {
     position: new THREE.Vector3(0, -8, 8),
@@ -1344,7 +1345,6 @@ let activeBillboard = null;
 let dragMoved = false;
 let dragStartX = 0;
 let dragStartY = 0;
-let uiAudioContext = null;
 
 function startAmbientMotion() {
     const splatScene = viewer.getSplatScene(0);
@@ -1530,7 +1530,7 @@ function revealHomepageUi() {
     if (heroTitle && heroTitle.style.display !== 'none') return;
     setHomepageUiVisible(true);
     uiRevealArmed = false;
-    window.removeEventListener('pointerdown', revealHomepageUi);
+    window.removeEventListener('pointermove', revealHomepageUi);
     window.removeEventListener('wheel', revealHomepageUi);
     window.removeEventListener('keydown', revealHomepageUi);
 }
@@ -1538,7 +1538,7 @@ function revealHomepageUi() {
 function armHomepageUiReveal() {
     if (uiRevealArmed) return;
     uiRevealArmed = true;
-    window.addEventListener('pointerdown', revealHomepageUi);
+    window.addEventListener('pointermove', revealHomepageUi);
     window.addEventListener('wheel', revealHomepageUi, { passive: true });
     window.addEventListener('keydown', revealHomepageUi);
 }
@@ -1714,7 +1714,7 @@ function endBillboardDrag() {
 
         billboard.expanded = shouldExpand;
         billboard.element.classList.toggle('expanded', billboard.expanded);
-        playBubbleSound(billboard.expanded);
+        playBubbleSound();
         syncFocusMask();
     }
 
@@ -1723,55 +1723,8 @@ function endBillboardDrag() {
     updateBillboardPositions();
 }
 
-function getUiAudioContext() {
-    if (!uiAudioContext) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return null;
-        uiAudioContext = new AudioContextClass();
-    }
-
-    if (uiAudioContext.state === 'suspended') {
-        uiAudioContext.resume().catch(() => {});
-    }
-
-    return uiAudioContext;
-}
-
-function playBubbleSound(isOpening) {
-    const context = getUiAudioContext();
-    if (!context) return;
-
-    const now = context.currentTime;
-    const oscillator = context.createOscillator();
-    const overtone = context.createOscillator();
-    const gain = context.createGain();
-    const filter = context.createBiquadFilter();
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(isOpening ? 1700 : 1300, now);
-    filter.Q.setValueAtTime(1.4, now);
-
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(isOpening ? 520 : 420, now);
-    oscillator.frequency.exponentialRampToValueAtTime(isOpening ? 300 : 220, now + 0.12);
-
-    overtone.type = 'triangle';
-    overtone.frequency.setValueAtTime(isOpening ? 760 : 620, now);
-    overtone.frequency.exponentialRampToValueAtTime(isOpening ? 410 : 300, now + 0.08);
-
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-
-    oscillator.connect(gain);
-    overtone.connect(gain);
-    gain.connect(filter);
-    filter.connect(context.destination);
-
-    oscillator.start(now);
-    overtone.start(now);
-    oscillator.stop(now + 0.18);
-    overtone.stop(now + 0.14);
+function playBubbleSound() {
+    playMemoClickSound();
 }
 
 function updateAudioButton() {
@@ -1949,6 +1902,12 @@ memoryBillboards.forEach((billboard) => {
 window.addEventListener('pointermove', moveBillboardDrag);
 window.addEventListener('pointerup', endBillboardDrag);
 window.addEventListener('pointercancel', endBillboardDrag);
+
+document.addEventListener('click', (event) => {
+    if (event.target.closest('.billboard-text')) return;
+    if (!event.target.closest('button, a.nav-link, a.map-node')) return;
+    playButtonClickSound();
+});
 
 updateAudioButton();
 updateViewIndicator();
