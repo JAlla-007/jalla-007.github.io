@@ -647,7 +647,7 @@
             gap: 18px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transition: opacity 0.18s ease, transform 0.18s ease;
         }
 
         #side-tags.visible {
@@ -894,7 +894,7 @@
             box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
             color: rgba(255, 255, 255, 0.92);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.18s ease;
         }
 
         .view-indicator-label {
@@ -928,7 +928,7 @@
             opacity: 0;
             transform: translateY(12px);
             pointer-events: none;
-            transition: opacity 0.45s ease, transform 0.45s ease;
+            transition: opacity 0.18s ease, transform 0.18s ease;
         }
 
         #page-identity-card.visible {
@@ -1193,7 +1193,7 @@
 <button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
 <audio id="ambient-audio" loop preload="auto">
-    <source src="./logoss%20(3).mp3" type="audio/mpeg">
+    <source src="./Music/logoss%20(3).mp3" type="audio/mpeg">
 </audio>
 
 <script type="importmap">
@@ -1249,11 +1249,31 @@ const viewer = new GaussianSplats3D.Viewer({
 });
 viewer.onMouseClick = () => {};
 
-function playUiSound(url, volume = 0.55) {
-    const audio = new Audio(url);
-    audio.volume = volume;
-    audio.play().catch(() => {});
+function createSoundPlayer(url, volume = 0.55) {
+    let pool = null;
+    let nextIndex = 0;
+
+    return () => {
+        if (!pool) {
+            if (typeof Audio === 'undefined') return;
+            pool = Array.from({ length: 4 }, () => {
+                const audio = new Audio(url);
+                audio.preload = 'auto';
+                audio.volume = volume;
+                return audio;
+            });
+        }
+        const audio = pool[nextIndex];
+        nextIndex = (nextIndex + 1) % pool.length;
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = volume;
+        audio.play().catch(() => {});
+    };
 }
+
+const playButtonClickSound = createSoundPlayer(buttonClickSoundUrl, 0.52);
+const playMemoClickSound = createSoundPlayer(memoClickSoundUrl, 0.58);
 
 const initialView = {
     position: new THREE.Vector3(0, -8, 8),
@@ -1265,7 +1285,7 @@ const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
     { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(3.01, 2.41, -14.94), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-6.78, 0.99, -8.41), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.53, 1.86, 11.58), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.68, 2.40, 12.25), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
@@ -1407,16 +1427,6 @@ function getSceneDistanceBounds(scene = getActiveScene()) {
     return {
         minDistance: Math.max(2.5, defaultDistance * 0.6),
         maxDistance: defaultDistance
-    };
-}
-
-function getSceneAzimuthBounds(scene = getActiveScene()) {
-    const sceneView = getSceneView(scene);
-    const offset = sceneView.position.clone().sub(sceneView.target);
-    const initialTheta = new THREE.Spherical().setFromVector3(offset).theta;
-    return {
-        minAzimuthAngle: initialTheta - (Math.PI / 2),
-        maxAzimuthAngle: initialTheta + (Math.PI / 2)
     };
 }
 
@@ -1732,7 +1742,7 @@ function endBillboardDrag() {
 }
 
 function playBubbleSound() {
-    playUiSound(memoClickSoundUrl, 0.58);
+    playMemoClickSound();
 }
 
 function updateAudioButton() {
@@ -1914,7 +1924,7 @@ window.addEventListener('pointercancel', endBillboardDrag);
 document.addEventListener('click', (event) => {
     if (event.target.closest('.billboard-text')) return;
     if (!event.target.closest('button, a.nav-link, a.map-node')) return;
-    playUiSound(buttonClickSoundUrl, 0.52);
+    playButtonClickSound();
 });
 
 updateAudioButton();
@@ -1993,10 +2003,9 @@ async function loadScene(sceneId = currentSceneId) {
         if (viewer.controls) {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
-            const { minAzimuthAngle, maxAzimuthAngle } = getSceneAzimuthBounds(scene);
             const { minDistance, maxDistance } = getSceneDistanceBounds(scene);
-            viewer.controls.minAzimuthAngle = minAzimuthAngle;
-            viewer.controls.maxAzimuthAngle = maxAzimuthAngle;
+            viewer.controls.minAzimuthAngle = -Infinity;
+            viewer.controls.maxAzimuthAngle = Infinity;
             viewer.controls.minDistance = minDistance;
             viewer.controls.maxDistance = maxDistance;
             viewer.controls.enablePan = true;

@@ -3,8 +3,23 @@ const BUTTON_CLICK_SOUND_URL = new URL('../Sound_effects/Clickbutton.wav', impor
 const MEMO_CLICK_SOUND_URL = new URL('../Sound_effects/Clickmemo.wav', import.meta.url).href;
 
 function createSoundPlayer(url, volume = 0.55) {
+    let pool = null;
+    let nextIndex = 0;
+
     return () => {
-        const audio = new Audio(url);
+        if (!pool) {
+            if (typeof Audio === 'undefined') return;
+            pool = Array.from({ length: 4 }, () => {
+                const audio = new Audio(url);
+                audio.preload = 'auto';
+                audio.volume = volume;
+                return audio;
+            });
+        }
+        const audio = pool[nextIndex];
+        nextIndex = (nextIndex + 1) % pool.length;
+        audio.pause();
+        audio.currentTime = 0;
         audio.volume = volume;
         audio.play().catch(() => {});
     };
