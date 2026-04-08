@@ -1207,7 +1207,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { bindSceneCoordinatePicker, playButtonClickSound, playMemoClickSound } from './pages/shared-chrome.js';
+import { bindSceneCoordinatePicker } from './pages/shared-chrome.js?v=20260408a';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -1237,6 +1237,8 @@ const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
+const buttonClickSoundUrl = new URL('./Sound_effects/Clickbutton.wav', import.meta.url).href;
+const memoClickSoundUrl = new URL('./Sound_effects/Clickmemo.wav', import.meta.url).href;
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -1246,6 +1248,12 @@ const viewer = new GaussianSplats3D.Viewer({
     sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant
 });
 viewer.onMouseClick = () => {};
+
+function playUiSound(url, volume = 0.55) {
+    const audio = new Audio(url);
+    audio.volume = volume;
+    audio.play().catch(() => {});
+}
 
 const initialView = {
     position: new THREE.Vector3(0, -8, 8),
@@ -1724,7 +1732,7 @@ function endBillboardDrag() {
 }
 
 function playBubbleSound() {
-    playMemoClickSound();
+    playUiSound(memoClickSoundUrl, 0.58);
 }
 
 function updateAudioButton() {
@@ -1906,7 +1914,7 @@ window.addEventListener('pointercancel', endBillboardDrag);
 document.addEventListener('click', (event) => {
     if (event.target.closest('.billboard-text')) return;
     if (!event.target.closest('button, a.nav-link, a.map-node')) return;
-    playButtonClickSound();
+    playUiSound(buttonClickSoundUrl, 0.52);
 });
 
 updateAudioButton();
