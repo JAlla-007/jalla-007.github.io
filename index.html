@@ -1295,6 +1295,7 @@ let currentSceneId = 'pk';
 let billboardLoopStarted = false;
 let viewerStarted = false;
 let uiRevealArmed = false;
+let homepageNavPeekUsed = false;
 let navPeekTimer = null;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
@@ -1537,11 +1538,15 @@ function setHomepageUiVisible(visible) {
 }
 
 function peekHomepageNav() {
-    document.body.classList.add('nav-peek');
-    if (navPeekTimer) window.clearTimeout(navPeekTimer);
-    navPeekTimer = window.setTimeout(() => {
-        document.body.classList.remove('nav-peek');
-    }, 1000);
+    if (homepageNavPeekUsed) return;
+    homepageNavPeekUsed = true;
+    window.setTimeout(() => {
+        document.body.classList.add('nav-peek');
+        if (navPeekTimer) window.clearTimeout(navPeekTimer);
+        navPeekTimer = window.setTimeout(() => {
+            document.body.classList.remove('nav-peek');
+        }, 1600);
+    }, 1450);
 }
 
 function revealHomepageUi() {
