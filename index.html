@@ -1283,13 +1283,14 @@ const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Ma
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(3.01, 2.41, -14.94), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, azimuthRestricted: true, initialView: { position: new THREE.Vector3(0.18, 1.65, 9.07), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-6.78, 0.99, -8.41), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.68, 2.40, 12.25), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
 let motionFrame = null;
+let cameraDriftFrame = null;
 let currentSceneIndex = null;
 let currentSceneId = 'pk';
 let billboardLoopStarted = false;
@@ -1297,6 +1298,7 @@ let viewerStarted = false;
 let uiRevealArmed = false;
 let homepageNavPeekUsed = false;
 let navPeekTimer = null;
+let cameraDriftDisabled = false;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
 let audioStarted = false;
@@ -1410,6 +1412,56 @@ function startAmbientMotion() {
     motionFrame = window.requestAnimationFrame(animateScene);
 }
 
+function stopCameraDrift() {
+    cameraDriftDisabled = true;
+    if (cameraDriftFrame) {
+        window.cancelAnimationFrame(cameraDriftFrame);
+        cameraDriftFrame = null;
+    }
+}
+
+function startCameraDrift(scene = getActiveScene()) {
+    const controls = getControls();
+    if (!controls || !viewer.camera || cameraDriftDisabled) return;
+
+    if (cameraDriftFrame) {
+        window.cancelAnimationFrame(cameraDriftFrame);
+        cameraDriftFrame = null;
+    }
+
+    const sceneView = getSceneView(scene);
+    const basePosition = sceneView.position.clone();
+    const baseTarget = sceneView.target.clone();
+    const startTime = performance.now();
+
+    const drift = () => {
+        if (cameraDriftDisabled) {
+            cameraDriftFrame = null;
+            return;
+        }
+
+        const t = (performance.now() - startTime) * 0.001;
+        const offset = new THREE.Vector3(
+            Math.sin(t * 0.22) * 0.18,
+            Math.cos(t * 0.18) * 0.08,
+            Math.sin(t * 0.16 + 0.9) * 0.12
+        );
+        const targetOffset = new THREE.Vector3(
+            Math.sin(t * 0.12 + 0.6) * 0.05,
+            Math.cos(t * 0.15) * 0.03,
+            0
+        );
+
+        viewer.camera.position.copy(basePosition).add(offset);
+        controls.target.copy(baseTarget).add(targetOffset);
+        viewer.camera.lookAt(controls.target);
+        controls.update();
+        cameraDriftFrame = window.requestAnimationFrame(drift);
+    };
+
+    cameraDriftFrame = window.requestAnimationFrame(drift);
+}
+
 function getControls() {
     return viewer.controls;
 }
@@ -1428,6 +1480,23 @@ function getSceneDistanceBounds(scene = getActiveScene()) {
     return {
         minDistance: Math.max(2.5, defaultDistance * 0.6),
         maxDistance: defaultDistance
+    };
+}
+
+function getSceneAzimuthBounds(scene = getActiveScene()) {
+    if (!scene?.azimuthRestricted) {
+        return {
+            minAzimuthAngle: -Infinity,
+            maxAzimuthAngle: Infinity
+        };
+    }
+
+    const sceneView = getSceneView(scene);
+    const offset = sceneView.position.clone().sub(sceneView.target);
+    const initialTheta = new THREE.Spherical().setFromVector3(offset).theta;
+    return {
+        minAzimuthAngle: initialTheta - (Math.PI / 2),
+        maxAzimuthAngle: initialTheta + (Math.PI / 2)
     };
 }
 
@@ -1865,6 +1934,9 @@ window.setTimeout(hideHint, 4500);
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
 window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', stopCameraDrift, { once: true });
+window.addEventListener('wheel', stopCameraDrift, { once: true });
+window.addEventListener('keydown', stopCameraDrift, { once: true });
 window.addEventListener('pointerdown', hideHeroTitle, { once: true });
 window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
@@ -2008,9 +2080,10 @@ async function loadScene(sceneId = currentSceneId) {
         if (viewer.controls) {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
+            const { minAzimuthAngle, maxAzimuthAngle } = getSceneAzimuthBounds(scene);
             const { minDistance, maxDistance } = getSceneDistanceBounds(scene);
-            viewer.controls.minAzimuthAngle = -Infinity;
-            viewer.controls.maxAzimuthAngle = Infinity;
+            viewer.controls.minAzimuthAngle = minAzimuthAngle;
+            viewer.controls.maxAzimuthAngle = maxAzimuthAngle;
             viewer.controls.minDistance = minDistance;
             viewer.controls.maxDistance = maxDistance;
             viewer.controls.enablePan = true;
@@ -2031,6 +2104,8 @@ async function loadScene(sceneId = currentSceneId) {
 
         startBillboardLoop();
         startAmbientMotion();
+        cameraDriftDisabled = false;
+        startCameraDrift(scene);
         showHeroTitle();
         applySceneUi(scene, false);
     } catch (err) {
