@@ -1,32 +1,4 @@
 const SHARED_CHROME_STYLE_ID = 'shared-subpage-chrome';
-const BUTTON_CLICK_SOUND_URL = new URL('../Sound_effects/Clickbutton.wav', import.meta.url).href;
-const MEMO_CLICK_SOUND_URL = new URL('../Sound_effects/Clickmemo.wav', import.meta.url).href;
-
-function createSoundPlayer(url, volume = 0.55) {
-    let pool = null;
-    let nextIndex = 0;
-
-    return () => {
-        if (!pool) {
-            if (typeof Audio === 'undefined') return;
-            pool = Array.from({ length: 4 }, () => {
-                const audio = new Audio(url);
-                audio.preload = 'auto';
-                audio.volume = volume;
-                return audio;
-            });
-        }
-        const audio = pool[nextIndex];
-        nextIndex = (nextIndex + 1) % pool.length;
-        audio.pause();
-        audio.currentTime = 0;
-        audio.volume = volume;
-        audio.play().catch(() => {});
-    };
-}
-
-const playButtonClickSound = createSoundPlayer(BUTTON_CLICK_SOUND_URL, 0.52);
-const playMemoClickSound = createSoundPlayer(MEMO_CLICK_SOUND_URL, 0.58);
 
 const SHARED_CHROME_CSS = `
 body[data-shared-chrome="true"]::after {
@@ -919,16 +891,6 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}) {
     });
 }
 
-function bindUiButtonSounds() {
-    if (document.body.dataset.uiButtonSoundsBound === 'true') return;
-    document.body.dataset.uiButtonSoundsBound = 'true';
-    document.addEventListener('click', (event) => {
-        if (event.target.closest('.billboard-text')) return;
-        if (!event.target.closest('button, a.nav-link, a.map-node')) return;
-        playButtonClickSound();
-    });
-}
-
 const DEFAULT_MAP_CONFIG = {
     caption: 'Interactive Map',
     center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
@@ -972,13 +934,10 @@ export function initSharedChrome(options = {}) {
     ensurePageIdentityCard();
     bindOverlayBehavior(homeHref, itemsConfig);
     bindScreenshotBehavior();
-    bindUiButtonSounds();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }
 }
-
-export { playButtonClickSound, playMemoClickSound };
 
 export function bindSceneCoordinatePicker({ viewer, THREE }) {
     if (!viewer || !THREE) return;

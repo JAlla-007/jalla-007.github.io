@@ -46,11 +46,15 @@
             right: 0;
             height: 54px;
             z-index: 160;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.14s ease;
         }
 
         #nav:hover .nav-shell,
         #nav:focus-within .nav-shell {
+            transform: translateY(0);
+        }
+
+        body.ui-visible #nav .nav-shell {
             transform: translateY(0);
         }
 
@@ -71,7 +75,7 @@
             backdrop-filter: blur(16px);
             box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
             transform: translateY(-38px);
-            transition: transform 0.32s ease;
+            transition: transform 0.16s ease;
         }
 
         .nav-link {
@@ -616,7 +620,7 @@
             background: rgba(255, 255, 255, 0.04);
             color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, opacity 0.14s ease;
         }
 
         #screenshot-button:hover {
@@ -647,7 +651,7 @@
             gap: 18px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.18s ease, transform 0.18s ease;
+            transition: opacity 0.14s ease, transform 0.14s ease;
         }
 
         #side-tags.visible {
@@ -894,7 +898,7 @@
             box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
             color: rgba(255, 255, 255, 0.92);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            transition: opacity 0.18s ease;
+            transition: opacity 0.14s ease;
         }
 
         .view-indicator-label {
@@ -928,7 +932,7 @@
             opacity: 0;
             transform: translateY(12px);
             pointer-events: none;
-            transition: opacity 0.18s ease, transform 0.18s ease;
+            transition: opacity 0.14s ease, transform 0.14s ease;
         }
 
         #page-identity-card.visible {
@@ -1237,8 +1241,6 @@ const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
-const buttonClickSoundUrl = new URL('./Sound_effects/Clickbutton.wav', import.meta.url).href;
-const memoClickSoundUrl = new URL('./Sound_effects/Clickmemo.wav', import.meta.url).href;
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
@@ -1248,32 +1250,6 @@ const viewer = new GaussianSplats3D.Viewer({
     sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant
 });
 viewer.onMouseClick = () => {};
-
-function createSoundPlayer(url, volume = 0.55) {
-    let pool = null;
-    let nextIndex = 0;
-
-    return () => {
-        if (!pool) {
-            if (typeof Audio === 'undefined') return;
-            pool = Array.from({ length: 4 }, () => {
-                const audio = new Audio(url);
-                audio.preload = 'auto';
-                audio.volume = volume;
-                return audio;
-            });
-        }
-        const audio = pool[nextIndex];
-        nextIndex = (nextIndex + 1) % pool.length;
-        audio.pause();
-        audio.currentTime = 0;
-        audio.volume = volume;
-        audio.play().catch(() => {});
-    };
-}
-
-const playButtonClickSound = createSoundPlayer(buttonClickSoundUrl, 0.52);
-const playMemoClickSound = createSoundPlayer(memoClickSoundUrl, 0.58);
 
 const initialView = {
     position: new THREE.Vector3(0, -8, 8),
@@ -1442,13 +1418,13 @@ function startCameraDrift(scene = getActiveScene()) {
 
         const t = (performance.now() - startTime) * 0.001;
         const offset = new THREE.Vector3(
-            Math.sin(t * 0.22) * 0.18,
-            Math.cos(t * 0.18) * 0.08,
-            Math.sin(t * 0.16 + 0.9) * 0.12
+            Math.sin(t * 0.3) * 0.52,
+            Math.cos(t * 0.24) * 0.2,
+            Math.sin(t * 0.22 + 0.9) * 0.34
         );
         const targetOffset = new THREE.Vector3(
-            Math.sin(t * 0.12 + 0.6) * 0.05,
-            Math.cos(t * 0.15) * 0.03,
+            Math.sin(t * 0.19 + 0.6) * 0.14,
+            Math.cos(t * 0.2) * 0.08,
             0
         );
 
@@ -1622,6 +1598,7 @@ function revealHomepageUi() {
     if (heroTitle && heroTitle.style.display !== 'none') return;
     setHomepageUiVisible(true);
     uiRevealArmed = false;
+    window.removeEventListener('pointerdown', revealHomepageUi);
     window.removeEventListener('pointermove', revealHomepageUi);
     window.removeEventListener('wheel', revealHomepageUi);
     window.removeEventListener('keydown', revealHomepageUi);
@@ -1630,6 +1607,7 @@ function revealHomepageUi() {
 function armHomepageUiReveal() {
     if (uiRevealArmed) return;
     uiRevealArmed = true;
+    window.addEventListener('pointerdown', revealHomepageUi);
     window.addEventListener('pointermove', revealHomepageUi);
     window.addEventListener('wheel', revealHomepageUi, { passive: true });
     window.addEventListener('keydown', revealHomepageUi);
@@ -1816,7 +1794,7 @@ function endBillboardDrag() {
 }
 
 function playBubbleSound() {
-    playMemoClickSound();
+    return;
 }
 
 function updateAudioButton() {
@@ -1997,12 +1975,6 @@ memoryBillboards.forEach((billboard) => {
 window.addEventListener('pointermove', moveBillboardDrag);
 window.addEventListener('pointerup', endBillboardDrag);
 window.addEventListener('pointercancel', endBillboardDrag);
-
-document.addEventListener('click', (event) => {
-    if (event.target.closest('.billboard-text')) return;
-    if (!event.target.closest('button, a.nav-link, a.map-node')) return;
-    playButtonClickSound();
-});
 
 updateAudioButton();
 updateViewIndicator();
