@@ -54,10 +54,6 @@
             transform: translateY(0);
         }
 
-        body.ui-visible #nav .nav-shell {
-            transform: translateY(0);
-        }
-
         .nav-shell {
             position: relative;
             display: grid;
@@ -1012,28 +1008,6 @@
             line-height: 1.45;
         }
 
-        body:not(.ui-visible):not(.nav-peek) #nav {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        body:not(.ui-visible) #screenshot-button,
-        body:not(.ui-visible) #view-indicator,
-        body:not(.ui-visible) #audio-toggle {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        body:not(.ui-visible) #side-tags {
-            opacity: 0 !important;
-            pointer-events: none;
-        }
-
-        body:not(.ui-visible) #page-identity-card {
-            opacity: 0 !important;
-            pointer-events: none;
-            transform: translateY(12px);
-        }
     </style>
 </head>
 <body>
@@ -1271,7 +1245,6 @@ let currentSceneIndex = null;
 let currentSceneId = 'pk';
 let billboardLoopStarted = false;
 let viewerStarted = false;
-let uiRevealArmed = false;
 let homepageNavPeekUsed = false;
 let navPeekTimer = null;
 let cameraDriftDisabled = false;
@@ -1418,13 +1391,13 @@ function startCameraDrift(scene = getActiveScene()) {
 
         const t = (performance.now() - startTime) * 0.001;
         const offset = new THREE.Vector3(
-            Math.sin(t * 0.3) * 0.52,
-            Math.cos(t * 0.24) * 0.2,
-            Math.sin(t * 0.22 + 0.9) * 0.34
+            Math.sin(t * 0.42) * 0.95,
+            Math.cos(t * 0.34) * 0.34,
+            Math.sin(t * 0.3 + 0.9) * 0.72
         );
         const targetOffset = new THREE.Vector3(
-            Math.sin(t * 0.19 + 0.6) * 0.14,
-            Math.cos(t * 0.2) * 0.08,
+            Math.sin(t * 0.28 + 0.6) * 0.26,
+            Math.cos(t * 0.24) * 0.14,
             0
         );
 
@@ -1561,7 +1534,6 @@ function hideHeroTitle() {
         pageIdentityCard?.classList.add('visible');
         sideTags.classList.add('visible');
         peekHomepageNav();
-        armHomepageUiReveal();
     }, 850);
 }
 
@@ -1570,16 +1542,11 @@ function showHeroTitle() {
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
     introScrim?.classList.remove('hidden');
-    setHomepageUiVisible(false);
     pageIdentityCard?.classList.remove('visible');
     sideTags.classList.remove('visible');
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
-}
-
-function setHomepageUiVisible(visible) {
-    document.body.classList.toggle('ui-visible', visible);
 }
 
 function peekHomepageNav() {
@@ -1592,25 +1559,6 @@ function peekHomepageNav() {
             document.body.classList.remove('nav-peek');
         }, 1600);
     }, 1450);
-}
-
-function revealHomepageUi() {
-    if (heroTitle && heroTitle.style.display !== 'none') return;
-    setHomepageUiVisible(true);
-    uiRevealArmed = false;
-    window.removeEventListener('pointerdown', revealHomepageUi);
-    window.removeEventListener('pointermove', revealHomepageUi);
-    window.removeEventListener('wheel', revealHomepageUi);
-    window.removeEventListener('keydown', revealHomepageUi);
-}
-
-function armHomepageUiReveal() {
-    if (uiRevealArmed) return;
-    uiRevealArmed = true;
-    window.addEventListener('pointerdown', revealHomepageUi);
-    window.addEventListener('pointermove', revealHomepageUi);
-    window.addEventListener('wheel', revealHomepageUi, { passive: true });
-    window.addEventListener('keydown', revealHomepageUi);
 }
 
 function openMapOverlay() {
