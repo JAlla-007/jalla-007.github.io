@@ -684,6 +684,34 @@
             stroke-linejoin: round;
         }
 
+        #hero-style-toggle {
+            position: fixed;
+            top: 118px;
+            left: 20px;
+            z-index: 166;
+            min-height: 42px;
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        #hero-style-toggle:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.58);
+            transform: translateY(-1px);
+        }
+
         #side-tags {
             position: fixed;
             left: 20px;
@@ -884,15 +912,27 @@
 
         .hero-text {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: clamp(28px, 4vw, 52px);
             max-width: min(94vw, 1320px);
+            width: 100%;
             padding: 0 24px;
             color: rgba(255, 255, 255, 0.94);
             font-family: "Times New Roman", Times, serif;
             text-align: center;
             transform: translateY(clamp(18px, 4vh, 54px));
+        }
+
+        .hero-variant {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(28px, 4vw, 52px);
+            width: 100%;
+        }
+
+        body:not([data-hero-title-style="text"]) .hero-variant-text,
+        body[data-hero-title-style="text"] .hero-variant-image {
+            display: none;
         }
 
         .hero-title-line {
@@ -922,6 +962,30 @@
             height: auto;
             opacity: 0.92;
             filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.34));
+        }
+
+        .hero-title-copy {
+            display: block;
+            max-width: min(100%, 980px);
+            font-size: clamp(52px, 7.6vw, 108px);
+            font-weight: 700;
+            line-height: 0.94;
+            letter-spacing: 0.03em;
+            text-shadow:
+                0 10px 24px rgba(0, 0, 0, 0.38),
+                0 24px 56px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-subtitle-copy {
+            display: block;
+            max-width: min(100%, 820px);
+            color: rgba(255, 255, 255, 0.84);
+            font-size: clamp(16px, 2vw, 28px);
+            font-weight: 400;
+            letter-spacing: 0.18em;
+            line-height: 1.35;
+            text-transform: uppercase;
+            text-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
         }
 
         #intro-scrim {
@@ -1096,7 +1160,7 @@
 
     </style>
 </head>
-<body class="scene-reveal-pending">
+<body class="scene-reveal-pending" data-hero-title-style="image">
 <div id="info">
     <div class="loading-shell">
         <div class="loading-ring" aria-hidden="true"></div>
@@ -1207,11 +1271,21 @@
 
 <div id="hero-title">
     <div class="hero-text">
-        <div class="hero-title-line">
-            <img class="hero-title-image" src="./iconntext/bigtitle.gif" alt="Atlantic College Memo">
+        <div class="hero-variant hero-variant-image">
+            <div class="hero-title-line">
+                <img class="hero-title-image" src="./iconntext/bigtitle.gif" alt="Atlantic College Memo">
+            </div>
+            <div class="hero-subtitle">
+                <img class="hero-subtitle-image" src="./iconntext/subtitle.png" alt="To the memories I held dear">
+            </div>
         </div>
-        <div class="hero-subtitle">
-            <img class="hero-subtitle-image" src="./iconntext/subtitle.png" alt="To the memories I held dear">
+        <div class="hero-variant hero-variant-text" aria-hidden="true">
+            <div class="hero-title-line">
+                <span class="hero-title-copy">Atlantic College Memo</span>
+            </div>
+            <div class="hero-subtitle">
+                <span class="hero-subtitle-copy">To the memories I held dear</span>
+            </div>
         </div>
     </div>
 </div>
@@ -1244,6 +1318,8 @@
         <circle cx="12" cy="13.2" r="3.2"></circle>
     </svg>
 </button>
+
+<button id="hero-style-toggle" type="button" aria-label="Show text title version">Show Text Title</button>
 
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
@@ -1294,6 +1370,7 @@ const itemsYes = document.getElementById('items-yes');
 const itemsHellYes = document.getElementById('items-hell-yes');
 const homeReset = document.getElementById('home-reset');
 const heroTitle = document.getElementById('hero-title');
+const heroStyleToggle = document.getElementById('hero-style-toggle');
 const introScrim = document.getElementById('intro-scrim');
 const sideTags = document.getElementById('side-tags');
 const reviewMemosButton = document.getElementById('review-memos');
@@ -1339,6 +1416,7 @@ let billboardLoopStarted = false;
 let viewerStarted = false;
 let homepageNavPeekUsed = false;
 let navPeekTimer = null;
+let heroPreviewTimer = null;
 let cameraDriftDisabled = false;
 let initialSceneRevealPlayed = false;
 const minZoomDistance = 4;
@@ -1660,6 +1738,10 @@ function hideHint() {
 
 function hideHeroTitle() {
     if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
+    if (heroPreviewTimer) {
+        window.clearTimeout(heroPreviewTimer);
+        heroPreviewTimer = null;
+    }
     heroTitle.classList.add('hidden');
     introScrim?.classList.add('hidden');
     window.setTimeout(() => {
@@ -1672,6 +1754,10 @@ function hideHeroTitle() {
 
 function showHeroTitle() {
     if (!heroTitle) return;
+    if (heroPreviewTimer) {
+        window.clearTimeout(heroPreviewTimer);
+        heroPreviewTimer = null;
+    }
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
     introScrim?.classList.remove('hidden');
@@ -1680,6 +1766,60 @@ function showHeroTitle() {
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
+}
+
+function previewHeroTitle(duration = 3600) {
+    if (!heroTitle) return;
+    if (heroPreviewTimer) {
+        window.clearTimeout(heroPreviewTimer);
+    }
+
+    heroTitle.style.display = 'flex';
+    heroTitle.classList.remove('hidden');
+    heroTitle.classList.add('visible');
+    introScrim?.classList.remove('hidden');
+
+    heroPreviewTimer = window.setTimeout(() => {
+        heroTitle.classList.add('hidden');
+        introScrim?.classList.add('hidden');
+        window.setTimeout(() => {
+            if (heroTitle.classList.contains('hidden')) {
+                heroTitle.style.display = 'none';
+            }
+        }, 850);
+        heroPreviewTimer = null;
+    }, duration);
+}
+
+function setHeroTitleStyle(style) {
+    const nextStyle = style === 'text' ? 'text' : 'image';
+    document.body.dataset.heroTitleStyle = nextStyle;
+
+    if (heroStyleToggle) {
+        const showingText = nextStyle === 'text';
+        heroStyleToggle.textContent = showingText ? 'Show Image Title' : 'Show Text Title';
+        heroStyleToggle.setAttribute('aria-label', showingText ? 'Show image title version' : 'Show text title version');
+        heroStyleToggle.setAttribute('aria-pressed', showingText ? 'true' : 'false');
+    }
+
+    try {
+        window.localStorage.setItem('homepage-hero-title-style', nextStyle);
+    } catch (error) {
+        console.warn('Unable to save hero title style preference.', error);
+    }
+}
+
+function getHeroTitleStyle() {
+    try {
+        const storedStyle = window.localStorage.getItem('homepage-hero-title-style');
+        if (storedStyle === 'text' || storedStyle === 'image') {
+            return storedStyle;
+        }
+    } catch (error) {
+        console.warn('Unable to read hero title style preference.', error);
+    }
+
+    return 'image';
 }
 
 function peekHomepageNav() {
@@ -2020,6 +2160,26 @@ audioToggle.addEventListener('click', async () => {
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
 
+heroStyleToggle.addEventListener('pointerdown', (event) => {
+    event.stopPropagation();
+});
+
+heroStyleToggle.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.stopPropagation();
+    }
+});
+
+heroStyleToggle.addEventListener('click', () => {
+    const currentStyle = document.body.dataset.heroTitleStyle === 'text' ? 'text' : 'image';
+    const nextStyle = currentStyle === 'text' ? 'image' : 'text';
+    setHeroTitleStyle(nextStyle);
+
+    if (heroTitle?.style.display === 'none' || heroTitle?.classList.contains('hidden')) {
+        previewHeroTitle();
+    }
+});
+
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
 mapClose.addEventListener('click', closeMapOverlay);
@@ -2058,6 +2218,7 @@ window.addEventListener('pointerup', endBillboardDrag);
 window.addEventListener('pointercancel', endBillboardDrag);
 
 updateAudioButton();
+setHeroTitleStyle(getHeroTitleStyle());
 updateViewIndicator();
 
 function setCameraDistance(nextDistance) {
