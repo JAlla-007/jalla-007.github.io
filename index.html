@@ -964,28 +964,31 @@
             filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.34));
         }
 
-        .hero-title-copy {
-            display: block;
-            max-width: min(100%, 980px);
-            font-size: clamp(52px, 7.6vw, 108px);
-            font-weight: 700;
-            line-height: 0.94;
-            letter-spacing: 0.03em;
-            text-shadow:
-                0 10px 24px rgba(0, 0, 0, 0.38),
-                0 24px 56px rgba(0, 0, 0, 0.5);
+        .hero-variant-text {
+            gap: 14px;
+            max-width: min(92vw, 980px);
         }
 
-        .hero-subtitle-copy {
+        .hero-variant-text .hero-title-line {
             display: block;
-            max-width: min(100%, 820px);
-            color: rgba(255, 255, 255, 0.84);
-            font-size: clamp(16px, 2vw, 28px);
+            font-size: clamp(40px, 7vw, 92px);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            line-height: 0.95;
+            text-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.12),
+                0 12px 24px rgba(0, 0, 0, 0.42),
+                0 24px 60px rgba(0, 0, 0, 0.48);
+        }
+
+        .hero-variant-text .hero-subtitle {
+            display: block;
+            color: rgba(255, 255, 255, 0.76);
+            font-size: clamp(14px, 1.4vw, 22px);
             font-weight: 400;
             letter-spacing: 0.18em;
-            line-height: 1.35;
-            text-transform: uppercase;
-            text-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+            line-height: 1.2;
+            text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
         }
 
         #intro-scrim {
@@ -1281,10 +1284,10 @@
         </div>
         <div class="hero-variant hero-variant-text" aria-hidden="true">
             <div class="hero-title-line">
-                <span class="hero-title-copy">Atlantic College Memo</span>
+                Atlantic College Memo
             </div>
             <div class="hero-subtitle">
-                <span class="hero-subtitle-copy">To the memories I held dear</span>
+                To the memories I held dear
             </div>
         </div>
     </div>
