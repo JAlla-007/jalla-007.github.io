@@ -691,34 +691,6 @@
             stroke-linejoin: round;
         }
 
-        #hero-style-toggle {
-            position: fixed;
-            top: 118px;
-            left: 20px;
-            z-index: 166;
-            min-height: 42px;
-            padding: 0 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.9);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        #hero-style-toggle:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.58);
-            transform: translateY(-1px);
-        }
-
         #side-tags {
             position: fixed;
             left: 20px;
@@ -940,11 +912,6 @@
             transform: translateY(clamp(18px, 4vh, 54px));
         }
 
-        body:not([data-hero-title-style="text"]) .hero-variant-text,
-        body[data-hero-title-style="text"] .hero-variant-image {
-            display: none;
-        }
-
         .hero-title-line {
             display: flex;
             justify-content: center;
@@ -967,50 +934,13 @@
         }
 
         .hero-variant-image .hero-subtitle {
-            margin-top: -12px;
+            margin-top: -30px;
             color: rgba(255, 255, 255, 0.76);
             font-family: "Castle Regular", "Times New Roman", Times, serif;
-            font-size: clamp(14px, 1.4vw, 22px);
+            font-size: clamp(34px, calc(1.4vw + 20px), 42px);
             font-weight: 400;
             letter-spacing: 0.18em;
             line-height: 1.2;
-            text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
-        }
-
-        .hero-variant-text {
-            display: inline-flex;
-            width: auto;
-            gap: 14px;
-            max-width: min(92vw, 980px);
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .hero-variant-text .hero-title-line {
-            display: block;
-            width: fit-content;
-            margin: 0 auto;
-            font-size: clamp(40px, 7vw, 92px);
-            font-weight: 700;
-            letter-spacing: 0.03em;
-            line-height: 0.95;
-            text-align: center;
-            text-shadow:
-                0 1px 0 rgba(255, 255, 255, 0.12),
-                0 12px 24px rgba(0, 0, 0, 0.42),
-                0 24px 60px rgba(0, 0, 0, 0.48);
-        }
-
-        .hero-variant-text .hero-subtitle {
-            display: block;
-            width: fit-content;
-            margin: 0 auto;
-            color: rgba(255, 255, 255, 0.76);
-            font-size: clamp(14px, 1.4vw, 22px);
-            font-weight: 400;
-            letter-spacing: 0.18em;
-            line-height: 1.2;
-            text-align: center;
             text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
         }
 
@@ -1186,7 +1116,7 @@
 
     </style>
 </head>
-<body class="scene-reveal-pending" data-hero-title-style="image">
+<body class="scene-reveal-pending">
 <div id="info">
     <div class="loading-shell">
         <div class="loading-ring" aria-hidden="true"></div>
@@ -1305,14 +1235,6 @@
                 To the memories I held dear......
             </div>
         </div>
-        <div class="hero-variant hero-variant-text" aria-hidden="true">
-            <div class="hero-title-line">
-                Atlantic College Memo
-            </div>
-            <div class="hero-subtitle">
-                To the memories I held dear
-            </div>
-        </div>
     </div>
 </div>
 
@@ -1344,8 +1266,6 @@
         <circle cx="12" cy="13.2" r="3.2"></circle>
     </svg>
 </button>
-
-<button id="hero-style-toggle" type="button" aria-label="Show text title version">Show Text Title</button>
 
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
@@ -1396,7 +1316,6 @@ const itemsYes = document.getElementById('items-yes');
 const itemsHellYes = document.getElementById('items-hell-yes');
 const homeReset = document.getElementById('home-reset');
 const heroTitle = document.getElementById('hero-title');
-const heroStyleToggle = document.getElementById('hero-style-toggle');
 const introScrim = document.getElementById('intro-scrim');
 const sideTags = document.getElementById('side-tags');
 const reviewMemosButton = document.getElementById('review-memos');
@@ -1442,7 +1361,6 @@ let billboardLoopStarted = false;
 let viewerStarted = false;
 let homepageNavPeekUsed = false;
 let navPeekTimer = null;
-let heroPreviewTimer = null;
 let cameraDriftDisabled = false;
 let initialSceneRevealPlayed = false;
 const minZoomDistance = 4;
@@ -1764,10 +1682,6 @@ function hideHint() {
 
 function hideHeroTitle() {
     if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
-    if (heroPreviewTimer) {
-        window.clearTimeout(heroPreviewTimer);
-        heroPreviewTimer = null;
-    }
     heroTitle.classList.add('hidden');
     introScrim?.classList.add('hidden');
     window.setTimeout(() => {
@@ -1780,10 +1694,6 @@ function hideHeroTitle() {
 
 function showHeroTitle() {
     if (!heroTitle) return;
-    if (heroPreviewTimer) {
-        window.clearTimeout(heroPreviewTimer);
-        heroPreviewTimer = null;
-    }
     heroTitle.style.display = 'flex';
     heroTitle.classList.remove('hidden');
     introScrim?.classList.remove('hidden');
@@ -1792,60 +1702,6 @@ function showHeroTitle() {
     window.requestAnimationFrame(() => {
         heroTitle.classList.add('visible');
     });
-}
-
-function previewHeroTitle(duration = 3600) {
-    if (!heroTitle) return;
-    if (heroPreviewTimer) {
-        window.clearTimeout(heroPreviewTimer);
-    }
-
-    heroTitle.style.display = 'flex';
-    heroTitle.classList.remove('hidden');
-    heroTitle.classList.add('visible');
-    introScrim?.classList.remove('hidden');
-
-    heroPreviewTimer = window.setTimeout(() => {
-        heroTitle.classList.add('hidden');
-        introScrim?.classList.add('hidden');
-        window.setTimeout(() => {
-            if (heroTitle.classList.contains('hidden')) {
-                heroTitle.style.display = 'none';
-            }
-        }, 850);
-        heroPreviewTimer = null;
-    }, duration);
-}
-
-function setHeroTitleStyle(style) {
-    const nextStyle = style === 'text' ? 'text' : 'image';
-    document.body.dataset.heroTitleStyle = nextStyle;
-
-    if (heroStyleToggle) {
-        const showingText = nextStyle === 'text';
-        heroStyleToggle.textContent = showingText ? 'Show Image Title' : 'Show Text Title';
-        heroStyleToggle.setAttribute('aria-label', showingText ? 'Show image title version' : 'Show text title version');
-        heroStyleToggle.setAttribute('aria-pressed', showingText ? 'true' : 'false');
-    }
-
-    try {
-        window.localStorage.setItem('homepage-hero-title-style', nextStyle);
-    } catch (error) {
-        console.warn('Unable to save hero title style preference.', error);
-    }
-}
-
-function getHeroTitleStyle() {
-    try {
-        const storedStyle = window.localStorage.getItem('homepage-hero-title-style');
-        if (storedStyle === 'text' || storedStyle === 'image') {
-            return storedStyle;
-        }
-    } catch (error) {
-        console.warn('Unable to read hero title style preference.', error);
-    }
-
-    return 'image';
 }
 
 function peekHomepageNav() {
@@ -2186,26 +2042,6 @@ audioToggle.addEventListener('click', async () => {
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
 
-heroStyleToggle.addEventListener('pointerdown', (event) => {
-    event.stopPropagation();
-});
-
-heroStyleToggle.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.stopPropagation();
-    }
-});
-
-heroStyleToggle.addEventListener('click', () => {
-    const currentStyle = document.body.dataset.heroTitleStyle === 'text' ? 'text' : 'image';
-    const nextStyle = currentStyle === 'text' ? 'image' : 'text';
-    setHeroTitleStyle(nextStyle);
-
-    if (heroTitle?.style.display === 'none' || heroTitle?.classList.contains('hidden')) {
-        previewHeroTitle();
-    }
-});
-
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
 mapClose.addEventListener('click', closeMapOverlay);
@@ -2244,7 +2080,6 @@ window.addEventListener('pointerup', endBillboardDrag);
 window.addEventListener('pointercancel', endBillboardDrag);
 
 updateAudioButton();
-setHeroTitleStyle(getHeroTitleStyle());
 updateViewIndicator();
 
 function setCameraDistance(nextDistance) {
