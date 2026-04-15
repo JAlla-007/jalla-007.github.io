@@ -972,13 +972,18 @@
         }
 
         .hero-variant-text {
+            display: inline-flex;
+            width: auto;
             gap: 14px;
             max-width: min(92vw, 980px);
+            margin: 0 auto;
+            text-align: center;
         }
 
         .hero-variant-text .hero-title-line {
             display: block;
-            width: auto;
+            width: fit-content;
+            margin: 0 auto;
             font-size: clamp(40px, 7vw, 92px);
             font-weight: 700;
             letter-spacing: 0.03em;
@@ -992,7 +997,8 @@
 
         .hero-variant-text .hero-subtitle {
             display: block;
-            width: auto;
+            width: fit-content;
+            margin: 0 auto;
             color: rgba(255, 255, 255, 0.76);
             font-size: clamp(14px, 1.4vw, 22px);
             font-weight: 400;
