@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>PK </title>
     <style>
+        @font-face {
+            font-family: "Castle Regular";
+            src: url("../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            font-weight: 400;
+            font-style: normal;
+        }
+
         body {
             margin: 0;
             background: black;
@@ -287,7 +294,7 @@
         #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
         .hero-text { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: min(92vw, 980px); padding: 0 24px; color: rgba(255,255,255,0.94); font-family: "Times New Roman", Times, serif; text-align: center; }
         .hero-title-line { font-size: clamp(40px, 7vw, 92px); font-weight: 700; letter-spacing: 0.03em; line-height: 0.95; text-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 12px 24px rgba(0,0,0,0.42), 0 24px 60px rgba(0,0,0,0.48); }
-        .hero-subtitle { color: rgba(255,255,255,0.76); font-size: clamp(14px, 1.4vw, 22px); font-weight: 400; letter-spacing: 0.18em; line-height: 1.2; text-shadow: 0 8px 22px rgba(0,0,0,0.35); }
+        .hero-subtitle { color: rgba(255,255,255,0.76); font-family: "Castle Regular", "Times New Roman", Times, serif; font-size: clamp(14px, 1.4vw, 22px); font-weight: 400; letter-spacing: 0.18em; line-height: 1.2; text-shadow: 0 8px 22px rgba(0,0,0,0.35); }
         #branch-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%), rgba(10,10,10,0.66); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0,0,0,0.28); }
         .branch-kicker { color: rgba(255,255,255,0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
         .branch-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
