@@ -919,7 +919,6 @@
             color: rgba(255, 255, 255, 0.94);
             font-family: "Times New Roman", Times, serif;
             text-align: center;
-            transform: translateY(clamp(18px, 4vh, 54px));
         }
 
         .hero-variant {
@@ -928,6 +927,10 @@
             align-items: center;
             gap: clamp(28px, 4vw, 52px);
             width: 100%;
+        }
+
+        .hero-variant-image {
+            transform: translateY(clamp(18px, 4vh, 54px));
         }
 
         body:not([data-hero-title-style="text"]) .hero-variant-text,
