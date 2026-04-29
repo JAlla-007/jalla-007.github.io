@@ -57,7 +57,7 @@
         .subpage-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.92); text-decoration: none; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
         .subpage-link:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(2px); }
         .subpage-link span:last-child { color: rgba(255, 255, 255, 0.54); font-size: 13px; letter-spacing: normal; }
-        .loading-shell { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 28px; border-radius: 36px; background: radial-gradient(circle at top, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+        .loading-shell { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0; background: transparent; border: 0; backdrop-filter: none; box-shadow: none; }
         .loading-gif { display: block; width: min(132px, 28vw); height: auto; border-radius: 18px; object-fit: contain; filter: drop-shadow(0 10px 28px rgba(0,0,0,0.34)); }
         .loading-text { color: rgba(255,255,255,0.94); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; padding-left: 0.28em; }
         #hint, #audio-toggle { position: fixed; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); color: rgba(255,255,255,0.88); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
@@ -77,7 +77,7 @@
     </style>
 </head>
 <body>
-<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"><div class="loading-text">Loading</div></div></div>
+<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"></div></div>
 <nav id="nav" aria-label="Primary"><div class="nav-shell">
     <a class="nav-link" href="../Music_Department_folder/Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
     <div class="nav-connector" aria-hidden="true"></div>
