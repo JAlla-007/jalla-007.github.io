@@ -567,20 +567,20 @@
             align-items: center;
             gap: 14px;
             padding: 24px 28px;
-            border-radius: 999px;
+            border-radius: 36px;
             background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
             border: 1px solid rgba(255, 255, 255, 0.14);
             backdrop-filter: blur(16px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
         }
 
-        .loading-ring {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.16);
-            border-top-color: rgba(255, 255, 255, 0.95);
-            animation: spin 0.9s linear infinite;
+        .loading-gif {
+            display: block;
+            width: min(132px, 28vw);
+            height: auto;
+            border-radius: 18px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.34));
         }
 
         .loading-text {
@@ -590,15 +590,6 @@
             letter-spacing: 0.28em;
             text-transform: uppercase;
             padding-left: 0.28em;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
         }
 
         #hint {
@@ -1119,7 +1110,7 @@
 <body class="scene-reveal-pending">
 <div id="info">
     <div class="loading-shell">
-        <div class="loading-ring" aria-hidden="true"></div>
+        <img class="loading-gif" src="./iconntext/loading.GIF" alt="Loading animation">
         <div class="loading-text">Loading</div>
     </div>
 </div>
@@ -1155,12 +1146,14 @@
         <div class="map-line" style="left: 32%; top: 44%; width: 20%; transform: rotate(160deg);"></div>
         <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
         <div class="map-line" style="left: 47%; top: 44%; width: 20%; transform: rotate(350deg);"></div>
+        <div class="map-line" style="left: 36%; top: 40%; width: 18%; transform: rotate(268deg);"></div>
         <div class="map-node home-node" style="left: 38%; top: 45%;">Atlantic College Memo</div>
         <a class="map-node" href="./pages/Music_Department_folder/Music_Department.html" style="left: 58%; top: 34%;">Music</a>
         <a class="map-node" href="./pages/Languages_folder/Languages.html" style="left: 59%; top: 62%;">Languages</a>
         <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
         <a class="map-node" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;">Church</a>
         <a class="map-node" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;">PK</a>
+        <a class="map-node" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;">Academic Blocks</a>
         <div class="place-card">
             <div class="place-kicker">Location</div>
             <h2 class="place-title">UWC Atlantic</h2>
