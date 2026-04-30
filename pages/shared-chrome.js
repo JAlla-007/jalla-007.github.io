@@ -219,8 +219,8 @@ body[data-shared-chrome="true"] .map-caption {
     top: 24px;
     color: rgba(255, 255, 255, 0.72);
     font-family: "Castle Regular", "Times New Roman", Times, serif;
-    font-size: 20px;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
 }
 
@@ -257,7 +257,7 @@ body[data-shared-chrome="true"] .map-node {
     text-decoration: none;
     font-family: "Castle Regular", "Times New Roman", Times, serif;
     font-size: clamp(14px, 1.35vw, 20px);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.03em;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
     transition: transform 0.22s ease, background 0.22s ease;
 }
@@ -1026,38 +1026,46 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP
     });
 }
 
-const DEFAULT_MAP_CONFIG = {
-    caption: 'Interactive Map',
-    center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
-    lines: [
-        { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
-        { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
-        { left: '32%', top: '44%', width: '20%', rotate: '160deg' },
-        { left: '34%', top: '55%', width: '18%', rotate: '208deg' },
-        { left: '47%', top: '44%', width: '20%', rotate: '350deg' }
-    ],
-    nodes: [
-        { label: 'Music', href: './Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
-        { label: 'Academic Blocks', href: './Academic_Blocks_folder/Academic_Blocks.html', left: '59%', top: '62%' },
-        { label: 'Seafront', href: './Seafront_folder/Seafront.html', left: '14%', top: '26%' },
-        { label: 'Church', href: './Church_folder/Church.html', left: '15%', top: '67%' },
-        { label: 'PK', href: './PK_folder/PK.html', left: '76%', top: '44%' }
-    ],
-    placeCard: {
-        kicker: 'Location',
-        title: 'UWC Atlantic',
-        copy: `St Donat's Castle, Llantwit Major, CF61 1WF, Wales, UK.
+function buildGlobalMapConfig(homeHref) {
+    const rootHref = homeHref.replace(/index\.html(?:[?#].*)?$/, '');
+
+    return {
+        caption: 'Interactive Map',
+        center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
+        lines: [
+            { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
+            { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
+            { left: '32%', top: '44%', width: '20%', rotate: '160deg' },
+            { left: '34%', top: '55%', width: '18%', rotate: '208deg' },
+            { left: '47%', top: '44%', width: '20%', rotate: '350deg' },
+            { left: '36%', top: '40%', width: '18%', rotate: '268deg' }
+        ],
+        nodes: [
+            { label: 'Music', href: `${rootHref}pages/Music_Department_folder/Music_Department.html`, left: '58%', top: '34%' },
+            { label: 'Languages', href: `${rootHref}pages/Languages_folder/Languages.html`, left: '59%', top: '62%' },
+            { label: 'Seafront', href: `${rootHref}pages/Seafront_folder/Seafront.html`, left: '14%', top: '26%' },
+            { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%' },
+            { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%' },
+            { label: 'Academic Blocks', href: `${rootHref}pages/Academic_Blocks_folder/Academic_Blocks.html`, left: '37%', top: '18%' }
+        ],
+        placeCard: {
+            kicker: 'Location',
+            title: 'UWC Atlantic',
+            copy: `St Donat's Castle, Llantwit Major, CF61 1WF, Wales, UK.
 Rail access typically routes through Llantwit Major or Bridgend before the final taxi leg.`,
-        actions: [
-            { label: 'Open in Maps', href: 'https://maps.google.com/?q=UWC+Atlantic+St+Donat%27s+Castle+Llantwit+Major+CF61+1WF', target: '_blank' },
-            { label: 'Official Site', href: 'https://www.uwcatlantic.org/contact', target: '_blank' }
-        ]
-    }
-};
+            actions: [
+                { label: 'Open in Maps', href: 'https://maps.google.com/?q=UWC+Atlantic+St+Donat%27s+Castle+Llantwit+Major+CF61+1WF', target: '_blank' },
+                { label: 'Official Site', href: 'https://www.uwcatlantic.org/contact', target: '_blank' }
+            ]
+        }
+    };
+}
+
+const DEFAULT_MAP_CONFIG = buildGlobalMapConfig('../index.html');
 
 export function initSharedChrome(options = {}) {
     const homeHref = options.homeHref || '../index.html';
-    const mapConfig = options.regionalMap || DEFAULT_MAP_CONFIG;
+    const mapConfig = buildGlobalMapConfig(homeHref);
     const itemsConfig = options.itemsExperience || {};
     const keepSubpagesPanel = Boolean(options.keepSubpagesPanel);
     document.body.dataset.sharedChrome = 'true';
