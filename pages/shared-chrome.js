@@ -422,6 +422,15 @@ body[data-shared-chrome="true"] .gift-card {
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
 }
 
+body[data-shared-chrome="true"] .gift-visual {
+    display: block;
+    width: min(220px, 100%);
+    height: auto;
+    margin: 0 auto 14px;
+    border-radius: 14px;
+    object-fit: contain;
+}
+
 body[data-shared-chrome="true"] .gift-question {
     margin: 0;
     color: rgba(255, 255, 255, 0.92);
@@ -843,7 +852,8 @@ function buildItemsOverlayMarkup(itemsConfig = {}) {
     `;
 }
 
-function ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig = {}) {
+function ensureOverlays(homeHref, globalMapConfig, regionalMapConfig, itemsConfig = {}) {
+    const rootHref = getRootHref(homeHref);
     if (!document.getElementById('map-overlay')) {
         const mapOverlay = document.createElement('div');
         mapOverlay.id = 'map-overlay';
@@ -877,6 +887,7 @@ function ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig = {}) {
                     Private access card
                 </p>
                 <div class="gift-card">
+                    <img class="gift-visual" src="${rootHref}iconntext/waving.GIF" alt="Waving animation">
                     <p class="gift-question">Did you receive a gift?</p>
                     <div class="gift-actions">
                         <button class="gift-action" id="gift-yes" type="button">Yes</button>
@@ -1069,6 +1080,65 @@ function bindScreenshotBehavior() {
     });
 }
 
+function setupUiClickSfx() {
+    let audioContext = null;
+    let armed = false;
+
+    const ensureContext = async () => {
+        if (!audioContext) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return null;
+            audioContext = new Ctx();
+        }
+        if (audioContext.state === 'suspended') {
+            try {
+                await audioContext.resume();
+            } catch (err) {
+                return null;
+            }
+        }
+        return audioContext;
+    };
+
+    const playClick = async () => {
+        const ctx = await ensureContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(980, now);
+        osc.frequency.exponentialRampToValueAtTime(620, now + 0.035);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.06, now + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.045);
+    };
+
+    const unlock = () => {
+        if (armed) return;
+        armed = true;
+        ensureContext();
+    };
+
+    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+    window.addEventListener('keydown', unlock, { once: true });
+
+    document.addEventListener('pointerdown', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest('.nav-button, .map-close, .items-action, .gift-action, .side-tag, #screenshot-button')) return;
+        playClick();
+    }, true);
+}
+
 function bindOverlayBehavior(homeHref, globalMapConfig = DEFAULT_MAP_CONFIG, regionalMapConfig = DEFAULT_MAP_CONFIG, itemsConfig = {}) {
     const mapOverlay = document.getElementById('map-overlay');
     const regionalMapOverlay = document.getElementById('regional-map-overlay');
@@ -1203,6 +1273,10 @@ function buildGlobalMapConfig(homeHref) {
     };
 }
 
+function getRootHref(homeHref) {
+    return homeHref.replace(/index\.html(?:[?#].*)?$/, '');
+}
+
 const DEFAULT_MAP_CONFIG = buildGlobalMapConfig('../index.html');
 
 export function initSharedChrome(options = {}) {
@@ -1214,12 +1288,13 @@ export function initSharedChrome(options = {}) {
     document.body.dataset.sharedChrome = 'true';
     ensureStyles();
     ensureTopNav(homeHref);
-    ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig);
+    ensureOverlays(homeHref, globalMapConfig, regionalMapConfig, itemsConfig);
     ensureSideRail();
     ensureScreenshotButton();
     ensurePageIdentityCard();
     bindOverlayBehavior(homeHref, globalMapConfig, regionalMapConfig, itemsConfig);
     bindScreenshotBehavior();
+    setupUiClickSfx();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }

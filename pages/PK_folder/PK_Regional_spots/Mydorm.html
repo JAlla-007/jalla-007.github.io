@@ -323,10 +323,14 @@ initSharedChrome({
     }
 });
 
-const initialCameraPosition = [0, -8, 8];
+const initialCameraPosition = [-4.21, 1.23, 2.79];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const DEFAULT_ZOOM_PERCENT = 217;
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
+const maxCameraDistance = initialDistance;
+const minCameraDistance = initialDistance / 1.28;
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -341,12 +345,27 @@ const viewer = new GaussianSplats3D.Viewer({
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
 
+function enforceCameraConstraints() {
+    if (!viewer.camera?.position) return;
+
+    const cameraPosition = viewer.camera.position;
+    const distanceFromCenter = cameraPosition.distanceTo(initialLookAtVector);
+    if (distanceFromCenter > maxCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(maxCameraDistance).add(initialLookAtVector);
+    } else if (distanceFromCenter < minCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(minCameraDistance).add(initialLookAtVector);
+    }
+
+    if (viewer.controls) viewer.controls.update();
+}
+
 function updateViewIndicator() {
     if (viewer.camera?.position) {
+        enforceCameraConstraints();
         const { x, y, z } = viewer.camera.position;
         viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
-        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        const zoomPercent = Math.max(1, Math.round((zoomReferenceDistance / currentDistance) * 100));
         viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
@@ -439,8 +458,11 @@ async function loadScene() {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
+            viewer.controls.minDistance = minCameraDistance;
+            viewer.controls.maxDistance = maxCameraDistance;
             viewer.controls.update();
         }
+        enforceCameraConstraints();
         info.classList.add('hidden');
         window.setTimeout(() => {
             info.style.display = 'none';
