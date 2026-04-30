@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>The Arts - Atlantic College Memo</title>
+    <title>Glassroom - Atlantic College Memo</title>
     <style>
         @font-face {
             font-family: "Castle Regular";
-            src: url("../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            src: url("../../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
             font-weight: 400;
             font-style: normal;
         }
@@ -248,24 +248,22 @@
         #hero-title {
             position: fixed;
             inset: 0;
-            display: flex;
+            z-index: 130;
+            display: none;
             align-items: center;
             justify-content: center;
-            z-index: 130;
             pointer-events: none;
             opacity: 0;
-            transform: translateY(16px);
-            transition: opacity 2s ease, transform 2s ease;
+            transition: opacity 2s ease;
         }
 
         #hero-title.visible {
+            display: flex;
             opacity: 1;
-            transform: translateY(0);
         }
 
         #hero-title.hidden {
             opacity: 0;
-            transform: translateY(-10px);
         }
 
         .hero-text { text-align: center; padding: 0 24px; }
@@ -276,111 +274,59 @@
     </style>
 </head>
 <body class="scene-loading">
-<div id="info">
-    <div class="loading-shell">
-        <img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation">
-    </div>
-</div>
-
-<nav id="nav" aria-label="Primary">
-    <div class="nav-shell">
-        <a class="nav-link" href="./The_Arts.html" aria-label="The Arts location">
-            <span class="nav-icon">+</span>
-            <span>The Arts</span>
-        </a>
-        <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../../index.html" aria-label="Homepage">
-            <span class="nav-icon">⌂</span>
-            <span>Home</span>
-        </a>
-        <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html" aria-label="Academic Blocks location">
-            <span class="nav-icon">#</span>
-            <span>Academic</span>
-        </a>
-    </div>
-</nav>
-
-<div id="hero-title">
-    <div class="hero-text">
-        <div class="hero-title-line">The Arts</div>
-        <div class="hero-subtitle">A branch for rehearsal, expression, and the rooms around them</div>
-    </div>
-</div>
-
+<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../../iconntext/loading.GIF" alt="Loading animation"></div></div>
+<nav id="nav" aria-label="Primary"><div class="nav-shell">
+    <a class="nav-link" href="../The_Arts.html"><span class="nav-icon">←</span><span>The Arts</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../Music_Department_folder/Music_Department.html"><span class="nav-icon">♫</span><span>Music</span></a>
+</div></nav>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Glassroom</div><div class="hero-subtitle">Sunlight, music, arts that flows in the air...</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
-
-<div id="view-indicator" aria-live="polite">
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Coordinates</span>
-        <span class="view-indicator-value" id="view-indicator-coords">X 7.28 Y 2.05 Z 17.33</span>
-    </div>
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Zoom</span>
-        <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
-    </div>
-</div>
-
-<button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
-
-<audio id="ambient-audio" loop preload="auto">
-    <source src="../../Music/outerwilds_cleancover%20(1).mp3" type="audio/mpeg">
-</audio>
-
+<div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
+<button id="audio-toggle" type="button">Sound Off</button>
+<audio id="ambient-audio" loop preload="auto"><source src="../../../Music/outerwilds_cleancover%20(1).mp3" type="audio/mpeg"></audio>
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-  }
-}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
 </script>
-
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker } from '../shared-chrome.js';
+import { initSharedChrome, bindSceneCoordinatePicker } from '../../shared-chrome.js';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
-const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
+
 initSharedChrome({
-    homeHref: '../../index.html',
+    homeHref: '../../../index.html',
     regionalMap: {
         caption: 'The Arts Map',
-        center: { label: 'The Arts', left: '38%', top: '45%' },
+        center: { label: 'Glassroom', left: '38%', top: '45%' },
         lines: [
-            { left: '39%', top: '49%', width: '18%', rotate: '8deg' },
-            { left: '39%', top: '50%', width: '18%', rotate: '28deg' }
+            { left: '39%', top: '49%', width: '18%', rotate: '8deg' }
         ],
         nodes: [
-            { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '44%' },
-            { label: 'Glassroom', href: './The_Arts_regional/Glassroom.html', left: '58%', top: '64%' }
+            { label: 'The Arts', href: '../The_Arts.html', left: '58%', top: '44%' }
         ],
         placeCard: {
             kicker: 'Branch',
             title: 'Inside The Arts',
-            copy: 'A parent branch for the arts spaces, with Music and Glassroom nested inside it as their own destinations.',
+            copy: 'A cafe-concert corner nested inside The Arts, where sunlight, music, and quiet performances meet.',
             actions: []
         }
     }
 });
 
-const initialCameraPosition = [7.28, 2.05, 17.33];
+const initialCameraPosition = [0, -8, 8];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
-const DEFAULT_ZOOM_PERCENT = 100;
-const MIN_ZOOM_PERCENT = 72;
-const MIN_CAMERA_Y = -0.5;
-const MAX_CAMERA_Y = 7.5;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
-const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
-const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
-const minCameraDistance = zoomReferenceDistance / 1.28;
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -395,35 +341,12 @@ const viewer = new GaussianSplats3D.Viewer({
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
 
-function enforceCameraConstraints() {
-    if (!viewer.camera?.position) return;
-
-    const cameraPosition = viewer.camera.position;
-    cameraPosition.y = THREE.MathUtils.clamp(cameraPosition.y, MIN_CAMERA_Y, MAX_CAMERA_Y);
-
-    const distanceFromCenter = cameraPosition.distanceTo(initialLookAtVector);
-    if (distanceFromCenter > maxCameraDistance) {
-        cameraPosition.sub(initialLookAtVector).setLength(maxCameraDistance).add(initialLookAtVector);
-    } else if (distanceFromCenter < minCameraDistance) {
-        cameraPosition.sub(initialLookAtVector).setLength(minCameraDistance).add(initialLookAtVector);
-    }
-
-    if (viewer.controls?.target) {
-        viewer.controls.target.x = THREE.MathUtils.clamp(viewer.controls.target.x, -3.5, 3.5);
-        viewer.controls.target.y = THREE.MathUtils.clamp(viewer.controls.target.y, -1.2, 3.8);
-        viewer.controls.target.z = THREE.MathUtils.clamp(viewer.controls.target.z, -3.5, 3.5);
-    }
-
-    if (viewer.controls) viewer.controls.update();
-}
-
 function updateViewIndicator() {
     if (viewer.camera?.position) {
-        enforceCameraConstraints();
         const { x, y, z } = viewer.camera.position;
         viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
-        const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100));
+        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
         viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
@@ -455,7 +378,6 @@ function showHeroTitle() {
         heroTitle.classList.add('visible');
     });
 }
-
 
 function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
@@ -489,7 +411,6 @@ audioToggle.addEventListener('click', async () => {
         await startAmbientAudio();
         return;
     }
-
     if (ambientAudio.paused || ambientAudio.muted) {
         ambientAudio.muted = false;
         await ambientAudio.play();
@@ -504,29 +425,22 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../Scenes/musicdep_1.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching musicdep_1.ksplat`);
-
+        const response = await fetch('../../../Scenes/Glassroom.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching Glassroom.ksplat`);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
-
         await viewer.addSplatScene(blobUrl, {
             format: GaussianSplats3D.SceneFormat.KSplat,
             rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
             showLoadingUI: false,
             progressiveLoad: false
         });
-
         if (viewer.controls) {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
-            viewer.controls.minDistance = minCameraDistance;
-            viewer.controls.maxDistance = maxCameraDistance;
             viewer.controls.update();
         }
-
-        enforceCameraConstraints();
         info.classList.add('hidden');
         window.setTimeout(() => {
             info.style.display = 'none';
