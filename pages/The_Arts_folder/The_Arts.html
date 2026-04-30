@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Languages - Atlantic College Memo</title>
+    <title>The Arts - Atlantic College Memo</title>
     <style>
         @font-face {
             font-family: "Castle Regular";
@@ -245,81 +245,6 @@
             margin-top: 10px;
         }
 
-        #subpages-panel {
-            position: fixed;
-            left: 24px;
-            bottom: 24px;
-            z-index: 135;
-            width: min(360px, calc(100vw - 48px));
-            padding: 20px 18px 18px;
-            border-radius: 24px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
-                rgba(10, 10, 10, 0.66);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
-        }
-
-        .subpages-kicker {
-            color: rgba(255, 255, 255, 0.56);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-        }
-
-        .subpages-title {
-            margin: 10px 0 8px;
-            color: white;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 30px;
-            line-height: 1;
-        }
-
-        .subpages-copy {
-            margin: 0 0 16px;
-            color: rgba(255, 255, 255, 0.72);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .subpages-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .subpage-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            min-height: 46px;
-            padding: 0 14px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: rgba(255, 255, 255, 0.92);
-            text-decoration: none;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .subpage-link:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateX(2px);
-        }
-
-        .subpage-link span:last-child {
-            color: rgba(255, 255, 255, 0.54);
-            font-size: 13px;
-            letter-spacing: normal;
-        }
-
         #hero-title {
             position: fixed;
             inset: 0;
@@ -359,7 +284,7 @@
 
 <nav id="nav" aria-label="Primary">
     <div class="nav-shell">
-        <a class="nav-link" href="../The_Arts_folder/The_Arts.html" aria-label="The Arts location">
+        <a class="nav-link" href="./The_Arts.html" aria-label="The Arts location">
             <span class="nav-icon">+</span>
             <span>The Arts</span>
         </a>
@@ -378,8 +303,8 @@
 
 <div id="hero-title">
     <div class="hero-text">
-        <div class="hero-title-line">Languages</div>
-        <div class="hero-subtitle">A language branch nested inside Academic Blocks</div>
+        <div class="hero-title-line">The Arts</div>
+        <div class="hero-subtitle">A branch for rehearsal, expression, and the rooms around them</div>
     </div>
 </div>
 
@@ -388,24 +313,11 @@
 <div id="view-indicator" aria-live="polite">
     <div class="view-indicator-row">
         <span class="view-indicator-label">Coordinates</span>
-        <span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span>
+        <span class="view-indicator-value" id="view-indicator-coords">X 7.28 Y 2.05 Z 17.33</span>
     </div>
     <div class="view-indicator-row">
         <span class="view-indicator-label">Zoom</span>
         <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
-    </div>
-</div>
-
-<div id="subpages-panel">
-    <div class="subpages-kicker">Inside Academic Blocks</div>
-    <h2 class="subpages-title">Languages</h2>
-    <p class="subpages-copy">
-        A smaller branch inside Academic Blocks, with quieter corners for classrooms, conversation, and study.
-    </p>
-    <div class="subpages-list">
-        <a class="subpage-link" href="./Laguages_regional/Language_Classroom.html"><span>Language Classroom</span><span>↗</span></a>
-        <a class="subpage-link" href="./Laguages_regional/Conversation_Corner.html"><span>Conversation Corner</span><span>↗</span></a>
-        <a class="subpage-link" href="./Laguages_regional/Study_Nook.html"><span>Study Nook</span><span>↗</span></a>
     </div>
 </div>
 
@@ -439,31 +351,34 @@ const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
-        caption: 'Languages Regional Map',
-        center: { label: 'Languages', left: '38%', top: '45%' },
+        caption: 'The Arts Map',
+        center: { label: 'The Arts', left: '38%', top: '45%' },
         lines: [
-            { left: '38%', top: '50%', width: '18%', rotate: '-20deg' },
-            { left: '39%', top: '50%', width: '17%', rotate: '24deg' },
-            { left: '33%', top: '47%', width: '16%', rotate: '182deg' }
+            { left: '39%', top: '49%', width: '18%', rotate: '8deg' }
         ],
         nodes: [
-            { label: 'Classroom', href: './Language_Classroom.html', left: '58%', top: '34%' },
-            { label: 'Conversation', href: './Conversation_Corner.html', left: '58%', top: '63%' },
-            { label: 'Study Nook', href: './Study_Nook.html', left: '16%', top: '56%' }
+            { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '44%' }
         ],
         placeCard: {
             kicker: 'Branch',
-            title: 'Inside Languages',
-            copy: 'A local map for the Languages branch inside Academic Blocks, with smaller corners ready for their own notes and stories.',
+            title: 'Inside The Arts',
+            copy: 'A parent branch for the arts spaces, with Music now nested inside it as its own destination.',
             actions: []
         }
     }
 });
 
-const initialCameraPosition = [0, -8, 8];
+const initialCameraPosition = [7.28, 2.05, 17.33];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const DEFAULT_ZOOM_PERCENT = 100;
+const MIN_ZOOM_PERCENT = 72;
+const MIN_CAMERA_Y = -0.5;
+const MAX_CAMERA_Y = 7.5;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
+const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
+const minCameraDistance = zoomReferenceDistance / 1.28;
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -478,12 +393,35 @@ const viewer = new GaussianSplats3D.Viewer({
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let audioStarted = false;
 
+function enforceCameraConstraints() {
+    if (!viewer.camera?.position) return;
+
+    const cameraPosition = viewer.camera.position;
+    cameraPosition.y = THREE.MathUtils.clamp(cameraPosition.y, MIN_CAMERA_Y, MAX_CAMERA_Y);
+
+    const distanceFromCenter = cameraPosition.distanceTo(initialLookAtVector);
+    if (distanceFromCenter > maxCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(maxCameraDistance).add(initialLookAtVector);
+    } else if (distanceFromCenter < minCameraDistance) {
+        cameraPosition.sub(initialLookAtVector).setLength(minCameraDistance).add(initialLookAtVector);
+    }
+
+    if (viewer.controls?.target) {
+        viewer.controls.target.x = THREE.MathUtils.clamp(viewer.controls.target.x, -3.5, 3.5);
+        viewer.controls.target.y = THREE.MathUtils.clamp(viewer.controls.target.y, -1.2, 3.8);
+        viewer.controls.target.z = THREE.MathUtils.clamp(viewer.controls.target.z, -3.5, 3.5);
+    }
+
+    if (viewer.controls) viewer.controls.update();
+}
+
 function updateViewIndicator() {
     if (viewer.camera?.position) {
+        enforceCameraConstraints();
         const { x, y, z } = viewer.camera.position;
         viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
-        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100));
         viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
@@ -515,6 +453,7 @@ function showHeroTitle() {
         heroTitle.classList.add('visible');
     });
 }
+
 
 function updateAudioButton() {
     audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
@@ -563,8 +502,8 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../PK.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+        const response = await fetch('../../Scenes/musicdep_1.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching musicdep_1.ksplat`);
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -580,9 +519,12 @@ async function loadScene() {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
+            viewer.controls.minDistance = minCameraDistance;
+            viewer.controls.maxDistance = maxCameraDistance;
             viewer.controls.update();
         }
 
+        enforceCameraConstraints();
         info.classList.add('hidden');
         window.setTimeout(() => {
             info.style.display = 'none';
