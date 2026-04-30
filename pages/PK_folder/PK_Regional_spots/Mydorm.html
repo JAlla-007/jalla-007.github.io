@@ -433,19 +433,37 @@
         }
 
         .memory-gallery {
-            display: grid;
-            gap: 12px;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             margin-top: 20px;
+            position: relative;
         }
 
-        .memory-gallery img {
+        .memory-gallery.has-multiple {
+            min-height: clamp(300px, 46vh, 430px);
+        }
+
+        .memory-photo {
+            position: relative;
+            display: block;
+            width: min(420px, 100%);
+            margin: 0 auto;
+        }
+
+        .memory-gallery.has-multiple .memory-photo {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: clamp(170px, 23vw, 250px);
+            margin: 0;
+            z-index: var(--z, 1);
+            transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, 0px))) rotate(var(--rot, 0deg)) scale(var(--scale, 1));
+        }
+
+        .memory-photo img {
             display: block;
             width: 100%;
+            height: auto;
             border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.03);
-            box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+            box-shadow: 0 18px 44px rgba(0,0,0,0.28);
         }
 
         @keyframes hotspotPulse {
@@ -676,10 +694,27 @@ function projectSceneBeacon(anchor, element) {
 }
 
 function openMemory(memory) {
+    const collagePresets = [
+        { tx: '-160px', ty: '-88px', rot: '-9deg', scale: '0.96', z: 2 },
+        { tx: '132px', ty: '-76px', rot: '7deg', scale: '1.02', z: 4 },
+        { tx: '-18px', ty: '18px', rot: '-2deg', scale: '1.06', z: 6 },
+        { tx: '-146px', ty: '92px', rot: '8deg', scale: '0.98', z: 3 },
+        { tx: '156px', ty: '84px', rot: '-7deg', scale: '0.95', z: 5 },
+        { tx: '8px', ty: '-146px', rot: '4deg', scale: '0.92', z: 1 }
+    ];
+
     memoryKicker.textContent = memory.kicker;
     memoryTitle.textContent = memory.title;
     memoryCopy.textContent = memory.copy;
-    memoryGallery.innerHTML = memory.images.map((imagePath) => `<img src="${imagePath}" alt="${memory.title}">`).join('');
+    const hasMultiple = memory.images.length > 1;
+    memoryGallery.classList.toggle('has-multiple', hasMultiple);
+    memoryGallery.innerHTML = memory.images.map((imagePath, index) => {
+        const preset = collagePresets[index % collagePresets.length];
+        const style = hasMultiple
+            ? ` style="--tx:${preset.tx};--ty:${preset.ty};--rot:${preset.rot};--scale:${preset.scale};--z:${preset.z};"`
+            : '';
+        return `<figure class="memory-photo"${style}><img src="${imagePath}" alt="${memory.title}"></figure>`;
+    }).join('');
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
 }
