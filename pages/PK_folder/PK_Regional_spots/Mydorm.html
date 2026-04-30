@@ -330,7 +330,7 @@ const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(i
 const DEFAULT_ZOOM_PERCENT = 217;
 const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
 const maxCameraDistance = initialDistance;
-const minCameraDistance = initialDistance / 1.28;
+const minCameraDistance = initialDistance / 3.5;
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
