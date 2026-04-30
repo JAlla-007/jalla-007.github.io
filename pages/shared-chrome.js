@@ -20,6 +20,7 @@ body[data-shared-chrome="true"].scene-loading #screenshot-button,
 body[data-shared-chrome="true"].scene-loading #side-tags,
 body[data-shared-chrome="true"].scene-loading .page-identity-card,
 body[data-shared-chrome="true"].scene-loading #map-overlay,
+body[data-shared-chrome="true"].scene-loading #regional-map-overlay,
 body[data-shared-chrome="true"].scene-loading #memo-overlay,
 body[data-shared-chrome="true"].scene-loading #items-overlay {
     opacity: 0 !important;
@@ -147,6 +148,7 @@ body[data-shared-chrome="true"] #screenshot-button svg {
 }
 
 body[data-shared-chrome="true"] #map-overlay,
+body[data-shared-chrome="true"] #regional-map-overlay,
 body[data-shared-chrome="true"] #memo-overlay,
 body[data-shared-chrome="true"] #items-overlay {
     position: fixed;
@@ -163,10 +165,12 @@ body[data-shared-chrome="true"] #items-overlay {
 }
 
 body[data-shared-chrome="true"] #map-overlay { z-index: 170; }
+body[data-shared-chrome="true"] #regional-map-overlay { z-index: 170; }
 body[data-shared-chrome="true"] #memo-overlay { z-index: 171; }
 body[data-shared-chrome="true"] #items-overlay { z-index: 172; }
 
 body[data-shared-chrome="true"] #map-overlay.visible,
+body[data-shared-chrome="true"] #regional-map-overlay.visible,
 body[data-shared-chrome="true"] #memo-overlay.visible,
 body[data-shared-chrome="true"] #items-overlay.visible {
     opacity: 1;
@@ -606,7 +610,7 @@ function ensureTopNav(homeHref) {
     return nav;
 }
 
-function buildMapOverlayMarkup(mapConfig) {
+function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
     const lines = (mapConfig.lines || []).map((line) => `
         <div class="map-line" style="left: ${line.left}; top: ${line.top}; width: ${line.width}; transform: rotate(${line.rotate});"></div>
     `).join('');
@@ -641,7 +645,7 @@ function buildMapOverlayMarkup(mapConfig) {
                 </div>
             </div>
             <div class="map-caption">${mapConfig.caption || 'Interactive Map'}</div>
-            <button class="map-close" id="map-close" type="button" aria-label="Close map">×</button>
+            <button class="map-close" id="${closeId}" type="button" aria-label="Close map">×</button>
             ${placeCard}
         </div>
     `;
@@ -660,14 +664,14 @@ function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
-function bindMapPan(mapConfig) {
-    const mapOverlay = document.getElementById('map-overlay');
-    const panel = mapOverlay?.querySelector('.map-panel');
-    const viewport = mapOverlay?.querySelector('.map-viewport');
-    const canvas = mapOverlay?.querySelector('[data-map-canvas]');
-    if (!mapOverlay || !panel || !viewport || !canvas) return;
+function bindMapPan(overlayId, mapConfig) {
+    const overlay = document.getElementById(overlayId);
+    const panel = overlay?.querySelector('.map-panel');
+    const viewport = overlay?.querySelector('.map-viewport');
+    const canvas = overlay?.querySelector('[data-map-canvas]');
+    if (!overlay || !panel || !viewport || !canvas) return;
 
-    const state = mapOverlay._mapPanState || {
+    const state = overlay._mapPanState || {
         x: 0,
         y: 0,
         pointerId: null,
@@ -677,7 +681,7 @@ function bindMapPan(mapConfig) {
         originY: 0,
         initialized: false
     };
-    mapOverlay._mapPanState = state;
+    overlay._mapPanState = state;
 
     const canvasWidth = Number.isFinite(mapConfig.canvasWidth) ? mapConfig.canvasWidth : 1400;
     const canvasHeight = Number.isFinite(mapConfig.canvasHeight) ? mapConfig.canvasHeight : 980;
@@ -777,15 +781,25 @@ function buildItemsOverlayMarkup(itemsConfig = {}) {
     `;
 }
 
-function ensureOverlays(mapConfig, itemsConfig = {}) {
+function ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig = {}) {
     if (!document.getElementById('map-overlay')) {
         const mapOverlay = document.createElement('div');
         mapOverlay.id = 'map-overlay';
         mapOverlay.setAttribute('aria-hidden', 'true');
-        mapOverlay.innerHTML = buildMapOverlayMarkup(mapConfig);
+        mapOverlay.innerHTML = buildMapOverlayMarkup(globalMapConfig, 'map-close');
         document.body.appendChild(mapOverlay);
     } else {
-        document.getElementById('map-overlay').innerHTML = buildMapOverlayMarkup(mapConfig);
+        document.getElementById('map-overlay').innerHTML = buildMapOverlayMarkup(globalMapConfig, 'map-close');
+    }
+
+    if (!document.getElementById('regional-map-overlay')) {
+        const regionalMapOverlay = document.createElement('div');
+        regionalMapOverlay.id = 'regional-map-overlay';
+        regionalMapOverlay.setAttribute('aria-hidden', 'true');
+        regionalMapOverlay.innerHTML = buildMapOverlayMarkup(regionalMapConfig, 'regional-map-close');
+        document.body.appendChild(regionalMapOverlay);
+    } else {
+        document.getElementById('regional-map-overlay').innerHTML = buildMapOverlayMarkup(regionalMapConfig, 'regional-map-close');
     }
 
     if (!document.getElementById('memo-overlay')) {
@@ -822,7 +836,8 @@ function ensureOverlays(mapConfig, itemsConfig = {}) {
         document.getElementById('items-overlay').innerHTML = buildItemsOverlayMarkup(itemsConfig);
     }
 
-    bindMapPan(mapConfig);
+    bindMapPan('map-overlay', globalMapConfig);
+    bindMapPan('regional-map-overlay', regionalMapConfig);
 }
 
 function ensureSideRail() {
@@ -984,14 +999,16 @@ function bindScreenshotBehavior() {
     });
 }
 
-function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP_CONFIG) {
+function bindOverlayBehavior(homeHref, globalMapConfig = DEFAULT_MAP_CONFIG, regionalMapConfig = DEFAULT_MAP_CONFIG, itemsConfig = {}) {
     const mapOverlay = document.getElementById('map-overlay');
+    const regionalMapOverlay = document.getElementById('regional-map-overlay');
     const memoOverlay = document.getElementById('memo-overlay');
     const itemsOverlay = document.getElementById('items-overlay');
     const mapToggle = document.getElementById('map-toggle');
     const homeReset = document.getElementById('home-reset');
     const memoToggle = document.getElementById('memo-toggle');
     const mapClose = document.getElementById('map-close');
+    const regionalMapClose = document.getElementById('regional-map-close');
     const memoClose = document.getElementById('memo-close');
     const itemsClose = document.getElementById('items-close');
     const itemsYes = document.getElementById('items-yes');
@@ -1000,22 +1017,23 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP
     const reviewNotesButton = document.getElementById('review-notes');
     const searchStoriesButton = document.getElementById('search-stories');
 
-    const open = (overlay) => {
+    const open = (overlay, overlayId, mapConfig) => {
         overlay.classList.add('visible');
         overlay.setAttribute('aria-hidden', 'false');
-        if (overlay.id === 'map-overlay') bindMapPan(mapConfig);
+        if (overlayId) bindMapPan(overlayId, mapConfig);
     };
     const close = (overlay) => {
         overlay.classList.remove('visible');
         overlay.setAttribute('aria-hidden', 'true');
     };
 
-    mapToggle?.addEventListener('click', () => open(mapOverlay));
+    mapToggle?.addEventListener('click', () => open(mapOverlay, 'map-overlay', globalMapConfig));
     memoToggle?.addEventListener('click', () => open(memoOverlay));
     homeReset?.addEventListener('click', () => {
         window.location.href = homeHref;
     });
     mapClose?.addEventListener('click', () => close(mapOverlay));
+    regionalMapClose?.addEventListener('click', () => close(regionalMapOverlay));
     memoClose?.addEventListener('click', () => close(memoOverlay));
     itemsClose?.addEventListener('click', () => close(itemsOverlay));
     itemsYes?.addEventListener('click', () => {
@@ -1033,10 +1051,13 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP
 
     reviewMemosButton?.addEventListener('click', () => open(memoOverlay));
     reviewNotesButton?.addEventListener('click', () => open(itemsOverlay));
-    searchStoriesButton?.addEventListener('click', () => open(mapOverlay));
+    searchStoriesButton?.addEventListener('click', () => open(regionalMapOverlay, 'regional-map-overlay', regionalMapConfig));
 
     mapOverlay?.addEventListener('click', (event) => {
         if (event.target === mapOverlay) close(mapOverlay);
+    });
+    regionalMapOverlay?.addEventListener('click', (event) => {
+        if (event.target === regionalMapOverlay) close(regionalMapOverlay);
     });
     memoOverlay?.addEventListener('click', (event) => {
         if (event.target === memoOverlay) close(memoOverlay);
@@ -1048,6 +1069,7 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP
     window.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
         close(mapOverlay);
+        close(regionalMapOverlay);
         close(memoOverlay);
         close(itemsOverlay);
     });
@@ -1073,17 +1095,7 @@ function buildGlobalMapConfig(homeHref) {
             { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%', icon: `${rootHref}iconntext/Map_icons/Church_icon.PNG` },
             { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%', icon: `${rootHref}iconntext/Map_icons/PK_icon.PNG` },
             { label: 'Academic Blocks', href: `${rootHref}pages/Academic_Blocks_folder/Academic_Blocks.html`, left: '37%', top: '18%', icon: `${rootHref}iconntext/Map_icons/AcademicBlocks_icon.PNG` }
-        ],
-        placeCard: {
-            kicker: 'Location',
-            title: 'UWC Atlantic',
-            copy: `St Donat's Castle, Llantwit Major, CF61 1WF, Wales, UK.
-Rail access typically routes through Llantwit Major or Bridgend before the final taxi leg.`,
-            actions: [
-                { label: 'Open in Maps', href: 'https://maps.google.com/?q=UWC+Atlantic+St+Donat%27s+Castle+Llantwit+Major+CF61+1WF', target: '_blank' },
-                { label: 'Official Site', href: 'https://www.uwcatlantic.org/contact', target: '_blank' }
-            ]
-        }
+        ]
     };
 }
 
@@ -1091,17 +1103,18 @@ const DEFAULT_MAP_CONFIG = buildGlobalMapConfig('../index.html');
 
 export function initSharedChrome(options = {}) {
     const homeHref = options.homeHref || '../index.html';
-    const mapConfig = buildGlobalMapConfig(homeHref);
+    const globalMapConfig = buildGlobalMapConfig(homeHref);
+    const regionalMapConfig = options.regionalMap || globalMapConfig;
     const itemsConfig = options.itemsExperience || {};
     const keepSubpagesPanel = Boolean(options.keepSubpagesPanel);
     document.body.dataset.sharedChrome = 'true';
     ensureStyles();
     ensureTopNav(homeHref);
-    ensureOverlays(mapConfig, itemsConfig);
+    ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig);
     ensureSideRail();
     ensureScreenshotButton();
     ensurePageIdentityCard();
-    bindOverlayBehavior(homeHref, itemsConfig, mapConfig);
+    bindOverlayBehavior(homeHref, globalMapConfig, regionalMapConfig, itemsConfig);
     bindScreenshotBehavior();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
