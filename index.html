@@ -260,6 +260,10 @@
             background: rgba(255, 255, 255, 0.12);
         }
 
+        .map-node.has-icon {
+            gap: 12px;
+        }
+
         .map-node::before {
             content: "";
             width: 12px;
@@ -268,6 +272,18 @@
             background: white;
             box-shadow: 0 0 18px rgba(255, 255, 255, 0.55);
             flex: 0 0 auto;
+        }
+
+        .map-node.has-icon::before {
+            display: none;
+        }
+
+        .map-node-icon {
+            width: 26px;
+            height: 26px;
+            object-fit: contain;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
         }
 
         .map-node.home-node {
@@ -1161,12 +1177,12 @@
         <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
         <div class="map-line" style="left: 47%; top: 44%; width: 20%; transform: rotate(350deg);"></div>
         <div class="map-line" style="left: 36%; top: 40%; width: 18%; transform: rotate(268deg);"></div>
-        <div class="map-node home-node" style="left: 38%; top: 45%;">Atlantic College Memo</div>
-        <a class="map-node" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;">The Arts</a>
+        <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Atlantic College Memo</span></div>
+        <a class="map-node has-icon" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;"><img class="map-node-icon" src="./iconntext/Map_icons/TheArts_icon.PNG" alt=""><span>The Arts</span></a>
         <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
-        <a class="map-node" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;">Church</a>
-        <a class="map-node" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;">PK</a>
-        <a class="map-node" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;">Academic Blocks</a>
+        <a class="map-node has-icon" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;"><img class="map-node-icon" src="./iconntext/Map_icons/Church_icon.PNG" alt=""><span>Church</span></a>
+        <a class="map-node has-icon" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;"><img class="map-node-icon" src="./iconntext/Map_icons/PK_icon.PNG" alt=""><span>PK</span></a>
+        <a class="map-node has-icon" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;"><img class="map-node-icon" src="./iconntext/Map_icons/AcademicBlocks_icon.PNG" alt=""><span>Academic Blocks</span></a>
         <div class="place-card">
             <div class="place-kicker">Location</div>
             <h2 class="place-title">UWC Atlantic</h2>

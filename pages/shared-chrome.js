@@ -278,6 +278,10 @@ body[data-shared-chrome="true"] .map-node:hover {
     background: rgba(255, 255, 255, 0.12);
 }
 
+body[data-shared-chrome="true"] .map-node.has-icon {
+    gap: 12px;
+}
+
 body[data-shared-chrome="true"] .map-node::before {
     content: "";
     width: 12px;
@@ -286,6 +290,18 @@ body[data-shared-chrome="true"] .map-node::before {
     background: white;
     box-shadow: 0 0 18px rgba(255, 255, 255, 0.55);
     flex: 0 0 auto;
+}
+
+body[data-shared-chrome="true"] .map-node.has-icon::before {
+    display: none;
+}
+
+body[data-shared-chrome="true"] .map-node-icon {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
 }
 
 body[data-shared-chrome="true"] .map-node.home-node {
@@ -596,7 +612,7 @@ function buildMapOverlayMarkup(mapConfig) {
     `).join('');
 
     const nodes = (mapConfig.nodes || []).map((node) => `
-        <a class="map-node" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.label}</a>
+        <a class="map-node${node.icon ? ' has-icon' : ''}" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.icon ? `<img class="map-node-icon" src="${node.icon}" alt="">` : ''}<span>${node.label}</span></a>
     `).join('');
 
     const placeCard = mapConfig.placeCard ? `
@@ -620,7 +636,7 @@ function buildMapOverlayMarkup(mapConfig) {
                 <div class="map-canvas" data-map-canvas>
                     <div class="map-grid"></div>
                     ${lines}
-                    <div class="map-node home-node" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.label}</div>
+                    <div class="map-node home-node${mapConfig.center.icon ? ' has-icon' : ''}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></div>
                     ${nodes}
                 </div>
             </div>
@@ -1042,7 +1058,7 @@ function buildGlobalMapConfig(homeHref) {
 
     return {
         caption: 'Interactive Map',
-        center: { label: 'Atlantic College Memo', left: '38%', top: '45%' },
+        center: { label: 'Atlantic College Memo', left: '38%', top: '45%', icon: `${rootHref}iconntext/Map_icons/Castle_icon.PNG` },
         lines: [
             { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
             { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
@@ -1052,11 +1068,11 @@ function buildGlobalMapConfig(homeHref) {
             { left: '36%', top: '40%', width: '18%', rotate: '268deg' }
         ],
         nodes: [
-            { label: 'The Arts', href: `${rootHref}pages/The_Arts_folder/The_Arts.html`, left: '58%', top: '34%' },
+            { label: 'The Arts', href: `${rootHref}pages/The_Arts_folder/The_Arts.html`, left: '58%', top: '34%', icon: `${rootHref}iconntext/Map_icons/TheArts_icon.PNG` },
             { label: 'Seafront', href: `${rootHref}pages/Seafront_folder/Seafront.html`, left: '14%', top: '26%' },
-            { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%' },
-            { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%' },
-            { label: 'Academic Blocks', href: `${rootHref}pages/Academic_Blocks_folder/Academic_Blocks.html`, left: '37%', top: '18%' }
+            { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%', icon: `${rootHref}iconntext/Map_icons/Church_icon.PNG` },
+            { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%', icon: `${rootHref}iconntext/Map_icons/PK_icon.PNG` },
+            { label: 'Academic Blocks', href: `${rootHref}pages/Academic_Blocks_folder/Academic_Blocks.html`, left: '37%', top: '18%', icon: `${rootHref}iconntext/Map_icons/AcademicBlocks_icon.PNG` }
         ],
         placeCard: {
             kicker: 'Location',
