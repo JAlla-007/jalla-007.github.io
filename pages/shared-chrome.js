@@ -15,6 +15,17 @@ body[data-shared-chrome="true"]::after {
         radial-gradient(circle at center, transparent 38%, rgba(0, 0, 0, 0.28) 100%);
 }
 
+body[data-shared-chrome="true"].scene-loading #nav,
+body[data-shared-chrome="true"].scene-loading #screenshot-button,
+body[data-shared-chrome="true"].scene-loading #side-tags,
+body[data-shared-chrome="true"].scene-loading .page-identity-card,
+body[data-shared-chrome="true"].scene-loading #map-overlay,
+body[data-shared-chrome="true"].scene-loading #memo-overlay,
+body[data-shared-chrome="true"].scene-loading #items-overlay {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 body[data-shared-chrome="true"] #nav {
     position: fixed;
     top: 0;

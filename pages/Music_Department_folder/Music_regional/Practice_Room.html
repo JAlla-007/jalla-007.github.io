@@ -29,6 +29,22 @@
         }
 
         #info.hidden { opacity: 0; }
+        body.scene-loading #nav,
+        body.scene-loading #audio-toggle,
+        body.scene-loading #view-indicator,
+        body.scene-loading #hero-title,
+        body.scene-loading #subpages-panel,
+        body.scene-loading #branch-panel,
+        body.scene-loading #scene-hotspot,
+        body.scene-loading #memory-overlay,
+        body.scene-loading #focus-mask,
+        body.scene-loading #side-tags,
+        body.scene-loading #page-identity-card,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         #hint {
             position: fixed;
             left: 50%;
@@ -140,7 +156,7 @@
         }
     </style>
 </head>
-<body>
+<body class="scene-loading">
 <div id="info"><div class="loading-shell"><img class="loading-gif" src="../../../iconntext/loading.GIF" alt="Loading animation"></div></div>
 <nav id="nav" aria-label="Primary"></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Practice Room</div><div class="hero-subtitle">A quieter sub-location inside Music</div></div></div>
@@ -265,6 +281,7 @@ async function loadScene() {
             info.style.display = 'none';
         }, 450);
         viewer.start();
+        document.body.classList.remove('scene-loading');
         bindSceneCoordinatePicker({ viewer, THREE });
         showHeroTitle();
     } catch (err) {

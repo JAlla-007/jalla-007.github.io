@@ -47,6 +47,22 @@
             opacity: 0;
         }
 
+        body.scene-loading #nav,
+        body.scene-loading #audio-toggle,
+        body.scene-loading #view-indicator,
+        body.scene-loading #hero-title,
+        body.scene-loading #subpages-panel,
+        body.scene-loading #branch-panel,
+        body.scene-loading #scene-hotspot,
+        body.scene-loading #memory-overlay,
+        body.scene-loading #focus-mask,
+        body.scene-loading #side-tags,
+        body.scene-loading #page-identity-card,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         #nav {
             position: fixed;
             top: 0;
@@ -274,7 +290,7 @@
         }
     </style>
 </head>
-<body>
+<body class="scene-loading">
 <div id="info"><div class="loading-shell"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"></div></div>
 <nav id="nav" aria-label="Primary"><div class="nav-shell">
     <a class="nav-link" href="../PK_folder/PK.html"><span class="nav-icon">+</span><span>PK</span></a>
@@ -451,6 +467,7 @@ async function loadScene() {
             info.style.display = 'none';
         }, 450);
         viewer.start();
+        document.body.classList.remove('scene-loading');
         bindSceneCoordinatePicker({ viewer, THREE });
         showHeroTitle();
     } catch (err) {

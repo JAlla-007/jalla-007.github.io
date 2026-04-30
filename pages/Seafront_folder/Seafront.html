@@ -42,6 +42,22 @@
         }
 
         #info.hidden { opacity: 0; }
+        body.scene-loading #nav,
+        body.scene-loading #audio-toggle,
+        body.scene-loading #view-indicator,
+        body.scene-loading #hero-title,
+        body.scene-loading #subpages-panel,
+        body.scene-loading #branch-panel,
+        body.scene-loading #scene-hotspot,
+        body.scene-loading #memory-overlay,
+        body.scene-loading #focus-mask,
+        body.scene-loading #side-tags,
+        body.scene-loading #page-identity-card,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
 
         #nav {
             position: fixed;
@@ -210,7 +226,7 @@
         .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
     </style>
 </head>
-<body>
+<body class="scene-loading">
 <div id="info"><div class="loading-shell"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"></div></div>
 <nav id="nav" aria-label="Primary"><div class="nav-shell">
     <a class="nav-link" href="../Music_Department_folder/Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
@@ -302,6 +318,7 @@ async function loadScene() {
         info.classList.add('hidden');
         window.setTimeout(() => { info.style.display = 'none'; }, 450);
         viewer.start();
+        document.body.classList.remove('scene-loading');
         bindSceneCoordinatePicker({ viewer, THREE });
         showHeroTitle();
     } catch (err) {
