@@ -291,9 +291,9 @@
         #hero-title { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 130; pointer-events: none; opacity: 0; transform: translateY(16px); transition: opacity 2s ease, transform 2s ease; }
         #hero-title.visible { opacity: 1; transform: translateY(0); }
         #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
-        .hero-text { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: min(92vw, 980px); padding: 0 24px; color: rgba(255,255,255,0.94); font-family: "Times New Roman", Times, serif; text-align: center; }
-        .hero-title-line { font-size: clamp(40px, 7vw, 92px); font-weight: 700; letter-spacing: 0.03em; line-height: 0.95; text-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 12px 24px rgba(0,0,0,0.42), 0 24px 60px rgba(0,0,0,0.48); }
-        .hero-subtitle { color: rgba(255,255,255,0.76); font-family: "Castle Regular", "Times New Roman", Times, serif; font-size: clamp(24px, calc(1.4vw + 10px), 32px); font-weight: 400; letter-spacing: 0.18em; line-height: 1.2; text-shadow: 0 8px 22px rgba(0,0,0,0.35); }
+        .hero-text { text-align: center; padding: 0 24px; }
+        .hero-title-line { color: rgba(255, 255, 255, 0.98); font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(42px, 8vw, 92px); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58); }
+        .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
         #branch-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%), rgba(10,10,10,0.66); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0,0,0,0.28); }
         .branch-kicker { color: rgba(255,255,255,0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
         .branch-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
@@ -356,10 +356,12 @@ initSharedChrome({
             { left: '38%', top: '50%', width: '18%', rotate: '-18deg' },
             { left: '40%', top: '48%', width: '18%', rotate: '8deg' },
             { left: '34%', top: '47%', width: '16%', rotate: '176deg' },
-            { left: '39%', top: '52%', width: '16%', rotate: '42deg' }
+            { left: '39%', top: '52%', width: '16%', rotate: '42deg' },
+            { left: '41%', top: '54%', width: '18%', rotate: '56deg' }
         ],
         nodes: [
             { label: 'QR', href: './PK_Regional_spots/QR.html', left: '58%', top: '64%' },
+            { label: 'My Dorm', href: './PK_Regional_spots/Mydorm.html', left: '60%', top: '76%' },
             { label: 'Church', href: '../Church_folder/Church.html', left: '16%', top: '60%' },
             { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
             { label: 'Academic Blocks', href: '../Academic_Blocks_folder/Academic_Blocks.html', left: '60%', top: '62%' }
