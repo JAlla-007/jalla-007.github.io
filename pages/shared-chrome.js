@@ -1053,7 +1053,6 @@ function buildGlobalMapConfig(homeHref) {
         ],
         nodes: [
             { label: 'Music', href: `${rootHref}pages/Music_Department_folder/Music_Department.html`, left: '58%', top: '34%' },
-            { label: 'Languages', href: `${rootHref}pages/Languages_folder/Languages.html`, left: '59%', top: '62%' },
             { label: 'Seafront', href: `${rootHref}pages/Seafront_folder/Seafront.html`, left: '14%', top: '26%' },
             { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%' },
             { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%' },
