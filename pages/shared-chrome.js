@@ -413,6 +413,84 @@ body[data-shared-chrome="true"] .memo-letter {
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
 }
 
+body[data-shared-chrome="true"] .gift-card {
+    margin-top: 8px;
+    padding: 22px 22px 18px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+}
+
+body[data-shared-chrome="true"] .gift-question {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.92);
+    font-family: "Times New Roman", Times, serif;
+    font-size: clamp(24px, 2.2vw, 34px);
+    line-height: 1.3;
+}
+
+body[data-shared-chrome="true"] .gift-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+body[data-shared-chrome="true"] .gift-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+body[data-shared-chrome="true"] .gift-action:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-1px);
+}
+
+body[data-shared-chrome="true"] .gift-form {
+    display: none;
+    margin-top: 16px;
+}
+
+body[data-shared-chrome="true"] .gift-form.visible {
+    display: block;
+}
+
+body[data-shared-chrome="true"] .gift-input {
+    width: 100%;
+    min-height: 40px;
+    margin-top: 10px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.36);
+    color: rgba(255, 255, 255, 0.95);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+body[data-shared-chrome="true"] .gift-note {
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
 body[data-shared-chrome="true"] .memo-letter p {
     margin: 0 0 18px;
     color: rgba(255, 255, 255, 0.9);
@@ -600,9 +678,9 @@ function ensureTopNav(homeHref) {
                 <span>Home</span>
             </button>
             <div class="nav-connector" aria-hidden="true"></div>
-            <button class="nav-link nav-button" id="memo-toggle" type="button" aria-label="Open about panel">
+            <button class="nav-link nav-button" id="memo-toggle" type="button" aria-label="Open more panel">
                 <span class="nav-icon">?</span>
-                <span>About</span>
+                <span>More</span>
             </button>
         </div>
     `;
@@ -619,21 +697,6 @@ function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
         <a class="map-node${node.icon ? ' has-icon' : ''}" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.icon ? `<img class="map-node-icon" src="${node.icon}" alt="">` : ''}<span>${node.label}</span></a>
     `).join('');
 
-    const placeCard = mapConfig.placeCard ? `
-        <div class="place-card">
-            <div class="place-kicker">${mapConfig.placeCard.kicker || 'Location'}</div>
-            <h2 class="place-title">${mapConfig.placeCard.title}</h2>
-            <p class="place-copy">${mapConfig.placeCard.copy}</p>
-            ${(mapConfig.placeCard.actions || []).length ? `
-                <div class="place-actions">
-                    ${mapConfig.placeCard.actions.map((action) => `
-                        <a class="place-action" href="${action.href}"${action.target ? ` target="${action.target}" rel="noreferrer"` : ''}>${action.label}</a>
-                    `).join('')}
-                </div>
-            ` : ''}
-        </div>
-    ` : '';
-
     return `
         <div class="map-panel">
             <div class="map-viewport">
@@ -646,7 +709,6 @@ function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
             </div>
             <div class="map-caption">${mapConfig.caption || 'Interactive Map'}</div>
             <button class="map-close" id="${closeId}" type="button" aria-label="Close map">×</button>
-            ${placeCard}
         </div>
     `;
 }
@@ -722,7 +784,7 @@ function bindMapPan(overlayId, mapConfig) {
         panel.dataset.mapPanBound = 'true';
 
         viewport.addEventListener('pointerdown', (event) => {
-            if (event.target.closest('.map-node, .map-close, .place-card, .place-action')) return;
+            if (event.target.closest('.map-node, .map-close')) return;
             state.pointerId = event.pointerId;
             state.startX = event.clientX;
             state.startY = event.clientY;
@@ -808,18 +870,26 @@ function ensureOverlays(globalMapConfig, regionalMapConfig, itemsConfig = {}) {
         memoOverlay.setAttribute('aria-hidden', 'true');
         memoOverlay.innerHTML = `
             <div class="memo-panel">
-                <button class="map-close" id="memo-close" type="button" aria-label="Close about panel">×</button>
+                <button class="map-close" id="memo-close" type="button" aria-label="Close more panel">×</button>
                 <div class="memo-kicker">Atlantic College Memo</div>
-                <h2 class="memo-title">Farewell Transmission</h2>
+                <h2 class="memo-title">More</h2>
                 <p class="memo-intro">
-                    A note that feels half diary, half departure, and already belongs somewhere between memory and orbit.
+                    Private access card
                 </p>
-                <div class="memo-letter">
-                    <p>Hello, fellow human ;)</p>
-                    <p>It has been my greatest pleasure to cross paths with you in this immense galaxy. But I am afraid it is time to say goodbye.</p>
-                    <p>Travellers come and go like meteorites. Yet a voyage among the stars still awaits us, scenes you've never seen.</p>
-                    <p>Ah... save your water for the journey. Shall we?</p>
-                    <p>Into the Great Wilds and Misty Future!<span class="memo-emphasis">Memo fragment / star log / parting note</span></p>
+                <div class="gift-card">
+                    <p class="gift-question">Did you receive a gift?</p>
+                    <div class="gift-actions">
+                        <button class="gift-action" id="gift-yes" type="button">Yes</button>
+                        <button class="gift-action" id="gift-no" type="button">No</button>
+                    </div>
+                    <form class="gift-form" id="gift-form" autocomplete="off">
+                        <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
+                        <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
+                        <div class="gift-actions">
+                            <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+                        </div>
+                    </form>
+                    <p class="gift-note" id="gift-note">Choose an option to continue.</p>
                 </div>
             </div>
         `;
@@ -1016,6 +1086,12 @@ function bindOverlayBehavior(homeHref, globalMapConfig = DEFAULT_MAP_CONFIG, reg
     const reviewMemosButton = document.getElementById('review-memos');
     const reviewNotesButton = document.getElementById('review-notes');
     const searchStoriesButton = document.getElementById('search-stories');
+    const giftYes = document.getElementById('gift-yes');
+    const giftNo = document.getElementById('gift-no');
+    const giftForm = document.getElementById('gift-form');
+    const giftName = document.getElementById('gift-name');
+    const giftPassword = document.getElementById('gift-password');
+    const giftNote = document.getElementById('gift-note');
 
     const open = (overlay, overlayId, mapConfig) => {
         overlay.classList.add('visible');
@@ -1064,6 +1140,34 @@ function bindOverlayBehavior(homeHref, globalMapConfig = DEFAULT_MAP_CONFIG, reg
     });
     itemsOverlay?.addEventListener('click', (event) => {
         if (event.target === itemsOverlay) close(itemsOverlay);
+    });
+
+    giftYes?.addEventListener('click', () => {
+        giftForm?.classList.add('visible');
+        if (giftNote) giftNote.textContent = 'Enter your name and password.';
+        giftName?.focus();
+    });
+
+    giftNo?.addEventListener('click', () => {
+        giftForm?.classList.remove('visible');
+        if (giftNote) giftNote.textContent = 'No worries. You can come back anytime.';
+    });
+
+    giftForm?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const typedName = giftName?.value?.trim();
+        const typedPassword = giftPassword?.value?.trim();
+        if (!typedName || !typedPassword) {
+            if (giftNote) giftNote.textContent = 'Please fill in both fields.';
+            return;
+        }
+
+        const secretLocationHref = itemsConfig.secretLocationHref || '#';
+        if (secretLocationHref === '#') {
+            if (giftNote) giftNote.textContent = 'Secret location is still being prepared.';
+            return;
+        }
+        window.location.href = `${secretLocationHref}${secretLocationHref.includes('?') ? '&' : '?'}name=${encodeURIComponent(typedName)}`;
     });
 
     window.addEventListener('keydown', (event) => {
