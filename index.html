@@ -435,6 +435,93 @@
             margin-bottom: 0;
         }
 
+        .gift-card {
+            margin-top: 8px;
+            padding: 22px 22px 18px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+        }
+
+        .gift-visual {
+            display: block;
+            width: min(220px, 100%);
+            height: auto;
+            margin: 0 auto 14px;
+            border-radius: 14px;
+            object-fit: contain;
+        }
+
+        .gift-question {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(24px, 2.2vw, 34px);
+            line-height: 1.3;
+        }
+
+        .gift-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .gift-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .gift-action:hover {
+            background: rgba(255, 255, 255, 0.14);
+            transform: translateY(-1px);
+        }
+
+        .gift-form {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .gift-form.visible {
+            display: block;
+        }
+
+        .gift-input {
+            width: 100%;
+            min-height: 40px;
+            margin-top: 10px;
+            padding: 0 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.36);
+            color: rgba(255, 255, 255, 0.95);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .gift-note {
+            margin: 12px 0 0;
+            color: rgba(255, 255, 255, 0.72);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
         .memo-emphasis {
             display: block;
             margin-top: 10px;
@@ -1190,31 +1277,25 @@
     <div class="memo-panel">
         <button class="map-close" id="memo-close" type="button" aria-label="Close more panel">×</button>
         <div class="memo-kicker">Atlantic College Memo</div>
-        <h2 class="memo-title">Farewell Transmission</h2>
+        <h2 class="memo-title">More</h2>
         <p class="memo-intro">
-            A note that feels half diary, half departure, and already belongs somewhere between memory and orbit.
+            Private access card
         </p>
-        <div class="memo-letter">
-            <p>Hello, fellow human ;)</p>
-            <p>
-                It has been my greatest pleasure to cross paths with you in this immense galaxy.
-                But I am afraid it is time to say goodbye.
-            </p>
-            <p>
-                Travellers come and go like meteorites -
-                Yet a voyage among the stars still awaits us,
-                scenes you've never seen...
-                Attack ships on fire off the shoulder of Orion,
-                C-beams glittering in the dark near the Tannhauser Gate.
-            </p>
-            <p>
-                Ah... save your water for the journey.
-                Shall we?
-            </p>
-            <p>
-                Into the Great Wilds and Misty Future!
-                <span class="memo-emphasis">Memo fragment / star log / parting note</span>
-            </p>
+        <div class="gift-card">
+            <img class="gift-visual" src="./iconntext/waving.GIF" alt="Waving animation">
+            <p class="gift-question">Did you receive a gift?</p>
+            <div class="gift-actions">
+                <button class="gift-action" id="gift-yes" type="button">Yes</button>
+                <button class="gift-action" id="gift-no" type="button">No</button>
+            </div>
+            <form class="gift-form" id="gift-form" autocomplete="off">
+                <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
+                <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
+                <div class="gift-actions">
+                    <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+                </div>
+            </form>
+            <p class="gift-note" id="gift-note">Choose an option to continue.</p>
         </div>
     </div>
 </div>
@@ -1331,6 +1412,12 @@ const sideTags = document.getElementById('side-tags');
 const reviewMemosButton = document.getElementById('review-memos');
 const reviewNotesButton = document.getElementById('review-notes');
 const searchStoriesButton = document.getElementById('search-stories');
+const giftYes = document.getElementById('gift-yes');
+const giftNo = document.getElementById('gift-no');
+const giftForm = document.getElementById('gift-form');
+const giftName = document.getElementById('gift-name');
+const giftPassword = document.getElementById('gift-password');
+const giftNote = document.getElementById('gift-note');
 const audioToggle = document.getElementById('audio-toggle');
 const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
@@ -2080,6 +2167,25 @@ window.addEventListener('keydown', (event) => {
 reviewMemosButton.addEventListener('click', toggleMemories);
 reviewNotesButton.addEventListener('click', openItemsOverlay);
 searchStoriesButton.addEventListener('click', openMapOverlay);
+giftYes?.addEventListener('click', () => {
+    giftForm?.classList.add('visible');
+    if (giftNote) giftNote.textContent = 'Enter your name and password.';
+    giftName?.focus();
+});
+giftNo?.addEventListener('click', () => {
+    giftForm?.classList.remove('visible');
+    if (giftNote) giftNote.textContent = 'No worries. You can come back anytime.';
+});
+giftForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const typedName = giftName?.value?.trim();
+    const typedPassword = giftPassword?.value?.trim();
+    if (!typedName || !typedPassword) {
+        if (giftNote) giftNote.textContent = 'Please fill in both fields.';
+        return;
+    }
+    if (giftNote) giftNote.textContent = 'Secret location is still being prepared.';
+});
 
 memoryBillboards.forEach((billboard) => {
     billboard.element.addEventListener('pointerdown', (event) => beginBillboardDrag(event, billboard));
