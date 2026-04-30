@@ -179,6 +179,28 @@ body[data-shared-chrome="true"] .map-panel {
         radial-gradient(circle at 78% 70%, rgba(255, 255, 255, 0.07), transparent 22%),
         rgba(10, 10, 10, 0.82);
     overflow: hidden;
+    touch-action: none;
+    user-select: none;
+}
+
+body[data-shared-chrome="true"] .map-panel.dragging {
+    cursor: grabbing;
+}
+
+body[data-shared-chrome="true"] .map-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+body[data-shared-chrome="true"] .map-canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1400px;
+    height: 980px;
+    cursor: grab;
+    will-change: transform;
 }
 
 body[data-shared-chrome="true"] .map-grid {
@@ -196,9 +218,9 @@ body[data-shared-chrome="true"] .map-caption {
     left: 28px;
     top: 24px;
     color: rgba(255, 255, 255, 0.72);
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.22em;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
@@ -233,9 +255,9 @@ body[data-shared-chrome="true"] .map-node {
     border: 1px solid rgba(255, 255, 255, 0.14);
     color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
-    font-family: "Times New Roman", Times, serif;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
     font-size: clamp(14px, 1.35vw, 20px);
-    letter-spacing: 0.03em;
+    letter-spacing: 0.08em;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
     transition: transform 0.22s ease, background 0.22s ease;
 }
@@ -277,9 +299,9 @@ body[data-shared-chrome="true"] .place-kicker,
 body[data-shared-chrome="true"] .memo-kicker,
 body[data-shared-chrome="true"] .items-kicker {
     color: rgba(255, 255, 255, 0.58);
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
     font-size: 11px;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
@@ -288,7 +310,7 @@ body[data-shared-chrome="true"] .memo-title,
 body[data-shared-chrome="true"] .items-title {
     margin: 14px 0 8px;
     color: white;
-    font-family: "Times New Roman", Times, serif;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
     line-height: 0.98;
 }
 
@@ -583,15 +605,125 @@ function buildMapOverlayMarkup(mapConfig) {
 
     return `
         <div class="map-panel">
-            <div class="map-grid"></div>
+            <div class="map-viewport">
+                <div class="map-canvas" data-map-canvas>
+                    <div class="map-grid"></div>
+                    ${lines}
+                    <div class="map-node home-node" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.label}</div>
+                    ${nodes}
+                </div>
+            </div>
             <div class="map-caption">${mapConfig.caption || 'Interactive Map'}</div>
             <button class="map-close" id="map-close" type="button" aria-label="Close map">×</button>
-            ${lines}
-            <div class="map-node home-node" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.label}</div>
-            ${nodes}
             ${placeCard}
         </div>
     `;
+}
+
+function parsePercent(value, fallback = 50) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+        const parsed = Number.parseFloat(value);
+        if (Number.isFinite(parsed)) return parsed;
+    }
+    return fallback;
+}
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+function bindMapPan(mapConfig) {
+    const mapOverlay = document.getElementById('map-overlay');
+    const panel = mapOverlay?.querySelector('.map-panel');
+    const viewport = mapOverlay?.querySelector('.map-viewport');
+    const canvas = mapOverlay?.querySelector('[data-map-canvas]');
+    if (!mapOverlay || !panel || !viewport || !canvas) return;
+
+    const state = mapOverlay._mapPanState || {
+        x: 0,
+        y: 0,
+        pointerId: null,
+        startX: 0,
+        startY: 0,
+        originX: 0,
+        originY: 0,
+        initialized: false
+    };
+    mapOverlay._mapPanState = state;
+
+    const canvasWidth = Number.isFinite(mapConfig.canvasWidth) ? mapConfig.canvasWidth : 1400;
+    const canvasHeight = Number.isFinite(mapConfig.canvasHeight) ? mapConfig.canvasHeight : 980;
+
+    const applyTransform = () => {
+        canvas.style.transform = `translate(${state.x}px, ${state.y}px)`;
+    };
+
+    const clampToViewport = () => {
+        const minX = Math.min(0, viewport.clientWidth - canvasWidth);
+        const minY = Math.min(0, viewport.clientHeight - canvasHeight);
+        state.x = clamp(state.x, minX, 0);
+        state.y = clamp(state.y, minY, 0);
+    };
+
+    const centerMap = () => {
+        const centerLeft = parsePercent(mapConfig.center?.left, 38) / 100;
+        const centerTop = parsePercent(mapConfig.center?.top, 45) / 100;
+        state.x = (viewport.clientWidth / 2) - (centerLeft * canvasWidth);
+        state.y = (viewport.clientHeight / 2) - (centerTop * canvasHeight);
+        clampToViewport();
+        applyTransform();
+        state.initialized = true;
+    };
+
+    const layoutMap = (preservePosition = true) => {
+        canvas.style.width = `${canvasWidth}px`;
+        canvas.style.height = `${canvasHeight}px`;
+        if (!preservePosition || !state.initialized) {
+            centerMap();
+            return;
+        }
+        clampToViewport();
+        applyTransform();
+    };
+
+    if (panel.dataset.mapPanBound !== 'true') {
+        panel.dataset.mapPanBound = 'true';
+
+        viewport.addEventListener('pointerdown', (event) => {
+            if (event.target.closest('.map-node, .map-close, .place-card, .place-action')) return;
+            state.pointerId = event.pointerId;
+            state.startX = event.clientX;
+            state.startY = event.clientY;
+            state.originX = state.x;
+            state.originY = state.y;
+            panel.classList.add('dragging');
+            viewport.setPointerCapture(event.pointerId);
+        });
+
+        viewport.addEventListener('pointermove', (event) => {
+            if (state.pointerId !== event.pointerId) return;
+            state.x = state.originX + (event.clientX - state.startX);
+            state.y = state.originY + (event.clientY - state.startY);
+            clampToViewport();
+            applyTransform();
+        });
+
+        const endDrag = (event) => {
+            if (state.pointerId !== event.pointerId) return;
+            panel.classList.remove('dragging');
+            if (viewport.hasPointerCapture(event.pointerId)) {
+                viewport.releasePointerCapture(event.pointerId);
+            }
+            state.pointerId = null;
+        };
+
+        viewport.addEventListener('pointerup', endDrag);
+        viewport.addEventListener('pointercancel', endDrag);
+        window.addEventListener('resize', () => layoutMap(true));
+    }
+
+    layoutMap(false);
 }
 
 function buildItemsOverlayMarkup(itemsConfig = {}) {
@@ -662,6 +794,8 @@ function ensureOverlays(mapConfig, itemsConfig = {}) {
     } else {
         document.getElementById('items-overlay').innerHTML = buildItemsOverlayMarkup(itemsConfig);
     }
+
+    bindMapPan(mapConfig);
 }
 
 function ensureSideRail() {
@@ -823,7 +957,7 @@ function bindScreenshotBehavior() {
     });
 }
 
-function bindOverlayBehavior(homeHref, itemsConfig = {}) {
+function bindOverlayBehavior(homeHref, itemsConfig = {}, mapConfig = DEFAULT_MAP_CONFIG) {
     const mapOverlay = document.getElementById('map-overlay');
     const memoOverlay = document.getElementById('memo-overlay');
     const itemsOverlay = document.getElementById('items-overlay');
@@ -842,6 +976,7 @@ function bindOverlayBehavior(homeHref, itemsConfig = {}) {
     const open = (overlay) => {
         overlay.classList.add('visible');
         overlay.setAttribute('aria-hidden', 'false');
+        if (overlay.id === 'map-overlay') bindMapPan(mapConfig);
     };
     const close = (overlay) => {
         overlay.classList.remove('visible');
@@ -903,7 +1038,7 @@ const DEFAULT_MAP_CONFIG = {
     ],
     nodes: [
         { label: 'Music', href: './Music_Department_folder/Music_Department.html', left: '58%', top: '34%' },
-        { label: 'Languages', href: './Languages_folder/Languages.html', left: '59%', top: '62%' },
+        { label: 'Academic Blocks', href: './Academic_Blocks_folder/Academic_Blocks.html', left: '59%', top: '62%' },
         { label: 'Seafront', href: './Seafront_folder/Seafront.html', left: '14%', top: '26%' },
         { label: 'Church', href: './Church_folder/Church.html', left: '15%', top: '67%' },
         { label: 'PK', href: './PK_folder/PK.html', left: '76%', top: '44%' }
@@ -932,7 +1067,7 @@ export function initSharedChrome(options = {}) {
     ensureSideRail();
     ensureScreenshotButton();
     ensurePageIdentityCard();
-    bindOverlayBehavior(homeHref, itemsConfig);
+    bindOverlayBehavior(homeHref, itemsConfig, mapConfig);
     bindScreenshotBehavior();
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
