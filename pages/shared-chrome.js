@@ -17,6 +17,7 @@ body[data-shared-chrome="true"]::after {
 
 body[data-shared-chrome="true"].scene-loading #nav,
 body[data-shared-chrome="true"].scene-loading #screenshot-button,
+body[data-shared-chrome="true"].scene-loading #music-player,
 body[data-shared-chrome="true"].scene-loading #side-tags,
 body[data-shared-chrome="true"].scene-loading .page-identity-card,
 body[data-shared-chrome="true"].scene-loading #map-overlay,
@@ -145,6 +146,142 @@ body[data-shared-chrome="true"] #screenshot-button svg {
     stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+body[data-shared-chrome="true"] #music-player {
+    position: fixed;
+    right: 16px;
+    bottom: 18px;
+    z-index: 145;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: auto;
+}
+
+body[data-shared-chrome="true"] #music-player-toggle {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.9);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
+}
+
+body[data-shared-chrome="true"] #music-player-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+body[data-shared-chrome="true"] #music-player-toggle .music-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+body[data-shared-chrome="true"] .music-player-panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    width: min(320px, calc(100vw - 32px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.9);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+body[data-shared-chrome="true"] #music-player.expanded .music-player-panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+body[data-shared-chrome="true"] .music-player-title {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+body[data-shared-chrome="true"] .music-player-track {
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body[data-shared-chrome="true"] .music-player-controls {
+    display: flex;
+    gap: 8px;
+}
+
+body[data-shared-chrome="true"] .music-player-button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+body[data-shared-chrome="true"] .music-player-button.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body[data-shared-chrome="true"] .music-player-list {
+    display: grid;
+    gap: 6px;
+    max-height: 110px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 2px;
+}
+
+body[data-shared-chrome="true"] .music-track-item {
+    width: 100%;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+body[data-shared-chrome="true"] .music-track-item.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.98);
 }
 
 body[data-shared-chrome="true"] #map-overlay,
@@ -1277,6 +1414,17 @@ function getRootHref(homeHref) {
     return homeHref.replace(/index\.html(?:[?#].*)?$/, '');
 }
 
+function buildSharedPlaylist(homeHref) {
+    const rootHref = getRootHref(homeHref);
+    return [
+        { label: 'Outer Wilds Cover', src: `${rootHref}Music/outerwilds_cleancover.mp3` },
+        { label: 'Homepage Ambience', src: `${rootHref}Music/homepoage_ambiencemusic.mp3?v=20260501c` },
+        { label: 'Bird Ambience', src: `${rootHref}Sound_effects/ambience/Birdambience.mp3?v=20260501a` },
+        { label: "Kelly's Theme", src: `${rootHref}Music/kelly's_themecover.mp3` },
+        { label: 'Moonsong Hmm', src: `${rootHref}Music/Moonsong_hmmcover.mp3` }
+    ];
+}
+
 const DEFAULT_MAP_CONFIG = buildGlobalMapConfig('../index.html');
 
 export function initSharedChrome(options = {}) {
@@ -1358,4 +1506,222 @@ export function bindSceneCoordinatePicker({ viewer, THREE }) {
         const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         await copyPickedCoordinates(coordinateMessage);
     });
+}
+
+export function initSharedMusicPlayer(options = {}) {
+    const homeHref = options.homeHref || '../index.html';
+    const ambientAudio = document.getElementById('ambient-audio');
+    if (!ambientAudio) return null;
+
+    ensureStyles();
+
+    const legacyToggle = document.getElementById('audio-toggle');
+    legacyToggle?.remove();
+
+    let musicPlayer = document.getElementById('music-player');
+    if (!musicPlayer) {
+        musicPlayer = document.createElement('div');
+        musicPlayer.id = 'music-player';
+        musicPlayer.setAttribute('aria-label', 'Music player');
+        musicPlayer.innerHTML = `
+            <button id="music-player-toggle" type="button" aria-label="Open music player" aria-expanded="false">
+                <span class="music-icon">♪</span>
+                <span>Music</span>
+            </button>
+            <div class="music-player-panel" id="music-player-panel">
+                <div class="music-player-title">Playlist</div>
+                <div class="music-player-track" id="music-player-track">Loading track...</div>
+                <div class="music-player-controls">
+                    <button class="music-player-button" id="music-prev" type="button" aria-label="Previous track">⏮</button>
+                    <button class="music-player-button" id="music-play" type="button" aria-label="Play or pause music">▶</button>
+                    <button class="music-player-button" id="music-next" type="button" aria-label="Next track">⏭</button>
+                    <button class="music-player-button" id="music-shuffle" type="button" aria-label="Toggle shuffle">🔀</button>
+                    <button class="music-player-button" id="music-loop" type="button" aria-label="Toggle loop mode">🔁</button>
+                </div>
+                <div class="music-player-list" id="music-player-list" aria-label="Track list"></div>
+            </div>
+        `;
+        document.body.appendChild(musicPlayer);
+    }
+
+    const musicPlayerToggle = document.getElementById('music-player-toggle');
+    const musicPlayerTrack = document.getElementById('music-player-track');
+    const musicPlayerList = document.getElementById('music-player-list');
+    const musicPrev = document.getElementById('music-prev');
+    const musicPlay = document.getElementById('music-play');
+    const musicNext = document.getElementById('music-next');
+    const musicShuffle = document.getElementById('music-shuffle');
+    const musicLoop = document.getElementById('music-loop');
+
+    const playlist = options.playlist || buildSharedPlaylist(homeHref);
+    const extractAudioFilename = (value) => (value || '').replace(/[?#].*$/, '').split('/').pop() || '';
+    const sourceChild = ambientAudio.querySelector('source');
+    const currentSource = ambientAudio.getAttribute('src') || sourceChild?.getAttribute('src') || '';
+    ambientAudio.loop = false;
+    sourceChild?.remove();
+    let currentTrackIndex = Math.max(0, playlist.findIndex((track) => extractAudioFilename(track.src) === extractAudioFilename(currentSource)));
+    let musicPlayerExpanded = false;
+    let shuffleEnabled = false;
+    let loopMode = 'all';
+    let audioStarted = false;
+
+    const setMusicPlayerExpanded = (expanded) => {
+        musicPlayerExpanded = expanded;
+        musicPlayer.classList.toggle('expanded', expanded);
+        musicPlayerToggle?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+
+    const updateAudioButton = () => {
+        musicPlay.textContent = ambientAudio.paused || ambientAudio.muted ? '▶' : '⏸';
+        musicShuffle.classList.toggle('active', shuffleEnabled);
+        musicLoop.textContent = loopMode === 'one' ? '🔂' : '🔁';
+        musicLoop.classList.toggle('active', loopMode !== 'off');
+        const loopLabel = loopMode === 'off' ? 'off' : loopMode === 'all' ? 'all tracks' : 'one track';
+        musicLoop.setAttribute('aria-label', `Loop mode: ${loopLabel}`);
+    };
+
+    const renderMusicPlaylist = () => {
+        if (!musicPlayerList) return;
+        musicPlayerList.innerHTML = playlist.map((track, index) => `
+            <button class="music-track-item${index === currentTrackIndex ? ' active' : ''}" type="button" data-track-index="${index}" aria-label="Play ${track.label}">${track.label}</button>
+        `).join('');
+    };
+
+    const getRandomTrackIndex = (excludeIndex = -1) => {
+        if (playlist.length <= 1) return 0;
+        let nextIndex = excludeIndex;
+        while (nextIndex === excludeIndex) {
+            nextIndex = Math.floor(Math.random() * playlist.length);
+        }
+        return nextIndex;
+    };
+
+    const loadTrack = async (index, { autoplay = audioStarted && !ambientAudio.paused && !ambientAudio.muted } = {}) => {
+        if (!playlist.length) return;
+        currentTrackIndex = (index + playlist.length) % playlist.length;
+        const track = playlist[currentTrackIndex];
+        ambientAudio.src = track.src;
+        ambientAudio.load();
+        if (musicPlayerTrack) {
+            musicPlayerTrack.textContent = track.label;
+        }
+        renderMusicPlaylist();
+        if (autoplay) {
+            try {
+                ambientAudio.muted = false;
+                ambientAudio.volume = 0.6;
+                await ambientAudio.play();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        updateAudioButton();
+    };
+
+    const playCurrentTrack = async () => {
+        try {
+            ambientAudio.muted = false;
+            ambientAudio.volume = 0.6;
+            await ambientAudio.play();
+        } catch (err) {
+            console.error(err);
+            ambientAudio.muted = true;
+        }
+        updateAudioButton();
+    };
+
+    const startAmbientAudio = async () => {
+        if (audioStarted) return;
+        audioStarted = true;
+        await playCurrentTrack();
+    };
+
+    loadTrack(currentTrackIndex, { autoplay: false });
+
+    window.addEventListener('pointerdown', startAmbientAudio, { once: true });
+    window.addEventListener('keydown', startAmbientAudio, { once: true });
+
+    musicPlayerToggle?.addEventListener('click', () => {
+        setMusicPlayerExpanded(!musicPlayerExpanded);
+    });
+
+    musicPrev?.addEventListener('click', async () => {
+        if (shuffleEnabled) {
+            await loadTrack(getRandomTrackIndex(currentTrackIndex));
+            return;
+        }
+        await loadTrack(currentTrackIndex - 1);
+    });
+
+    musicNext?.addEventListener('click', async () => {
+        if (shuffleEnabled) {
+            await loadTrack(getRandomTrackIndex(currentTrackIndex));
+            return;
+        }
+        await loadTrack(currentTrackIndex + 1);
+    });
+
+    musicPlay?.addEventListener('click', async () => {
+        if (!audioStarted) {
+            await startAmbientAudio();
+            return;
+        }
+        if (ambientAudio.paused || ambientAudio.muted) {
+            await playCurrentTrack();
+            return;
+        }
+        ambientAudio.pause();
+        updateAudioButton();
+    });
+
+    musicShuffle?.addEventListener('click', () => {
+        shuffleEnabled = !shuffleEnabled;
+        updateAudioButton();
+    });
+
+    musicLoop?.addEventListener('click', () => {
+        loopMode = loopMode === 'all' ? 'one' : loopMode === 'one' ? 'off' : 'all';
+        updateAudioButton();
+    });
+
+    musicPlayerList?.addEventListener('click', async (event) => {
+        const button = event.target.closest('.music-track-item');
+        if (!button) return;
+        const selectedIndex = Number(button.dataset.trackIndex || 0);
+        await loadTrack(selectedIndex);
+    });
+
+    ambientAudio.addEventListener('ended', async () => {
+        if (loopMode === 'one') {
+            ambientAudio.currentTime = 0;
+            await playCurrentTrack();
+            return;
+        }
+        if (loopMode === 'off' && !shuffleEnabled && currentTrackIndex === playlist.length - 1) {
+            audioStarted = false;
+            updateAudioButton();
+            return;
+        }
+        if (shuffleEnabled) {
+            await loadTrack(getRandomTrackIndex(currentTrackIndex));
+            return;
+        }
+        await loadTrack(currentTrackIndex + 1);
+    });
+
+    ambientAudio.addEventListener('pause', updateAudioButton);
+    ambientAudio.addEventListener('play', updateAudioButton);
+
+    document.addEventListener('click', (event) => {
+        if (!musicPlayerExpanded) return;
+        if (musicPlayer.contains(event.target)) return;
+        setMusicPlayerExpanded(false);
+    });
+
+    updateAudioButton();
+
+    return {
+        loadTrack,
+        startAmbientAudio
+    };
 }

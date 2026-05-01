@@ -339,11 +339,10 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome } from '../shared-chrome.js?v=20260430b';
+import { initSharedChrome, initSharedMusicPlayer } from '../shared-chrome.js?v=20260501a';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const heroTitle = document.getElementById('hero-title');
-const audioToggle = document.getElementById('audio-toggle');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
@@ -384,6 +383,7 @@ initSharedChrome({
         ],
     }
 });
+initSharedMusicPlayer({ homeHref: '../../index.html' });
 const initialCameraPosition = [4.5, -2.27, 29.05];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
@@ -396,7 +396,6 @@ const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
 const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-let audioStarted = false;
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
 let coordinatePopoverTimer = null;
@@ -413,7 +412,6 @@ function enforceCameraConstraints() {
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
-function updateAudioButton() { audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On'; }
 function showCoordinatePopover(message) {
     coordinatePopoverValue.textContent = message;
     coordinatePopover.classList.add('visible');
@@ -527,16 +525,12 @@ function toggleMemoryBeacons() {
     }
 }
 function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
-async function startAmbientAudio() { if (audioStarted) return; audioStarted = true; try { ambientAudio.muted = false; ambientAudio.volume = 0.6; await ambientAudio.play(); } catch (err) { console.error(err); ambientAudio.muted = true; } updateAudioButton(); }
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
 window.addEventListener('keydown', hideHint, { once: true });
 window.addEventListener('pointerdown', hideHeroTitle, { once: true });
 window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
-window.addEventListener('pointerdown', startAmbientAudio, { once: true });
-window.addEventListener('keydown', startAmbientAudio, { once: true });
-audioToggle.addEventListener('click', async () => { if (!audioStarted) { await startAmbientAudio(); return; } if (ambientAudio.paused || ambientAudio.muted) { ambientAudio.muted = false; await ambientAudio.play(); } else { ambientAudio.muted = true; } updateAudioButton(); });
 sceneHotspot.addEventListener('click', () => {
     if (!sceneHotspot.classList.contains('near')) return;
     const mapToggle = document.getElementById('map-toggle');
@@ -551,7 +545,6 @@ memoryOverlay.addEventListener('click', (event) => {
     memoryOverlay.classList.remove('visible');
     memoryOverlay.setAttribute('aria-hidden', 'true');
 });
-updateAudioButton();
 updateViewIndicator();
 updateSceneHotspot();
 updateMemoryBeacons();
