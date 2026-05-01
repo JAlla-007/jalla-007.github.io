@@ -446,6 +446,7 @@
             display: block;
             width: min(420px, 100%);
             margin: 0 auto;
+            cursor: zoom-in;
         }
 
         .memory-gallery.has-multiple .memory-photo {
@@ -464,6 +465,105 @@
             height: auto;
             border-radius: 18px;
             box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+        }
+
+        .memory-gallery.has-multiple .memory-photo:hover {
+            z-index: 20;
+            transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, 0px))) rotate(var(--rot, 0deg)) scale(calc(var(--scale, 1) + 0.05));
+        }
+
+        .memory-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 190;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(18px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.24s ease;
+        }
+
+        .memory-lightbox.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .memory-lightbox-frame {
+            position: relative;
+            width: min(92vw, 1120px);
+            max-height: 88vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .memory-lightbox-image {
+            display: block;
+            max-width: 100%;
+            max-height: 88vh;
+            width: auto;
+            height: auto;
+            border-radius: 22px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .memory-lightbox-close,
+        .memory-lightbox-nav {
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+        }
+
+        .memory-lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 2;
+            width: 46px;
+            height: 46px;
+            font-size: 24px;
+        }
+
+        .memory-lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            width: 52px;
+            height: 52px;
+            font-size: 28px;
+        }
+
+        .memory-lightbox-prev {
+            left: 20px;
+        }
+
+        .memory-lightbox-next {
+            right: 20px;
+        }
+
+        .memory-lightbox-meta {
+            position: absolute;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            white-space: nowrap;
         }
 
         @keyframes hotspotPulse {
@@ -522,6 +622,7 @@
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
 <div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
 <div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-gallery" id="memory-gallery"></div></div></div>
+<div class="memory-lightbox" id="memory-lightbox" aria-hidden="true"><button class="memory-lightbox-close" id="memory-lightbox-close" type="button" aria-label="Close photo viewer">×</button><button class="memory-lightbox-nav memory-lightbox-prev" id="memory-lightbox-prev" type="button" aria-label="Previous photo">‹</button><div class="memory-lightbox-frame"><img class="memory-lightbox-image" id="memory-lightbox-image" alt="Memory photo"><div class="memory-lightbox-meta" id="memory-lightbox-meta">1 / 1</div></div><button class="memory-lightbox-nav memory-lightbox-next" id="memory-lightbox-next" type="button" aria-label="Next photo">›</button></div>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
 <script type="importmap">
@@ -545,6 +646,12 @@ const memoryKicker = document.getElementById('memory-kicker');
 const memoryTitle = document.getElementById('memory-title');
 const memoryCopy = document.getElementById('memory-copy');
 const memoryGallery = document.getElementById('memory-gallery');
+const memoryLightbox = document.getElementById('memory-lightbox');
+const memoryLightboxClose = document.getElementById('memory-lightbox-close');
+const memoryLightboxPrev = document.getElementById('memory-lightbox-prev');
+const memoryLightboxNext = document.getElementById('memory-lightbox-next');
+const memoryLightboxImage = document.getElementById('memory-lightbox-image');
+const memoryLightboxMeta = document.getElementById('memory-lightbox-meta');
 
 initSharedChrome({
     homeHref: '../../../index.html',
@@ -589,6 +696,8 @@ const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.P
 let audioStarted = false;
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
 const MEMORY_REVEAL_DISTANCE = 3.9;
 const MEMORY_BEACONS = [
     {
@@ -703,6 +812,7 @@ function openMemory(memory) {
         { tx: '8px', ty: '-146px', rot: '4deg', scale: '0.92', z: 1 }
     ];
 
+    activeMemory = memory;
     memoryKicker.textContent = memory.kicker;
     memoryTitle.textContent = memory.title;
     memoryCopy.textContent = memory.copy;
@@ -713,10 +823,42 @@ function openMemory(memory) {
         const style = hasMultiple
             ? ` style="--tx:${preset.tx};--ty:${preset.ty};--rot:${preset.rot};--scale:${preset.scale};--z:${preset.z};"`
             : '';
-        return `<figure class="memory-photo"${style}><img src="${imagePath}" alt="${memory.title}"></figure>`;
+        return `<figure class="memory-photo" data-image-index="${index}"${style}><img src="${imagePath}" alt="${memory.title} photo ${index + 1}"></figure>`;
     }).join('');
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function updateMemoryLightbox() {
+    if (!activeMemory?.images?.length) return;
+    const imageCount = activeMemory.images.length;
+    const safeIndex = ((activeMemoryImageIndex % imageCount) + imageCount) % imageCount;
+    activeMemoryImageIndex = safeIndex;
+    memoryLightboxImage.src = activeMemory.images[safeIndex];
+    memoryLightboxImage.alt = `${activeMemory.title} photo ${safeIndex + 1}`;
+    memoryLightboxMeta.textContent = `${safeIndex + 1} / ${imageCount}`;
+    const showNav = imageCount > 1;
+    memoryLightboxPrev.style.display = showNav ? 'inline-flex' : 'none';
+    memoryLightboxNext.style.display = showNav ? 'inline-flex' : 'none';
+}
+
+function openMemoryLightbox(index) {
+    if (!activeMemory?.images?.length) return;
+    activeMemoryImageIndex = index;
+    updateMemoryLightbox();
+    memoryLightbox.classList.add('visible');
+    memoryLightbox.setAttribute('aria-hidden', 'false');
+}
+
+function closeMemoryLightbox() {
+    memoryLightbox.classList.remove('visible');
+    memoryLightbox.setAttribute('aria-hidden', 'true');
+}
+
+function stepMemoryLightbox(direction) {
+    if (!activeMemory?.images?.length) return;
+    activeMemoryImageIndex += direction;
+    updateMemoryLightbox();
 }
 
 function ensureMemoryBeacons() {
@@ -814,6 +956,40 @@ memoryOverlay.addEventListener('click', (event) => {
     if (event.target !== memoryOverlay) return;
     memoryOverlay.classList.remove('visible');
     memoryOverlay.setAttribute('aria-hidden', 'true');
+});
+
+memoryGallery.addEventListener('click', (event) => {
+    const photo = event.target.closest('.memory-photo');
+    if (!photo) return;
+    const index = Number(photo.dataset.imageIndex || 0);
+    openMemoryLightbox(index);
+});
+
+memoryLightboxClose.addEventListener('click', closeMemoryLightbox);
+memoryLightboxPrev.addEventListener('click', () => stepMemoryLightbox(-1));
+memoryLightboxNext.addEventListener('click', () => stepMemoryLightbox(1));
+
+memoryLightbox.addEventListener('click', (event) => {
+    if (event.target !== memoryLightbox) return;
+    closeMemoryLightbox();
+});
+
+window.addEventListener('keydown', (event) => {
+    if (memoryLightbox.classList.contains('visible')) {
+        if (event.key === 'Escape') {
+            closeMemoryLightbox();
+        } else if (event.key === 'ArrowLeft') {
+            stepMemoryLightbox(-1);
+        } else if (event.key === 'ArrowRight') {
+            stepMemoryLightbox(1);
+        }
+        return;
+    }
+
+    if (memoryOverlay.classList.contains('visible') && event.key === 'Escape') {
+        memoryOverlay.classList.remove('visible');
+        memoryOverlay.setAttribute('aria-hidden', 'true');
+    }
 });
 
 async function loadScene() {

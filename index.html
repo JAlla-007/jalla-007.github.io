@@ -835,6 +835,11 @@
             cursor: pointer;
         }
 
+        .music-player-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
         .music-player-list {
             display: grid;
             gap: 6px;
@@ -1487,6 +1492,8 @@
             <button class="music-player-button" id="music-prev" type="button" aria-label="Previous track">⏮</button>
             <button class="music-player-button" id="music-play" type="button" aria-label="Play or pause music">▶</button>
             <button class="music-player-button" id="music-next" type="button" aria-label="Next track">⏭</button>
+            <button class="music-player-button" id="music-shuffle" type="button" aria-label="Toggle shuffle">🔀</button>
+            <button class="music-player-button" id="music-loop" type="button" aria-label="Toggle loop mode">🔁</button>
         </div>
         <div class="music-player-list" id="music-player-list" aria-label="Track list"></div>
     </div>
@@ -1540,6 +1547,8 @@ const musicPlayerList = document.getElementById('music-player-list');
 const musicPrev = document.getElementById('music-prev');
 const musicPlay = document.getElementById('music-play');
 const musicNext = document.getElementById('music-next');
+const musicShuffle = document.getElementById('music-shuffle');
+const musicLoop = document.getElementById('music-loop');
 const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
@@ -1555,6 +1564,8 @@ const homepageAmbientTracks = [
 ];
 let currentTrackIndex = 0;
 let musicPlayerExpanded = false;
+let shuffleEnabled = false;
+let loopMode = 'all';
 loadTrack(currentTrackIndex);
 
 const viewer = new GaussianSplats3D.Viewer({
@@ -2130,6 +2141,24 @@ function playBubbleSound() {
 
 function updateAudioButton() {
     musicPlay.textContent = ambientAudio.paused || ambientAudio.muted ? '▶' : '⏸';
+    if (musicShuffle) {
+        musicShuffle.classList.toggle('active', shuffleEnabled);
+    }
+    if (musicLoop) {
+        musicLoop.textContent = loopMode === 'one' ? '🔂' : '🔁';
+        musicLoop.classList.toggle('active', loopMode !== 'off');
+        const loopLabel = loopMode === 'off' ? 'off' : loopMode === 'all' ? 'all tracks' : 'one track';
+        musicLoop.setAttribute('aria-label', `Loop mode: ${loopLabel}`);
+    }
+}
+
+function getRandomTrackIndex(excludeIndex = -1) {
+    if (homepageAmbientTracks.length <= 1) return 0;
+    let nextIndex = excludeIndex;
+    while (nextIndex === excludeIndex) {
+        nextIndex = Math.floor(Math.random() * homepageAmbientTracks.length);
+    }
+    return nextIndex;
 }
 
 function renderMusicPlaylist() {
@@ -2264,7 +2293,8 @@ async function startAmbientAudio() {
 
 async function changeTrack(step = 1) {
     const shouldResume = audioStarted && !ambientAudio.paused && !ambientAudio.muted;
-    loadTrack(currentTrackIndex + step);
+    const nextIndex = shuffleEnabled ? getRandomTrackIndex(currentTrackIndex) : currentTrackIndex + step;
+    loadTrack(nextIndex);
     if (!shouldResume) {
         updateAudioButton();
         return;
@@ -2304,6 +2334,20 @@ musicPrev.addEventListener('click', async () => {
 musicNext.addEventListener('click', async () => {
     await changeTrack(1);
 });
+musicShuffle?.addEventListener('click', () => {
+    shuffleEnabled = !shuffleEnabled;
+    updateAudioButton();
+});
+musicLoop?.addEventListener('click', () => {
+    if (loopMode === 'off') {
+        loopMode = 'all';
+    } else if (loopMode === 'all') {
+        loopMode = 'one';
+    } else {
+        loopMode = 'off';
+    }
+    updateAudioButton();
+});
 musicPlayerToggle?.addEventListener('click', (event) => {
     event.stopPropagation();
     setMusicPlayerExpanded(!musicPlayerExpanded);
@@ -2327,7 +2371,35 @@ document.addEventListener('pointerdown', (event) => {
     setMusicPlayerExpanded(false);
 });
 ambientAudio.addEventListener('ended', async () => {
-    await changeTrack(1);
+    if (loopMode === 'one') {
+        try {
+            ambientAudio.currentTime = 0;
+            await startAmbientAudio();
+        } catch (err) {
+            console.error(err);
+        }
+        return;
+    }
+
+    const isLastTrack = currentTrackIndex === homepageAmbientTracks.length - 1;
+    if (!shuffleEnabled && loopMode === 'off' && isLastTrack) {
+        updateAudioButton();
+        return;
+    }
+
+    if (shuffleEnabled) {
+        loadTrack(getRandomTrackIndex(currentTrackIndex));
+    } else if (isLastTrack && loopMode === 'all') {
+        loadTrack(0);
+    } else {
+        loadTrack(currentTrackIndex + 1);
+    }
+
+    try {
+        await startAmbientAudio();
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
