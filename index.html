@@ -1376,9 +1376,7 @@
 
 <button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
-<audio id="ambient-audio" loop preload="auto">
-    <source src="./Music/homepoage_ambiencemusic.mp3?v=20260501b" type="audio/mpeg">
-</audio>
+<audio id="ambient-audio" loop preload="auto"></audio>
 
 <script type="importmap">
 {
@@ -1427,6 +1425,19 @@ const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
+const homepageAmbientTracks = [
+    './Music/homepoage_ambiencemusic.mp3?v=20260501c',
+    './Sound_effects/ambience/Birdambience.mp3?v=20260501a'
+];
+
+function setRandomHomepageAmbient() {
+    const selectedTrack = homepageAmbientTracks[Math.floor(Math.random() * homepageAmbientTracks.length)];
+    ambientAudio.src = selectedTrack;
+    ambientAudio.load();
+}
+
+setRandomHomepageAmbient();
+
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
     initialCameraLookAt: [0, 0, 0],
