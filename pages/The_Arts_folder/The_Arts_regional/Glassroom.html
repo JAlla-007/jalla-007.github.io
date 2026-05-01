@@ -323,10 +323,12 @@ initSharedChrome({
     }
 });
 
-const initialCameraPosition = [0, -8, 8];
+const initialCameraPosition = [0.60, 2.11, 7.64];
 const initialCameraLookAt = [0, 0, 0];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const DEFAULT_ZOOM_PERCENT = 142;
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -346,7 +348,7 @@ function updateViewIndicator() {
         const { x, y, z } = viewer.camera.position;
         viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
-        const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+        const zoomPercent = Math.max(1, Math.round((zoomReferenceDistance / currentDistance) * 100));
         viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
