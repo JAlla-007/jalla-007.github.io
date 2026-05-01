@@ -92,7 +92,7 @@
         }
 
         body.scene-loading #nav,
-        body.scene-loading #audio-toggle,
+        body.scene-loading #music-player,
         body.scene-loading #view-indicator,
         body.scene-loading #hero-title,
         body.scene-loading #subpages-panel,
@@ -735,34 +735,62 @@
             transform: translateX(-50%) translateY(10px);
         }
 
-        #audio-toggle {
+        #music-player {
             position: fixed;
             right: 16px;
             bottom: 18px;
             z-index: 145;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
-            min-width: 132px;
-            min-height: 42px;
-            padding: 0 16px;
+            width: min(300px, calc(100vw - 32px));
+            padding: 10px 12px;
             border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 999px;
+            border-radius: 16px;
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(10px);
             color: rgba(255, 255, 255, 0.9);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
+        }
+
+        #music-player:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .music-player-title {
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .music-player-track {
+            color: rgba(255, 255, 255, 0.94);
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .music-player-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .music-player-button {
+            min-height: 32px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.92);
             font-size: 11px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
-        }
-
-        #audio-toggle:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-1px);
         }
 
         #screenshot-button {
@@ -1374,9 +1402,17 @@
     </div>
 </div>
 
-<button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
+<div id="music-player" aria-label="Music player">
+    <div class="music-player-title">Now Playing</div>
+    <div class="music-player-track" id="music-player-track">Loading track...</div>
+    <div class="music-player-controls">
+        <button class="music-player-button" id="music-prev" type="button" aria-label="Previous track">Prev</button>
+        <button class="music-player-button" id="music-play" type="button" aria-label="Play or pause music">Play</button>
+        <button class="music-player-button" id="music-next" type="button" aria-label="Next track">Next</button>
+    </div>
+</div>
 
-<audio id="ambient-audio" loop preload="auto"></audio>
+<audio id="ambient-audio" preload="auto"></audio>
 
 <script type="importmap">
 {
@@ -1417,7 +1453,10 @@ const giftForm = document.getElementById('gift-form');
 const giftName = document.getElementById('gift-name');
 const giftPassword = document.getElementById('gift-password');
 const giftNote = document.getElementById('gift-note');
-const audioToggle = document.getElementById('audio-toggle');
+const musicPlayerTrack = document.getElementById('music-player-track');
+const musicPrev = document.getElementById('music-prev');
+const musicPlay = document.getElementById('music-play');
+const musicNext = document.getElementById('music-next');
 const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
@@ -1426,17 +1465,13 @@ const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
 const homepageAmbientTracks = [
-    './Music/homepoage_ambiencemusic.mp3?v=20260501c',
-    './Sound_effects/ambience/Birdambience.mp3?v=20260501a'
+    { label: 'Homepage Ambience', src: './Music/homepoage_ambiencemusic.mp3?v=20260501c' },
+    { label: "Kelly's Theme", src: './Music/kelly\'s_themecover.mp3' },
+    { label: 'Moonsong Hmm', src: './Music/Moonsong_hmmcover.mp3' },
+    { label: 'Outer Wilds Cover', src: './Music/outerwilds_cleancover.mp3' }
 ];
-
-function setRandomHomepageAmbient() {
-    const selectedTrack = homepageAmbientTracks[Math.floor(Math.random() * homepageAmbientTracks.length)];
-    ambientAudio.src = selectedTrack;
-    ambientAudio.load();
-}
-
-setRandomHomepageAmbient();
+let currentTrackIndex = 0;
+loadTrack(currentTrackIndex);
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition: [0, -8, 8],
@@ -2010,7 +2045,18 @@ function playBubbleSound() {
 }
 
 function updateAudioButton() {
-    audioToggle.textContent = ambientAudio.muted || ambientAudio.paused ? 'Sound Off' : 'Sound On';
+    musicPlay.textContent = ambientAudio.paused || ambientAudio.muted ? 'Play' : 'Pause';
+}
+
+function loadTrack(index) {
+    const normalized = (index + homepageAmbientTracks.length) % homepageAmbientTracks.length;
+    currentTrackIndex = normalized;
+    const track = homepageAmbientTracks[currentTrackIndex];
+    ambientAudio.src = track.src;
+    ambientAudio.load();
+    if (musicPlayerTrack) {
+        musicPlayerTrack.textContent = track.label;
+    }
 }
 
 function getSceneRotation(scene) {
@@ -2104,8 +2150,7 @@ function applySceneUi(scene, isLoading = false) {
 }
 
 async function startAmbientAudio() {
-    if (audioStarted) return;
-    audioStarted = true;
+    if (!audioStarted) audioStarted = true;
 
     try {
         ambientAudio.muted = false;
@@ -2116,6 +2161,20 @@ async function startAmbientAudio() {
         console.error(err);
         ambientAudio.muted = true;
         updateAudioButton();
+    }
+}
+
+async function changeTrack(step = 1) {
+    const shouldResume = audioStarted && !ambientAudio.paused && !ambientAudio.muted;
+    loadTrack(currentTrackIndex + step);
+    if (!shouldResume) {
+        updateAudioButton();
+        return;
+    }
+    try {
+        await startAmbientAudio();
+    } catch (err) {
+        console.error(err);
     }
 }
 
@@ -2133,20 +2192,22 @@ window.addEventListener('keydown', hideHeroTitle, { once: true });
 window.addEventListener('pointerdown', startAmbientAudio, { once: true });
 window.addEventListener('keydown', startAmbientAudio, { once: true });
 
-audioToggle.addEventListener('click', async () => {
-    if (!audioStarted) {
+musicPlay.addEventListener('click', async () => {
+    if (!audioStarted || ambientAudio.paused || ambientAudio.muted) {
         await startAmbientAudio();
         return;
     }
-
-    if (ambientAudio.paused || ambientAudio.muted) {
-        ambientAudio.muted = false;
-        await ambientAudio.play();
-    } else {
-        ambientAudio.muted = true;
-    }
-
+    ambientAudio.muted = true;
     updateAudioButton();
+});
+musicPrev.addEventListener('click', async () => {
+    await changeTrack(-1);
+});
+musicNext.addEventListener('click', async () => {
+    await changeTrack(1);
+});
+ambientAudio.addEventListener('ended', async () => {
+    await changeTrack(1);
 });
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
