@@ -1558,14 +1558,17 @@ const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
 const homepageAmbientTracks = [
     { label: 'Homepage Ambience', src: './Music/homepoage_ambiencemusic.mp3?v=20260501c' },
+    { label: 'Bird Ambience', src: './Sound_effects/ambience/Birdambience.mp3' },
     { label: "Kelly's Theme", src: './Music/kelly\'s_themecover.mp3' },
     { label: 'Moonsong Hmm', src: './Music/Moonsong_hmmcover.mp3' },
     { label: 'Outer Wilds Cover', src: './Music/outerwilds_cleancover.mp3' }
 ];
-let currentTrackIndex = 0;
+const defaultAmbientTrackIndexes = [0, 1];
+let currentTrackIndex = defaultAmbientTrackIndexes[Math.floor(Math.random() * defaultAmbientTrackIndexes.length)];
 let musicPlayerExpanded = false;
 let shuffleEnabled = false;
 let loopMode = 'all';
+let userSelectedPlaylistTrack = false;
 loadTrack(currentTrackIndex);
 
 const viewer = new GaussianSplats3D.Viewer({
@@ -1588,7 +1591,7 @@ const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
     { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, azimuthRestricted: true, initialView: { position: new THREE.Vector3(0.18, 1.65, 9.07), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.48, 0.55, -9.64), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.58, 2.04, 12.09), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.40, 2.29, 11.13), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
@@ -2161,6 +2164,15 @@ function getRandomTrackIndex(excludeIndex = -1) {
     return nextIndex;
 }
 
+function getRandomDefaultAmbientIndex(excludeIndex = -1) {
+    if (defaultAmbientTrackIndexes.length <= 1) return defaultAmbientTrackIndexes[0] || 0;
+    let nextIndex = excludeIndex;
+    while (nextIndex === excludeIndex) {
+        nextIndex = defaultAmbientTrackIndexes[Math.floor(Math.random() * defaultAmbientTrackIndexes.length)];
+    }
+    return nextIndex;
+}
+
 function renderMusicPlaylist() {
     if (!musicPlayerList) return;
     musicPlayerList.innerHTML = homepageAmbientTracks.map((track, index) => `
@@ -2292,6 +2304,7 @@ async function startAmbientAudio() {
 }
 
 async function changeTrack(step = 1) {
+    userSelectedPlaylistTrack = true;
     const shouldResume = audioStarted && !ambientAudio.paused && !ambientAudio.muted;
     const nextIndex = shuffleEnabled ? getRandomTrackIndex(currentTrackIndex) : currentTrackIndex + step;
     loadTrack(nextIndex);
@@ -2357,6 +2370,7 @@ musicPlayerList?.addEventListener('click', async (event) => {
     if (!button) return;
     const nextIndex = Number(button.dataset.trackIndex);
     if (!Number.isFinite(nextIndex)) return;
+    userSelectedPlaylistTrack = true;
     const shouldResume = audioStarted && !ambientAudio.paused && !ambientAudio.muted;
     loadTrack(nextIndex);
     if (shouldResume) {
@@ -2371,6 +2385,16 @@ document.addEventListener('pointerdown', (event) => {
     setMusicPlayerExpanded(false);
 });
 ambientAudio.addEventListener('ended', async () => {
+    if (!userSelectedPlaylistTrack) {
+        loadTrack(getRandomDefaultAmbientIndex(currentTrackIndex));
+        try {
+            await startAmbientAudio();
+        } catch (err) {
+            console.error(err);
+        }
+        return;
+    }
+
     if (loopMode === 'one') {
         try {
             ambientAudio.currentTime = 0;
