@@ -383,7 +383,10 @@
 
         .memory-panel {
             position: relative;
-            width: min(92vw, 760px);
+            display: grid;
+            grid-template-columns: minmax(220px, 0.95fr) minmax(260px, 1.05fr);
+            gap: 24px;
+            width: min(94vw, 980px);
             max-height: min(84vh, 860px);
             overflow: auto;
             padding: 28px 24px 24px;
@@ -408,6 +411,7 @@
         }
 
         .memory-kicker {
+            grid-column: 2;
             color: rgba(255,255,255,0.58);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 11px;
@@ -416,6 +420,7 @@
         }
 
         .memory-title {
+            grid-column: 2;
             margin: 14px 0 10px;
             color: white;
             font-family: "Times New Roman", Times, serif;
@@ -424,6 +429,7 @@
         }
 
         .memory-copy {
+            grid-column: 2;
             margin: 0;
             color: rgba(255,255,255,0.78);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -433,43 +439,94 @@
         }
 
         .memory-gallery {
-            margin-top: 20px;
+            grid-column: 1;
+            grid-row: 1 / span 3;
             position: relative;
-        }
-
-        .memory-gallery.has-multiple {
-            min-height: clamp(300px, 46vh, 430px);
+            min-height: min(58vh, 460px);
+            border-radius: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
         }
 
         .memory-photo {
-            position: relative;
             display: block;
-            width: min(420px, 100%);
-            margin: 0 auto;
-            cursor: zoom-in;
-        }
-
-        .memory-gallery.has-multiple .memory-photo {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: clamp(170px, 23vw, 250px);
+            width: 100%;
+            height: 100%;
             margin: 0;
-            z-index: var(--z, 1);
-            transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, 0px))) rotate(var(--rot, 0deg)) scale(var(--scale, 1));
         }
 
         .memory-photo img {
             display: block;
             width: 100%;
-            height: auto;
-            border-radius: 18px;
-            box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+            height: 100%;
+            object-fit: cover;
         }
 
-        .memory-gallery.has-multiple .memory-photo:hover {
-            z-index: 20;
-            transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, 0px))) rotate(var(--rot, 0deg)) scale(calc(var(--scale, 1) + 0.05));
+        .memory-gallery-empty {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: rgba(255,255,255,0.46);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .memory-gallery-nav[hidden] {
+            display: none;
+        }
+
+        .memory-gallery-prev {
+            left: 12px;
+        }
+
+        .memory-gallery-next {
+            right: 12px;
+        }
+
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        @media (max-width: 720px) {
+            .memory-panel {
+                grid-template-columns: 1fr;
+            }
+            .memory-gallery,
+            .memory-kicker,
+            .memory-title,
+            .memory-copy {
+                grid-column: 1;
+            }
+            .memory-gallery {
+                grid-row: auto;
+                min-height: 320px;
+            }
         }
 
         .memory-lightbox {
@@ -704,8 +761,8 @@ const MEMORY_BEACONS = [
         label: 'Desk',
         anchor: new THREE.Vector3(-0.02, 0.02, -0.06),
         kicker: 'Memory Fragment',
-        title: 'Desk',
-        copy: '1.\nOctober 21st, 2025\n(9:10)\n昨天数学考试成绩出来了\n耶\n不会去保底校\n太好了\n但是我的语文好像要炸了\n救命\n\n2.\nOctober 13th, 2025\n(22:31)\nbro\nwhat should i do with my EE\nI mean I could definitely finish it\nbut\nbruh\ni could not meet the meeting',
+        title: 'October 21st, 2025',
+        copy: '1.\n(9:10)\n昨天数学考试成绩出来了\n耶\n不会去保底校\n太好了\n但是我的语文好像要炸了\n救命\n\n2.\nOctober 13th, 2025\n(22:31)\nbro\nwhat should i do with my EE\nI mean I could definitely finish it\nbut\nbruh\ni could not meet the meeting',
         images: [
             './Mydorm_sub/Memories/Desk/IMG_8583.HEIC',
             './Mydorm_sub/Memories/Desk/ad340e671081d2945779aa9326587874.JPG'
@@ -801,62 +858,41 @@ function projectSceneBeacon(anchor, element) {
 }
 
 function openMemory(memory) {
-    const collagePresets = [
-        { tx: '-160px', ty: '-88px', rot: '-9deg', scale: '0.96', z: 2 },
-        { tx: '132px', ty: '-76px', rot: '7deg', scale: '1.02', z: 4 },
-        { tx: '-18px', ty: '18px', rot: '-2deg', scale: '1.06', z: 6 },
-        { tx: '-146px', ty: '92px', rot: '8deg', scale: '0.98', z: 3 },
-        { tx: '156px', ty: '84px', rot: '-7deg', scale: '0.95', z: 5 },
-        { tx: '8px', ty: '-146px', rot: '4deg', scale: '0.92', z: 1 }
-    ];
-
     activeMemory = memory;
+    activeMemoryImageIndex = 0;
     memoryKicker.textContent = memory.kicker;
     memoryTitle.textContent = memory.title;
     memoryCopy.textContent = memory.copy;
-    const hasMultiple = memory.images.length > 1;
-    memoryGallery.classList.toggle('has-multiple', hasMultiple);
-    memoryGallery.innerHTML = memory.images.map((imagePath, index) => {
-        const preset = collagePresets[index % collagePresets.length];
-        const style = hasMultiple
-            ? ` style="--tx:${preset.tx};--ty:${preset.ty};--rot:${preset.rot};--scale:${preset.scale};--z:${preset.z};"`
-            : '';
-        return `<figure class="memory-photo" data-image-index="${index}"${style}><img src="${imagePath}" alt="${memory.title} photo ${index + 1}"></figure>`;
-    }).join('');
+    renderMemoryGallery();
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
 }
 
-function updateMemoryLightbox() {
-    if (!activeMemory?.images?.length) return;
-    const imageCount = activeMemory.images.length;
-    const safeIndex = ((activeMemoryImageIndex % imageCount) + imageCount) % imageCount;
-    activeMemoryImageIndex = safeIndex;
-    memoryLightboxImage.src = activeMemory.images[safeIndex];
-    memoryLightboxImage.alt = `${activeMemory.title} photo ${safeIndex + 1}`;
-    memoryLightboxMeta.textContent = `${safeIndex + 1} / ${imageCount}`;
-    const showNav = imageCount > 1;
-    memoryLightboxPrev.style.display = showNav ? 'inline-flex' : 'none';
-    memoryLightboxNext.style.display = showNav ? 'inline-flex' : 'none';
+function renderMemoryGallery() {
+    if (!memoryGallery || !activeMemory) return;
+    const images = activeMemory.images || [];
+    if (!images.length) {
+        memoryGallery.innerHTML = '<div class="memory-gallery-empty">No photos</div>';
+        return;
+    }
+
+    activeMemoryImageIndex = ((activeMemoryImageIndex % images.length) + images.length) % images.length;
+    const imagePath = images[activeMemoryImageIndex];
+    const showNav = images.length > 1;
+    memoryGallery.innerHTML = `
+        <figure class="memory-photo">
+            <img src="${imagePath}" alt="${activeMemory.title} photo ${activeMemoryImageIndex + 1}">
+        </figure>
+        <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo"${showNav ? '' : ' hidden'}>‹</button>
+        <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo"${showNav ? '' : ' hidden'}>›</button>
+        <div class="memory-gallery-count">${activeMemoryImageIndex + 1} / ${images.length}</div>
+    `;
 }
 
-function openMemoryLightbox(index) {
-    if (!activeMemory?.images?.length) return;
-    activeMemoryImageIndex = index;
-    updateMemoryLightbox();
-    memoryLightbox.classList.add('visible');
-    memoryLightbox.setAttribute('aria-hidden', 'false');
-}
-
-function closeMemoryLightbox() {
-    memoryLightbox.classList.remove('visible');
-    memoryLightbox.setAttribute('aria-hidden', 'true');
-}
-
-function stepMemoryLightbox(direction) {
+function stepMemoryGallery(direction) {
     if (!activeMemory?.images?.length) return;
     activeMemoryImageIndex += direction;
-    updateMemoryLightbox();
+    renderMemoryGallery();
 }
 
 function ensureMemoryBeacons() {
@@ -925,36 +961,22 @@ memoryOverlay.addEventListener('click', (event) => {
 });
 
 memoryGallery.addEventListener('click', (event) => {
-    const photo = event.target.closest('.memory-photo');
-    if (!photo) return;
-    const index = Number(photo.dataset.imageIndex || 0);
-    openMemoryLightbox(index);
-});
-
-memoryLightboxClose.addEventListener('click', closeMemoryLightbox);
-memoryLightboxPrev.addEventListener('click', () => stepMemoryLightbox(-1));
-memoryLightboxNext.addEventListener('click', () => stepMemoryLightbox(1));
-
-memoryLightbox.addEventListener('click', (event) => {
-    if (event.target !== memoryLightbox) return;
-    closeMemoryLightbox();
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
 });
 
 window.addEventListener('keydown', (event) => {
-    if (memoryLightbox.classList.contains('visible')) {
-        if (event.key === 'Escape') {
-            closeMemoryLightbox();
-        } else if (event.key === 'ArrowLeft') {
-            stepMemoryLightbox(-1);
-        } else if (event.key === 'ArrowRight') {
-            stepMemoryLightbox(1);
-        }
-        return;
-    }
-
-    if (memoryOverlay.classList.contains('visible') && event.key === 'Escape') {
+    if (!memoryOverlay.classList.contains('visible')) return;
+    if (event.key === 'Escape') {
         memoryOverlay.classList.remove('visible');
         memoryOverlay.setAttribute('aria-hidden', 'true');
+    } else if (event.key === 'ArrowLeft') {
+        stepMemoryGallery(-1);
+    } else if (event.key === 'ArrowRight') {
+        stepMemoryGallery(1);
     }
 });
 

@@ -234,7 +234,12 @@
         }
         .memory-panel {
             position: relative;
-            width: min(92vw, 760px);
+            display: grid;
+            grid-template-columns: minmax(220px, 0.95fr) minmax(260px, 1.05fr);
+            gap: 24px;
+            width: min(94vw, 980px);
+            max-height: min(84vh, 820px);
+            overflow: auto;
             padding: 28px 24px 24px;
             border-radius: 28px;
             background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 24%), rgba(12, 12, 12, 0.9);
@@ -255,6 +260,7 @@
             cursor: pointer;
         }
         .memory-kicker {
+            grid-column: 2;
             color: rgba(255,255,255,0.58);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 11px;
@@ -262,6 +268,7 @@
             text-transform: uppercase;
         }
         .memory-title {
+            grid-column: 2;
             margin: 14px 0 10px;
             color: white;
             font-family: "Times New Roman", Times, serif;
@@ -269,6 +276,7 @@
             line-height: 0.98;
         }
         .memory-copy {
+            grid-column: 2;
             margin: 0;
             color: rgba(255,255,255,0.78);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -277,24 +285,80 @@
             white-space: pre-line;
         }
         .memory-gallery {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
+            grid-column: 1;
+            grid-row: 1 / span 3;
+            position: relative;
+            min-height: min(58vh, 460px);
+            border-radius: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
         }
         .memory-photo {
             margin: 0;
-            aspect-ratio: 4 / 3;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.05);
+            width: 100%;
+            height: 100%;
         }
         .memory-photo img {
             width: 100%;
             height: 100%;
             display: block;
             object-fit: cover;
+        }
+        .memory-gallery-empty {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: rgba(255,255,255,0.46);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .memory-gallery-nav[hidden] {
+            display: none;
+        }
+        .memory-gallery-prev { left: 12px; }
+        .memory-gallery-next { right: 12px; }
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+        @media (max-width: 720px) {
+            .memory-panel {
+                grid-template-columns: 1fr;
+            }
+            .memory-gallery,
+            .memory-kicker,
+            .memory-title,
+            .memory-copy {
+                grid-column: 1;
+            }
+            .memory-gallery {
+                grid-row: auto;
+                min-height: 320px;
+            }
         }
         @keyframes hotspotPulse {
             0% {
@@ -370,8 +434,8 @@ const MEMORY_BEACONS = [
         label: 'Harvest',
         anchor: new THREE.Vector3(-1.92, -1.90, 9.50),
         kicker: 'Memory Fragment',
-        title: 'Harvest',
-        copy: 'October 5th, 2025\nDear Diary,\n\n(15:58)\nWent to valley for some fresh vegetables.\nSuch a nice day with beautiful weather.\ni took some pictures\nloved it.\nyou see, there\'s so much happening every day\nI can barely record it\ntry not to forget\nevery day, i am inspired to think some new question\nnew perspectives, new views and new stories.',
+        title: 'October 5th, 2025',
+        copy: 'Dear Diary,\n\n(15:58)\nWent to valley for some fresh vegetables.\nSuch a nice day with beautiful weather.\ni took some pictures\nloved it.\nyou see, there\'s so much happening every day\nI can barely record it\ntry not to forget\nevery day, i am inspired to think some new question\nnew perspectives, new views and new stories.',
         images: [
             './Memories/P_1_Harvest/IMG_2414.JPEG',
             './Memories/P_1_Harvest/IMG_2431.JPEG',
@@ -383,8 +447,8 @@ const MEMORY_BEACONS = [
         label: 'Stargaze',
         anchor: new THREE.Vector3(11.18, -1.91, 10.43),
         kicker: 'Memory Fragment',
-        title: 'Stargaze',
-        copy: 'March 3rd, 2026\nDear Diary,\n(09:15)\nMorning\nsuch a great day\nthe weather is gorgeous\n\n(23:00)\nwent to the amusement park today\ngreat food\ngreat time\ncame back for\na bonding\nAnd now I’m lying outside PK, stargazing\nWho would care if you just lay outside the house?\nit is not even nightriding.',
+        title: 'March 3rd, 2026',
+        copy: 'Dear Diary,\n(09:15)\nMorning\nsuch a great day\nthe weather is gorgeous\n\n(23:00)\nwent to the amusement park today\ngreat food\ngreat time\ncame back for\na bonding\nAnd now I’m lying outside PK, stargazing\nWho would care if you just lay outside the house?\nit is not even nightriding.',
         images: ['./Memories/P_2_Stargaze/IMG_8920.HEIC']
     },
     {
@@ -392,8 +456,8 @@ const MEMORY_BEACONS = [
         label: 'Names',
         anchor: new THREE.Vector3(-4.39, -0.19, -0.15),
         kicker: 'Memory Fragment',
-        title: 'Names',
-        copy: 'August 26th, 2025\nDear Diary,\n(22:55)\nIt\'s a big day of welcoming the firsties\nwhoo\nfeels like a full grown second year now\njeez\nthis is actually surprisingly amazing\nhh',
+        title: 'August 26th, 2025',
+        copy: 'Dear Diary,\n(22:55)\nIt\'s a big day of welcoming the firsties\nwhoo\nfeels like a full grown second year now\njeez\nthis is actually surprisingly amazing\nhh',
         images: []
     }
 ];
@@ -433,6 +497,8 @@ const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCamer
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
 let coordinatePopoverTimer = null;
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
@@ -513,6 +579,41 @@ function updateSceneHotspot() {
     }
     window.requestAnimationFrame(updateSceneHotspot);
 }
+function renderMemoryGallery() {
+    if (!memoryGallery || !activeMemory) return;
+    const images = activeMemory.images || [];
+    if (!images.length) {
+        memoryGallery.innerHTML = '<div class="memory-gallery-empty">No photos</div>';
+        return;
+    }
+
+    activeMemoryImageIndex = ((activeMemoryImageIndex % images.length) + images.length) % images.length;
+    const imagePath = images[activeMemoryImageIndex];
+    const showNav = images.length > 1;
+    memoryGallery.innerHTML = `
+        <figure class="memory-photo">
+            <img src="${imagePath}" alt="${activeMemory.title} photo ${activeMemoryImageIndex + 1}">
+        </figure>
+        <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo"${showNav ? '' : ' hidden'}>‹</button>
+        <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo"${showNav ? '' : ' hidden'}>›</button>
+        <div class="memory-gallery-count">${activeMemoryImageIndex + 1} / ${images.length}</div>
+    `;
+}
+function openMemory(memory) {
+    activeMemory = memory;
+    activeMemoryImageIndex = 0;
+    memoryKicker.textContent = memory.kicker;
+    memoryTitle.textContent = memory.title;
+    memoryCopy.textContent = memory.copy;
+    renderMemoryGallery();
+    memoryOverlay.classList.add('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+function stepMemoryGallery(direction) {
+    if (!activeMemory?.images?.length) return;
+    activeMemoryImageIndex += direction;
+    renderMemoryGallery();
+}
 function ensureMemoryBeacons() {
     if (memoryBeaconElements.length) return;
     memoryBeaconElements = MEMORY_BEACONS.map((memory) => {
@@ -523,14 +624,7 @@ function ensureMemoryBeacons() {
         element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"></span><span class="scene-beacon-label">${memory.label}</span>`;
         element.addEventListener('click', () => {
             if (!element.classList.contains('near')) return;
-            memoryKicker.textContent = memory.kicker;
-            memoryTitle.textContent = memory.title;
-            memoryCopy.textContent = memory.copy;
-            memoryGallery.innerHTML = (memory.images || []).map((imagePath, index) => (
-                `<figure class="memory-photo"><img src="${imagePath}" alt="${memory.title} photo ${index + 1}"></figure>`
-            )).join('');
-            memoryOverlay.classList.add('visible');
-            memoryOverlay.setAttribute('aria-hidden', 'false');
+            openMemory(memory);
         });
         document.body.appendChild(element);
         return { element, memory };
@@ -583,6 +677,13 @@ memoryOverlay.addEventListener('click', (event) => {
     memoryOverlay.classList.remove('visible');
     memoryOverlay.setAttribute('aria-hidden', 'true');
 });
+memoryGallery.addEventListener('click', (event) => {
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
+});
 updateViewIndicator();
 updateSceneHotspot();
 updateMemoryBeacons();
@@ -614,9 +715,14 @@ if (reviewMemosButton) {
     replacement.addEventListener('click', toggleMemoryBeacons);
 }
 window.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    memoryOverlay.classList.remove('visible');
-    memoryOverlay.setAttribute('aria-hidden', 'true');
+    if (event.key === 'Escape') {
+        memoryOverlay.classList.remove('visible');
+        memoryOverlay.setAttribute('aria-hidden', 'true');
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowLeft') {
+        stepMemoryGallery(-1);
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowRight') {
+        stepMemoryGallery(1);
+    }
 });
 </script>
 </body>
