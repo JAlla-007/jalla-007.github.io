@@ -1527,6 +1527,9 @@ const itemsOverlay = document.getElementById('items-overlay');
 const itemsClose = document.getElementById('items-close');
 const itemsYes = document.getElementById('items-yes');
 const itemsHellYes = document.getElementById('items-hell-yes');
+const itemsTitle = itemsOverlay?.querySelector('.items-title');
+const itemsCopy = itemsOverlay?.querySelector('.items-copy');
+const itemsActions = itemsOverlay?.querySelector('.items-actions');
 const homeReset = document.getElementById('home-reset');
 const heroTitle = document.getElementById('hero-title');
 const introScrim = document.getElementById('intro-scrim');
@@ -1595,6 +1598,7 @@ const sceneCatalog = [
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
+const noItemSceneIds = new Set(['ac-day', 'ac-alt', 'ac-night']);
 let motionFrame = null;
 let cameraDriftFrame = null;
 let currentSceneIndex = null;
@@ -1979,6 +1983,18 @@ function closeMemoOverlay() {
 }
 
 function openItemsOverlay() {
+    if (noItemSceneIds.has(currentSceneId)) {
+        if (itemsTitle) itemsTitle.textContent = 'no items to be found in this region';
+        if (itemsCopy) itemsCopy.textContent = '';
+        if (itemsActions) itemsActions.style.display = 'none';
+    } else {
+        if (itemsTitle) itemsTitle.textContent = 'Meaning hides inside objects.';
+        if (itemsCopy) {
+            itemsCopy.textContent = 'Items contain memories, and some of them carry a little more meaning than the rest. Would you like to discover the items and the stories behind them?';
+        }
+        if (itemsActions) itemsActions.style.display = '';
+    }
+
     itemsOverlay.classList.add('visible');
     itemsOverlay.setAttribute('aria-hidden', 'false');
 }
