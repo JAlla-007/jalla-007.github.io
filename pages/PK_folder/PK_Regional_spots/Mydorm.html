@@ -6,7 +6,7 @@
     <style>
         @font-face {
             font-family: "Castle Regular";
-            src: url("../../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            src: url("../../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype");
             font-weight: 400;
             font-style: normal;
         }
@@ -346,6 +346,9 @@
             border: 1px solid rgba(255, 228, 176, 0.22);
             background: rgba(255, 240, 214, 0.04);
         }
+        .memory-beacon.visible {
+            pointer-events: auto;
+        }
 
         .memory-beacon.near {
             background: rgba(28, 18, 10, 0.74);
@@ -387,8 +390,9 @@
             grid-template-columns: minmax(220px, 0.95fr) minmax(260px, 1.05fr);
             gap: 24px;
             width: min(94vw, 980px);
-            max-height: min(84vh, 860px);
-            overflow: auto;
+            height: min(84vh, 860px);
+            box-sizing: border-box;
+            overflow: hidden;
             padding: 28px 24px 24px;
             border-radius: 28px;
             background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 24%), rgba(12, 12, 12, 0.9);
@@ -411,6 +415,7 @@
         }
 
         .memory-kicker {
+            display: none;
             grid-column: 2;
             color: rgba(255,255,255,0.58);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -421,18 +426,20 @@
 
         .memory-title {
             grid-column: 2;
-            margin: 14px 0 10px;
+            margin: 0 0 10px;
             color: white;
-            font-family: "Times New Roman", Times, serif;
-            font-size: clamp(30px, 4vw, 48px);
-            line-height: 0.98;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(24px, 2.6vw, 34px);
+            line-height: 1.05;
         }
 
         .memory-copy {
             grid-column: 2;
+            min-height: 0;
+            overflow: auto;
             margin: 0;
             color: rgba(255,255,255,0.78);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 15px;
             line-height: 1.7;
             white-space: pre-wrap;
@@ -442,7 +449,8 @@
             grid-column: 1;
             grid-row: 1 / span 3;
             position: relative;
-            min-height: min(58vh, 460px);
+            height: 100%;
+            min-height: 0;
             border-radius: 22px;
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.1);
@@ -516,6 +524,7 @@
         @media (max-width: 720px) {
             .memory-panel {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto minmax(0, 1fr) 300px;
             }
             .memory-gallery,
             .memory-kicker,
@@ -525,7 +534,8 @@
             }
             .memory-gallery {
                 grid-row: auto;
-                min-height: 320px;
+                height: 300px;
+                min-height: 0;
             }
         }
 
@@ -904,7 +914,6 @@ function ensureMemoryBeacons() {
         element.setAttribute('aria-label', `Open memory ${memory.title}`);
         element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"></span><span class="scene-beacon-label">${memory.label}</span>`;
         element.addEventListener('click', () => {
-            if (!element.classList.contains('near')) return;
             openMemory(memory);
         });
         document.body.appendChild(element);

@@ -209,6 +209,8 @@
 
         .map-panel {
             position: relative;
+            --map-columns: 16;
+            --map-rows: 10;
             width: min(92vw, 920px);
             aspect-ratio: 16 / 10;
             border-radius: 30px;
@@ -219,15 +221,31 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
             overflow: hidden;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        .map-panel.panning {
+            cursor: grabbing;
+        }
+
+        .map-world {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 142%;
+            height: 142%;
+            transform: translate(var(--map-pan-x, 0px), var(--map-pan-y, 0px));
+            transform-origin: left top;
         }
 
         .map-grid {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 64px 64px;
+                linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: calc(100% / var(--map-columns)) calc(100% / var(--map-rows));
             mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
         }
 
@@ -253,11 +271,20 @@
             letter-spacing: 0.03em;
             box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
             transition: transform 0.22s ease, background 0.22s ease;
+            touch-action: none;
+            user-select: none;
         }
 
         .map-node:hover {
             transform: scale(1.04);
             background: rgba(255, 255, 255, 0.12);
+        }
+
+        .map-node.dragging {
+            z-index: 4;
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.16);
+            cursor: grabbing;
         }
 
         .map-node.has-icon {
@@ -287,7 +314,6 @@
         }
 
         .map-node.home-node {
-            pointer-events: none;
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -302,6 +328,49 @@
             text-transform: uppercase;
         }
 
+        .map-coordinate-readout {
+            position: absolute;
+            left: 28px;
+            bottom: 22px;
+            z-index: 3;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.46);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .map-coordinate-readout.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .map-coordinate-marker {
+            position: absolute;
+            z-index: 3;
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            border: 2px solid rgba(255, 255, 255, 0.92);
+            background: rgba(31, 144, 255, 0.9);
+            box-shadow: 0 0 0 8px rgba(31, 144, 255, 0.16), 0 0 22px rgba(31, 144, 255, 0.72);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .map-coordinate-marker.visible {
+            opacity: 1;
+        }
+
         .map-close {
             position: absolute;
             right: 18px;
@@ -314,6 +383,7 @@
             color: white;
             font-size: 22px;
             cursor: pointer;
+            z-index: 5;
         }
 
         #memo-overlay {
@@ -1362,21 +1432,25 @@
 
 <div id="map-overlay" aria-hidden="true">
     <div class="map-panel">
-        <div class="map-grid"></div>
-        <div class="map-caption">Interactive Map</div>
+        <div class="map-coordinate-readout" id="map-coordinate-readout" aria-live="polite">Double-click map to copy coordinates</div>
         <button class="map-close" id="map-close" type="button" aria-label="Close map">×</button>
-        <div class="map-line" style="left: 38%; top: 50%; width: 19%; transform: rotate(-18deg);"></div>
-        <div class="map-line" style="left: 42%; top: 52%; width: 17%; transform: rotate(28deg);"></div>
-        <div class="map-line" style="left: 32%; top: 44%; width: 20%; transform: rotate(160deg);"></div>
-        <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
-        <div class="map-line" style="left: 47%; top: 44%; width: 20%; transform: rotate(350deg);"></div>
-        <div class="map-line" style="left: 36%; top: 40%; width: 18%; transform: rotate(268deg);"></div>
-        <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Atlantic College Memo</span></div>
-        <a class="map-node has-icon" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;"><img class="map-node-icon" src="./iconntext/Map_icons/TheArts_icon.PNG" alt=""><span>The Arts</span></a>
-        <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
-        <a class="map-node has-icon" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;"><img class="map-node-icon" src="./iconntext/Map_icons/Church_icon.PNG" alt=""><span>Church</span></a>
-        <a class="map-node has-icon" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;"><img class="map-node-icon" src="./iconntext/Map_icons/PK_icon.PNG" alt=""><span>PK</span></a>
-        <a class="map-node has-icon" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;"><img class="map-node-icon" src="./iconntext/Map_icons/AcademicBlocks_icon.PNG" alt=""><span>Academic Blocks</span></a>
+        <div class="map-world" id="map-world">
+            <div class="map-grid"></div>
+            <div class="map-caption">Interactive Map</div>
+            <div class="map-coordinate-marker" id="map-coordinate-marker" aria-hidden="true"></div>
+            <div class="map-line" style="left: 38%; top: 50%; width: 19%; transform: rotate(-18deg);"></div>
+            <div class="map-line" style="left: 42%; top: 52%; width: 17%; transform: rotate(28deg);"></div>
+            <div class="map-line" style="left: 32%; top: 44%; width: 20%; transform: rotate(160deg);"></div>
+            <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
+            <div class="map-line" style="left: 47%; top: 44%; width: 20%; transform: rotate(350deg);"></div>
+            <div class="map-line" style="left: 36%; top: 40%; width: 18%; transform: rotate(268deg);"></div>
+            <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Atlantic College Memo</span></div>
+            <a class="map-node has-icon" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;"><img class="map-node-icon" src="./iconntext/Map_icons/TheArts_icon.PNG" alt=""><span>The Arts</span></a>
+            <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
+            <a class="map-node has-icon" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;"><img class="map-node-icon" src="./iconntext/Map_icons/Church_icon.PNG" alt=""><span>Church</span></a>
+            <a class="map-node has-icon" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;"><img class="map-node-icon" src="./iconntext/Map_icons/PK_icon.PNG" alt=""><span>PK</span></a>
+            <a class="map-node has-icon" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;"><img class="map-node-icon" src="./iconntext/Map_icons/AcademicBlocks_icon.PNG" alt=""><span>Academic Blocks</span></a>
+        </div>
     </div>
 </div>
 
@@ -1521,6 +1595,14 @@ const mapOverlay = document.getElementById('map-overlay');
 const mapToggle = document.getElementById('map-toggle');
 const memoToggle = document.getElementById('memo-toggle');
 const mapClose = document.getElementById('map-close');
+const mapPanel = mapOverlay?.querySelector('.map-panel');
+const mapWorld = document.getElementById('map-world');
+const mapCoordinateReadout = document.getElementById('map-coordinate-readout');
+const mapCoordinateMarker = document.getElementById('map-coordinate-marker');
+const mapColumns = 16;
+const mapRows = 10;
+let mapPanX = 0;
+let mapPanY = 0;
 const memoOverlay = document.getElementById('memo-overlay');
 const memoClose = document.getElementById('memo-close');
 const itemsOverlay = document.getElementById('items-overlay');
@@ -1970,6 +2052,71 @@ function openMapOverlay() {
 function closeMapOverlay() {
     mapOverlay.classList.remove('visible');
     mapOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function applyMapPan(x, y) {
+    if (!mapPanel || !mapWorld) return;
+    const panelRect = mapPanel.getBoundingClientRect();
+    const worldWidth = mapWorld.offsetWidth;
+    const worldHeight = mapWorld.offsetHeight;
+    const minX = Math.min(0, panelRect.width - worldWidth);
+    const minY = Math.min(0, panelRect.height - worldHeight);
+    mapPanX = clamp(x, minX, 0);
+    mapPanY = clamp(y, minY, 0);
+    mapWorld.style.setProperty('--map-pan-x', `${mapPanX}px`);
+    mapWorld.style.setProperty('--map-pan-y', `${mapPanY}px`);
+}
+
+function getMapCoordinate(clientX, clientY) {
+    if (!mapWorld) return null;
+    const rect = mapWorld.getBoundingClientRect();
+    const leftPercent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    const topPercent = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+    const x = (leftPercent / 100) * mapColumns;
+    const y = (topPercent / 100) * mapRows;
+    return { leftPercent, topPercent, x, y };
+}
+
+function formatMapCoordinate({ x, y, leftPercent, topPercent }) {
+    return `X ${x.toFixed(2)} Y ${y.toFixed(2)} | left: ${leftPercent.toFixed(2)}%; top: ${topPercent.toFixed(2)}%;`;
+}
+
+function showMapCoordinate(message, leftPercent, topPercent) {
+    if (mapCoordinateReadout) {
+        mapCoordinateReadout.textContent = message;
+        mapCoordinateReadout.classList.add('visible');
+    }
+    if (mapCoordinateMarker) {
+        mapCoordinateMarker.style.left = `${leftPercent}%`;
+        mapCoordinateMarker.style.top = `${topPercent}%`;
+        mapCoordinateMarker.classList.add('visible');
+    }
+}
+
+async function copyMapCoordinate(event) {
+    const mapCoordinate = getMapCoordinate(event.clientX, event.clientY);
+    if (!mapCoordinate) return;
+    const coordinate = formatMapCoordinate(mapCoordinate);
+
+    try {
+        await navigator.clipboard.writeText(coordinate);
+        showMapCoordinate(`${coordinate} copied`, mapCoordinate.leftPercent, mapCoordinate.topPercent);
+    } catch (err) {
+        console.error(err);
+        showMapCoordinate(coordinate, mapCoordinate.leftPercent, mapCoordinate.topPercent);
+    }
+}
+
+function moveMapNode(node, clientX, clientY, offsetX = 0, offsetY = 0) {
+    const mapCoordinate = getMapCoordinate(clientX - offsetX, clientY - offsetY);
+    if (!mapCoordinate) return;
+    node.style.left = `${mapCoordinate.leftPercent.toFixed(2)}%`;
+    node.style.top = `${mapCoordinate.topPercent.toFixed(2)}%`;
+    showMapCoordinate(formatMapCoordinate(mapCoordinate), mapCoordinate.leftPercent, mapCoordinate.topPercent);
 }
 
 function openMemoOverlay() {
@@ -2447,6 +2594,85 @@ screenshotButton.addEventListener('click', captureSceneScreenshot);
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
 mapClose.addEventListener('click', closeMapOverlay);
+mapPanel?.addEventListener('dblclick', (event) => {
+    if (event.target.closest('.map-close')) return;
+    event.preventDefault();
+    copyMapCoordinate(event);
+});
+mapPanel?.addEventListener('pointerdown', (event) => {
+    const node = event.target.closest('.map-node');
+    if (!node || !mapPanel.contains(node)) {
+        if (event.target.closest('.map-close, .map-coordinate-readout')) return;
+
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startPanX = mapPanX;
+        const startPanY = mapPanY;
+
+        mapPanel.classList.add('panning');
+        mapPanel.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+
+        const handlePanMove = (moveEvent) => {
+            applyMapPan(startPanX + moveEvent.clientX - startX, startPanY + moveEvent.clientY - startY);
+        };
+
+        const handlePanUp = () => {
+            mapPanel.classList.remove('panning');
+            mapPanel.releasePointerCapture?.(event.pointerId);
+            mapPanel.removeEventListener('pointermove', handlePanMove);
+            mapPanel.removeEventListener('pointerup', handlePanUp);
+            mapPanel.removeEventListener('pointercancel', handlePanUp);
+        };
+
+        mapPanel.addEventListener('pointermove', handlePanMove);
+        mapPanel.addEventListener('pointerup', handlePanUp);
+        mapPanel.addEventListener('pointercancel', handlePanUp);
+        return;
+    }
+
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const nodeRect = node.getBoundingClientRect();
+    const offsetX = startX - nodeRect.left;
+    const offsetY = startY - nodeRect.top;
+    const startingHref = node.getAttribute('href');
+    let didDrag = false;
+
+    node.classList.add('dragging');
+    node.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+
+    const handlePointerMove = (moveEvent) => {
+        const movedDistance = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+        if (movedDistance > 3) didDrag = true;
+        if (didDrag) {
+            moveMapNode(node, moveEvent.clientX, moveEvent.clientY, offsetX, offsetY);
+        }
+    };
+
+    const handlePointerUp = (upEvent) => {
+        node.classList.remove('dragging');
+        node.releasePointerCapture?.(event.pointerId);
+        node.removeEventListener('pointermove', handlePointerMove);
+        node.removeEventListener('pointerup', handlePointerUp);
+        node.removeEventListener('pointercancel', handlePointerUp);
+        if (didDrag && startingHref) {
+            node.dataset.suppressNextClick = 'true';
+            moveMapNode(node, upEvent.clientX, upEvent.clientY, offsetX, offsetY);
+        }
+    };
+
+    node.addEventListener('pointermove', handlePointerMove);
+    node.addEventListener('pointerup', handlePointerUp);
+    node.addEventListener('pointercancel', handlePointerUp);
+});
+mapPanel?.addEventListener('click', (event) => {
+    const node = event.target.closest('.map-node');
+    if (!node?.dataset.suppressNextClick) return;
+    event.preventDefault();
+    node.dataset.suppressNextClick = '';
+});
 memoClose.addEventListener('click', closeMemoOverlay);
 itemsClose.addEventListener('click', closeItemsOverlay);
 itemsYes.addEventListener('click', closeItemsOverlay);
