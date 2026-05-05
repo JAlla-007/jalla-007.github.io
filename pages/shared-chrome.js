@@ -1,4 +1,5 @@
 const SHARED_CHROME_STYLE_ID = 'shared-subpage-chrome';
+const LOAD_REPORT_EMAIL = 'duoa0404@gmail.com';
 
 const SHARED_CHROME_CSS = `
 body[data-shared-chrome="true"]::after {
@@ -800,6 +801,61 @@ body[data-shared-chrome="true"] .coordinate-popover-value {
     line-height: 1.45;
 }
 `;
+
+function getLoadReportHref(error, context = {}) {
+    const lines = [
+        'A page failed to load.',
+        '',
+        `Page: ${window.location.href}`,
+        context.scenePath ? `Scene: ${context.scenePath}` : null,
+        context.sceneId ? `Scene id: ${context.sceneId}` : null,
+        `Error: ${error?.message || String(error || 'Unknown error')}`,
+        `Browser: ${navigator.userAgent}`
+    ].filter(Boolean);
+
+    const params = new URLSearchParams({
+        subject: 'St. Donats 3D Viewer load failed',
+        body: lines.join('\n')
+    });
+
+    return `mailto:${LOAD_REPORT_EMAIL}?${params.toString()}`;
+}
+
+export function showLoadFailure(infoElement, error, context = {}) {
+    if (!infoElement) return;
+
+    const shell = document.createElement('div');
+    shell.className = 'loading-shell';
+
+    const text = document.createElement('div');
+    text.className = 'loading-text';
+    text.textContent = 'Load failed';
+
+    const reportButton = document.createElement('button');
+    reportButton.type = 'button';
+    reportButton.textContent = 'report';
+    reportButton.style.cssText = [
+        'margin-top:18px',
+        'min-height:38px',
+        'padding:0 18px',
+        'border-radius:999px',
+        'border:1px solid rgba(255,255,255,0.2)',
+        'background:rgba(255,255,255,0.12)',
+        'color:white',
+        'font-family:"Helvetica Neue",Helvetica,Arial,sans-serif',
+        'font-size:11px',
+        'letter-spacing:0.08em',
+        'cursor:pointer'
+    ].join(';');
+    reportButton.addEventListener('click', () => {
+        window.location.href = getLoadReportHref(error, context);
+    });
+
+    shell.append(text, reportButton);
+    infoElement.replaceChildren(shell);
+    infoElement.classList.remove('hidden');
+    infoElement.style.display = '';
+}
 
 function ensureStyles() {
     if (document.getElementById(SHARED_CHROME_STYLE_ID)) return;
