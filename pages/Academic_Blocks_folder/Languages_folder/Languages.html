@@ -6,7 +6,7 @@
     <style>
         @font-face {
             font-family: "Castle Regular";
-            src: url("../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            src: url("../../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
             font-weight: 400;
             font-style: normal;
         }
@@ -353,23 +353,23 @@
 <body class="scene-loading">
 <div id="info">
     <div class="loading-shell">
-        <img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation">
+        <img class="loading-gif" src="../../../iconntext/loading.GIF" alt="Loading animation">
     </div>
 </div>
 
 <nav id="nav" aria-label="Primary">
     <div class="nav-shell">
-        <a class="nav-link" href="../The_Arts_folder/The_Arts.html" aria-label="The Arts location">
+        <a class="nav-link" href="../../The_Arts_folder/The_Arts.html" aria-label="The Arts location">
             <span class="nav-icon">+</span>
             <span>The Arts</span>
         </a>
         <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../../index.html" aria-label="Homepage">
+        <a class="nav-link" href="../../../index.html" aria-label="Homepage">
             <span class="nav-icon">⌂</span>
             <span>Home</span>
         </a>
         <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html" aria-label="Academic Blocks location">
+        <a class="nav-link" href="../Academic_Blocks.html" aria-label="Academic Blocks location">
             <span class="nav-icon">#</span>
             <span>Academic</span>
         </a>
@@ -412,7 +412,7 @@
 <button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
 <audio id="ambient-audio" loop preload="auto">
-    <source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg">
+    <source src="../../../Music/outerwilds_cleancover.mp3" type="audio/mpeg">
 </audio>
 
 <script type="importmap">
@@ -426,7 +426,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer } from '../shared-chrome.js?v=20260501a';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer } from '../../shared-chrome.js?v=20260501a';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -436,7 +436,7 @@ const ambientAudio = document.getElementById('ambient-audio');
 const viewIndicatorCoords = document.getElementById('view-indicator-coords');
 const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
-    homeHref: '../../index.html',
+    homeHref: '../../../index.html',
     regionalMap: {
         caption: 'Languages Regional Map',
         center: { label: 'Languages', left: '38%', top: '45%' },
@@ -458,7 +458,7 @@ initSharedChrome({
         }
     }
 });
-initSharedMusicPlayer({ homeHref: '../../index.html' });
+initSharedMusicPlayer({ homeHref: '../../../index.html' });
 
 const initialCameraPosition = [0, -8, 8];
 const initialCameraLookAt = [0, 0, 0];
@@ -525,7 +525,7 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../PK.ksplat');
+        const response = await fetch('../../../PK.ksplat');
         if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
 
         const blob = await response.blob();
