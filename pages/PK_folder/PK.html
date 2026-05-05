@@ -274,21 +274,27 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 15px;
             line-height: 1.7;
+            white-space: pre-line;
         }
-        .memory-image-placeholder {
+        .memory-gallery {
             margin-top: 20px;
-            min-height: 180px;
-            border-radius: 22px;
-            border: 1px dashed rgba(255,255,255,0.18);
-            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255,255,255,0.42);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .memory-photo {
+            margin: 0;
+            aspect-ratio: 4 / 3;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+        }
+        .memory-photo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
         }
         @keyframes hotspotPulse {
             0% {
@@ -330,7 +336,7 @@
 <div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
 <div id="coordinate-popover" aria-live="polite"><span class="coordinate-popover-label">Picked Point</span><span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span></div>
 <button id="scene-hotspot" class="scene-beacon" type="button" aria-label="Open regional map from PK hotspot"><span class="scene-beacon-core" aria-hidden="true"></span><span class="scene-beacon-label">Reveal Map</span></button>
-<div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-image-placeholder">Image Placeholder</div></div></div>
+<div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-gallery" id="memory-gallery"></div></div></div>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
 <script type="importmap">
@@ -354,13 +360,42 @@ const memoryClose = document.getElementById('memory-close');
 const memoryKicker = document.getElementById('memory-kicker');
 const memoryTitle = document.getElementById('memory-title');
 const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
 const hotspotAnchor = new THREE.Vector3(-2.45, 0.43, -1.58);
 const HOTSPOT_REVEAL_DISTANCE = 15;
 const MEMORY_REVEAL_DISTANCE = 15;
 const MEMORY_BEACONS = [
-    { id: 'window-light', label: 'Window Light', anchor: new THREE.Vector3(-0.92, 0.52, -2.34), kicker: 'Memory Fragment', title: 'Window Light', copy: 'A placeholder memory pinned to a precise spot in PK. You can replace this text with the final story fragment and pictures later.' },
-    { id: 'hallway-turn', label: 'Hallway Turn', anchor: new THREE.Vector3(1.35, 0.68, -1.12), kicker: 'Memory Fragment', title: 'Hallway Turn', copy: 'Another anchored memory bubble, ready to become a specific recollection tied to this exact corner of the space.' },
-    { id: 'bedside-corner', label: 'Bedside Corner', anchor: new THREE.Vector3(-2.08, 0.28, 0.44), kicker: 'Memory Fragment', title: 'Bedside Corner', copy: 'A third placeholder memory scene. The darkened overlay is already in place, so later you can add the real text and image content.' }
+    {
+        id: 'harvest',
+        label: 'Harvest',
+        anchor: new THREE.Vector3(-1.92, -1.90, 9.50),
+        kicker: 'Memory Fragment',
+        title: 'Harvest',
+        copy: 'October 5th, 2025\nDear Diary,\n\n(15:58)\nWent to valley for some fresh vegetables.\nSuch a nice day with beautiful weather.\ni took some pictures\nloved it.\nyou see, there\'s so much happening every day\nI can barely record it\ntry not to forget\nevery day, i am inspired to think some new question\nnew perspectives, new views and new stories.',
+        images: [
+            './Memories/P_1_Harvest/IMG_2414.JPEG',
+            './Memories/P_1_Harvest/IMG_2431.JPEG',
+            './Memories/P_1_Harvest/IMG_2437.JPEG'
+        ]
+    },
+    {
+        id: 'stargaze',
+        label: 'Stargaze',
+        anchor: new THREE.Vector3(11.18, -1.91, 10.43),
+        kicker: 'Memory Fragment',
+        title: 'Stargaze',
+        copy: 'March 3rd, 2026\nDear Diary,\n(09:15)\nMorning\nsuch a great day\nthe weather is gorgeous\n\n(23:00)\nwent to the amusement park today\ngreat food\ngreat time\ncame back for\na bonding\nAnd now I’m lying outside PK, stargazing\nWho would care if you just lay outside the house?\nit is not even nightriding.',
+        images: ['./Memories/P_2_Stargaze/IMG_8920.HEIC']
+    },
+    {
+        id: 'names',
+        label: 'Names',
+        anchor: new THREE.Vector3(-4.39, -0.19, -0.15),
+        kicker: 'Memory Fragment',
+        title: 'Names',
+        copy: 'August 26th, 2025\nDear Diary,\n(22:55)\nIt\'s a big day of welcoming the firsties\nwhoo\nfeels like a full grown second year now\njeez\nthis is actually surprisingly amazing\nhh',
+        images: []
+    }
 ];
 initSharedChrome({
     homeHref: '../../index.html',
@@ -491,6 +526,9 @@ function ensureMemoryBeacons() {
             memoryKicker.textContent = memory.kicker;
             memoryTitle.textContent = memory.title;
             memoryCopy.textContent = memory.copy;
+            memoryGallery.innerHTML = (memory.images || []).map((imagePath, index) => (
+                `<figure class="memory-photo"><img src="${imagePath}" alt="${memory.title} photo ${index + 1}"></figure>`
+            )).join('');
             memoryOverlay.classList.add('visible');
             memoryOverlay.setAttribute('aria-hidden', 'false');
         });
