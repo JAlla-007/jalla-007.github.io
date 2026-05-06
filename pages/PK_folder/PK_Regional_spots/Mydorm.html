@@ -253,12 +253,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             padding: 0;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.12);
             border-radius: 999px;
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.12);
             backdrop-filter: blur(12px);
             box-shadow: 0 10px 26px rgba(0,0,0,0.24);
             color: rgba(255,255,255,0.94);
@@ -280,8 +280,8 @@
 
         .scene-beacon.near {
             width: auto;
-            min-height: 42px;
-            padding: 0 16px;
+            min-height: 40px;
+            padding: 0 14px 0 8px;
             background: rgba(0,0,0,0.68);
             pointer-events: auto;
         }
@@ -293,31 +293,24 @@
 
         .scene-beacon-core {
             position: relative;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.96);
-            box-shadow: 0 0 12px rgba(255,255,255,0.8);
-            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            flex: 0 0 26px;
+            overflow: hidden;
+            mix-blend-mode: screen;
         }
 
-        .scene-beacon-core::before,
-        .scene-beacon-core::after {
-            content: "";
+        .scene-beacon-gif {
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.5);
-            transform: translate(-50%, -50%) scale(0.55);
-            opacity: 0;
-            animation: hotspotPulse 2.2s ease-out infinite;
-        }
-
-        .scene-beacon-core::after {
-            animation-delay: 1.1s;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.9);
         }
 
         .scene-beacon-label {
@@ -336,15 +329,10 @@
             transform: translateX(0);
         }
 
-        .scene-beacon.near .scene-beacon-core::before,
-        .scene-beacon.near .scene-beacon-core::after {
-            opacity: 0.18;
-        }
-
         .memory-beacon {
             z-index: 121;
             border: 1px solid rgba(255, 228, 176, 0.22);
-            background: rgba(255, 240, 214, 0.04);
+            background: rgba(0, 0, 0, 0.12);
         }
         .memory-beacon.visible {
             pointer-events: auto;
@@ -352,16 +340,6 @@
 
         .memory-beacon.near {
             background: rgba(28, 18, 10, 0.74);
-        }
-
-        .memory-beacon .scene-beacon-core {
-            background: rgba(255, 230, 184, 0.98);
-            box-shadow: 0 0 12px rgba(255, 218, 150, 0.84);
-        }
-
-        .memory-beacon .scene-beacon-core::before,
-        .memory-beacon .scene-beacon-core::after {
-            border-color: rgba(255, 218, 150, 0.5);
         }
 
         #memory-overlay {
@@ -387,7 +365,9 @@
         .memory-panel {
             position: relative;
             display: grid;
-            grid-template-columns: minmax(220px, 0.95fr) minmax(260px, 1.05fr);
+            grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+            grid-template-rows: minmax(90px, auto) minmax(0, 1fr);
+            align-items: stretch;
             gap: 24px;
             width: min(94vw, 980px);
             height: min(84vh, 860px);
@@ -426,7 +406,11 @@
 
         .memory-title {
             grid-column: 2;
-            margin: 0 0 10px;
+            grid-row: 1;
+            align-self: start;
+            min-width: 0;
+            margin: 0;
+            padding-right: 62px;
             color: white;
             font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: clamp(24px, 2.6vw, 34px);
@@ -435,6 +419,11 @@
 
         .memory-copy {
             grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            min-width: 0;
             min-height: 0;
             overflow: auto;
             margin: 0;
@@ -447,8 +436,10 @@
 
         .memory-gallery {
             grid-column: 1;
-            grid-row: 1 / span 3;
+            grid-row: 1 / -1;
             position: relative;
+            contain: layout paint;
+            width: 100%;
             height: 100%;
             min-height: 0;
             border-radius: 22px;
@@ -461,7 +452,10 @@
             display: block;
             width: 100%;
             height: 100%;
+            min-width: 0;
+            min-height: 0;
             margin: 0;
+            overflow: hidden;
         }
 
         .memory-photo img {
@@ -469,6 +463,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
         }
 
         .memory-gallery-empty {
@@ -532,8 +527,15 @@
             .memory-copy {
                 grid-column: 1;
             }
+            .memory-title {
+                grid-row: 1;
+                padding-right: 58px;
+            }
+            .memory-copy {
+                grid-row: 2;
+            }
             .memory-gallery {
-                grid-row: auto;
+                grid-row: 3;
                 height: 300px;
                 min-height: 0;
             }
@@ -873,15 +875,24 @@ function openMemory(memory) {
     memoryKicker.textContent = memory.kicker;
     memoryTitle.textContent = memory.title;
     memoryCopy.textContent = memory.copy;
+    memoryGallery.dataset.memoryId = '';
     renderMemoryGallery();
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function preloadMemoryImages(images) {
+    images.forEach((imagePath) => {
+        const image = new Image();
+        image.src = imagePath;
+    });
 }
 
 function renderMemoryGallery() {
     if (!memoryGallery || !activeMemory) return;
     const images = activeMemory.images || [];
     if (!images.length) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
         memoryGallery.innerHTML = '<div class="memory-gallery-empty">No photos</div>';
         return;
     }
@@ -889,14 +900,31 @@ function renderMemoryGallery() {
     activeMemoryImageIndex = ((activeMemoryImageIndex % images.length) + images.length) % images.length;
     const imagePath = images[activeMemoryImageIndex];
     const showNav = images.length > 1;
-    memoryGallery.innerHTML = `
-        <figure class="memory-photo">
-            <img src="${imagePath}" alt="${activeMemory.title} photo ${activeMemoryImageIndex + 1}">
-        </figure>
-        <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo"${showNav ? '' : ' hidden'}>‹</button>
-        <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo"${showNav ? '' : ' hidden'}>›</button>
-        <div class="memory-gallery-count">${activeMemoryImageIndex + 1} / ${images.length}</div>
-    `;
+    if (memoryGallery.dataset.memoryId !== activeMemory.id) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
+        memoryGallery.innerHTML = `
+            <figure class="memory-photo">
+                <img class="memory-gallery-image" alt="" decoding="async">
+            </figure>
+            <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo">‹</button>
+            <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo">›</button>
+            <div class="memory-gallery-count"></div>
+        `;
+        preloadMemoryImages(images);
+    }
+
+    const galleryImage = memoryGallery.querySelector('.memory-gallery-image');
+    const galleryPrev = memoryGallery.querySelector('.memory-gallery-prev');
+    const galleryNext = memoryGallery.querySelector('.memory-gallery-next');
+    const galleryCount = memoryGallery.querySelector('.memory-gallery-count');
+
+    if (galleryImage) {
+        galleryImage.src = imagePath;
+        galleryImage.alt = `${activeMemory.title} photo ${activeMemoryImageIndex + 1}`;
+    }
+    if (galleryPrev) galleryPrev.hidden = !showNav;
+    if (galleryNext) galleryNext.hidden = !showNav;
+    if (galleryCount) galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${images.length}`;
 }
 
 function stepMemoryGallery(direction) {
@@ -912,7 +940,7 @@ function ensureMemoryBeacons() {
         element.type = 'button';
         element.className = 'scene-beacon memory-beacon';
         element.setAttribute('aria-label', `Open memory ${memory.title}`);
-        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"></span><span class="scene-beacon-label">${memory.label}</span>`;
+        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../../iconntext/Beacon.GIF" alt=""></span><span class="scene-beacon-label">${memory.label}</span>`;
         element.addEventListener('click', () => {
             openMemory(memory);
         });
