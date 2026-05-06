@@ -6,7 +6,7 @@
     <style>
         @font-face {
             font-family: "Castle Regular";
-            src: url("../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            src: url("../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype");
             font-weight: 400;
             font-style: normal;
         }
@@ -308,20 +308,7 @@
     </div>
 </div>
 
-<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
-
-<div id="view-indicator" aria-live="polite">
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Coordinates</span>
-        <span class="view-indicator-value" id="view-indicator-coords">X 7.28 Y 2.05 Z 17.33</span>
-    </div>
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Zoom</span>
-        <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
-    </div>
-</div>
-
-<button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
 
 <audio id="ambient-audio" loop preload="auto">
     <source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg">
@@ -345,8 +332,6 @@ const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
-const viewIndicatorCoords = document.getElementById('view-indicator-coords');
-const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -419,11 +404,8 @@ function enforceCameraConstraints() {
 function updateViewIndicator() {
     if (viewer.camera?.position) {
         enforceCameraConstraints();
-        const { x, y, z } = viewer.camera.position;
-        viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
         const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100));
-        viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
     window.requestAnimationFrame(updateViewIndicator);

@@ -397,7 +397,7 @@
         .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
         #branch-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%), rgba(10,10,10,0.66); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0,0,0,0.28); }
         .branch-kicker { color: rgba(255,255,255,0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
-        .branch-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
+        .branch-title { margin: 10px 0 8px; color: white; font-family: "Castle Regular", "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
         .branch-copy { margin: 0; color: rgba(255,255,255,0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
     </style>
 </head>
@@ -411,9 +411,7 @@
     <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html"><span class="nav-icon">#</span><span>Academic</span></a>
 </div></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">PK</div><div class="hero-subtitle">A place that is warm enough to call home......</div></div></div>
-<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
-<div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
-<div id="coordinate-popover" aria-live="polite"><span class="coordinate-popover-label">Picked Point</span><span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span></div>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><div id="coordinate-popover" aria-live="polite"><span class="coordinate-popover-label">Picked Point</span><span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span></div>
 <div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-gallery" id="memory-gallery"></div></div></div>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
@@ -428,8 +426,6 @@ const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
-const viewIndicatorCoords = document.getElementById('view-indicator-coords');
-const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const coordinatePopover = document.getElementById('coordinate-popover');
 const coordinatePopoverValue = document.getElementById('coordinate-popover-value');
 const memoryOverlay = document.getElementById('memory-overlay');
@@ -680,7 +676,7 @@ function toggleMemoryBeacons() {
         memoryOverlay.setAttribute('aria-hidden', 'true');
     }
 }
-function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
+function updateViewIndicator() { if (viewer.camera?.position) { enforceCameraConstraints(); const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(MIN_ZOOM_PERCENT, Math.round((zoomReferenceDistance / currentDistance) * 100)); } window.requestAnimationFrame(updateViewIndicator); }
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
 window.addEventListener('keydown', hideHint, { once: true });

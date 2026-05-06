@@ -6,7 +6,7 @@
     <style>
         @font-face {
             font-family: "Castle Regular";
-            src: url("../../iconntext/font_castle/Castle-Regular.otf") format("opentype");
+            src: url("../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype");
             font-weight: 400;
             font-style: normal;
         }
@@ -67,7 +67,7 @@
         .nav-connector { width: 72px; height: 1px; background: rgba(255, 255, 255, 0.58); justify-self: center; }
         #subpages-panel { position: fixed; left: 24px; bottom: 24px; z-index: 135; width: min(360px, calc(100vw - 48px)); padding: 20px 18px 18px; border-radius: 24px; background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%), rgba(10, 10, 10, 0.66); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(14px); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28); }
         .subpages-kicker { color: rgba(255, 255, 255, 0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
-        .subpages-title { margin: 10px 0 8px; color: white; font-family: "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
+        .subpages-title { margin: 10px 0 8px; color: white; font-family: "Castle Regular", "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
         .subpages-copy { margin: 0 0 16px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
         .subpages-list { display: grid; gap: 10px; }
         .subpage-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.92); text-decoration: none; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
@@ -102,9 +102,7 @@
     <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html"><span class="nav-icon">#</span><span>Academic</span></a>
 </div></nav>
 <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Church</div><div class="hero-subtitle">A location within Atlantic College Memo</div></div></div>
-<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
-<div id="view-indicator" aria-live="polite"><div class="view-indicator-row"><span class="view-indicator-label">Coordinates</span><span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span></div><div class="view-indicator-row"><span class="view-indicator-label">Zoom</span><span class="view-indicator-value" id="view-indicator-zoom">100%</span></div></div>
-<div id="subpages-panel"><div class="subpages-kicker">Inside Church</div><h2 class="subpages-title">Sub-Locations</h2><p class="subpages-copy">Split the church into quieter interior fragments so each corner can become its own remembered stop.</p><div class="subpages-list">
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><div id="subpages-panel"><div class="subpages-kicker">Inside Church</div><h2 class="subpages-title">Sub-Locations</h2><p class="subpages-copy">Split the church into quieter interior fragments so each corner can become its own remembered stop.</p><div class="subpages-list">
     <a class="subpage-link" href="./Main_Hall.html"><span>Main Hall</span><span>↗</span></a>
     <a class="subpage-link" href="./Quiet_Pew.html"><span>Quiet Pew</span><span>↗</span></a>
     <a class="subpage-link" href="./Stone_Arch.html"><span>Stone Arch</span><span>↗</span></a>
@@ -123,8 +121,6 @@ const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
-const viewIndicatorCoords = document.getElementById('view-indicator-coords');
-const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -155,7 +151,7 @@ const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
-function updateViewIndicator() { if (viewer.camera?.position) { const { x, y, z } = viewer.camera.position; viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`; const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); viewIndicatorZoom.textContent = `${zoomPercent}%`; } window.requestAnimationFrame(updateViewIndicator); }
+function updateViewIndicator() { if (viewer.camera?.position) { const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); } window.requestAnimationFrame(updateViewIndicator); }
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }

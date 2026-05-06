@@ -572,7 +572,7 @@ body[data-shared-chrome="true"] .gift-visual {
 body[data-shared-chrome="true"] .gift-question {
     margin: 0;
     color: rgba(255, 255, 255, 0.92);
-    font-family: "Times New Roman", Times, serif;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
     font-size: clamp(24px, 2.2vw, 34px);
     line-height: 1.3;
 }
@@ -740,7 +740,7 @@ body[data-shared-chrome="true"] .page-identity-kicker {
 body[data-shared-chrome="true"] .page-identity-title {
     margin: 6px 0 6px;
     color: rgba(255, 255, 255, 0.96);
-    font-family: "Times New Roman", Times, serif;
+    font-family: "Castle Regular", "Times New Roman", Times, serif;
     font-size: clamp(17px, 2vw, 22px);
     font-weight: 700;
     line-height: 1;

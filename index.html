@@ -1541,20 +1541,7 @@
 
 <div id="hint">
     Drag to orbit. Scroll to zoom. Shift+drag to pan.
-</div>
-
-<div id="view-indicator" aria-live="polite">
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Coordinates</span>
-        <span class="view-indicator-value" id="view-indicator-coords">X 0.00 Y -8.00 Z 8.00</span>
-    </div>
-    <div class="view-indicator-row">
-        <span class="view-indicator-label">Zoom</span>
-        <span class="view-indicator-value" id="view-indicator-zoom">100%</span>
-    </div>
-</div>
-
-<div id="music-player" aria-label="Music player">
+</div><div id="music-player" aria-label="Music player">
     <button id="music-player-toggle" type="button" aria-label="Open music player" aria-expanded="false">
         <span class="music-icon">♪</span>
         <span>Music</span>
@@ -1636,8 +1623,6 @@ const musicShuffle = document.getElementById('music-shuffle');
 const musicLoop = document.getElementById('music-loop');
 const screenshotButton = document.getElementById('screenshot-button');
 const ambientAudio = document.getElementById('ambient-audio');
-const viewIndicatorCoords = document.getElementById('view-indicator-coords');
-const viewIndicatorZoom = document.getElementById('view-indicator-zoom');
 const pageIdentityCard = document.getElementById('page-identity-card');
 const focusMask = document.getElementById('focus-mask');
 const billboardLayer = document.getElementById('billboard-layer');
@@ -2187,13 +2172,10 @@ function updateBillboardPositions() {
 function updateViewIndicator() {
     if (viewer.camera?.position) {
         const sceneView = getSceneView();
-        const { x, y, z } = viewer.camera.position;
-        viewIndicatorCoords.textContent = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         const sceneLookAtVector = sceneView.target;
         const sceneInitialDistance = sceneView.position.distanceTo(sceneLookAtVector);
         const currentDistance = viewer.camera.position.distanceTo(sceneLookAtVector);
         const zoomPercent = Math.max(1, Math.round((sceneInitialDistance / currentDistance) * 100));
-        viewIndicatorZoom.textContent = `${zoomPercent}%`;
     }
 
     window.requestAnimationFrame(updateViewIndicator);
