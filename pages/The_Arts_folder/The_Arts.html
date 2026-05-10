@@ -355,17 +355,18 @@ initSharedChrome({
 });
 initSharedMusicPlayer({ homeHref: '../../index.html' });
 
-const initialCameraPosition = [7.28, 2.05, 17.33];
-const initialCameraLookAt = [0, 0, 0];
+const initialCameraPosition = [-4.13, 2.09, 9.24];
+const initialCameraLookAt = [1.38, 1.04, 0.20];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const DEFAULT_ZOOM_PERCENT = 100;
 const MIN_ZOOM_PERCENT = 72;
+const MAX_ZOOM_PERCENT = 450;
 const MIN_CAMERA_Y = -0.5;
 const MAX_CAMERA_Y = 7.5;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
 const maxCameraDistance = zoomReferenceDistance / (MIN_ZOOM_PERCENT / 100);
-const minCameraDistance = zoomReferenceDistance / 1.28;
+const minCameraDistance = zoomReferenceDistance / (MAX_ZOOM_PERCENT / 100);
 
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
@@ -448,8 +449,8 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../Scenes/musicdep_1.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching musicdep_1.ksplat`);
+        const response = await fetch('../../Scenes/TheArts.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching TheArts.ksplat`);
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -481,7 +482,7 @@ async function loadScene() {
         showHeroTitle();
     } catch (err) {
         console.error(err);
-        showLoadFailure(info, err, { scenePath: '../../Scenes/musicdep_1.ksplat' });
+        showLoadFailure(info, err, { scenePath: '../../Scenes/TheArts.ksplat' });
     }
 }
 

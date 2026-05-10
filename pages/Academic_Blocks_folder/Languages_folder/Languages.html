@@ -445,8 +445,8 @@ initSharedChrome({
 });
 initSharedMusicPlayer({ homeHref: '../../../index.html' });
 
-const initialCameraPosition = [0, -8, 8];
-const initialCameraLookAt = [0, 0, 0];
+const initialCameraPosition = [15.61, -9.74, 24.12];
+const initialCameraLookAt = [1.25, -7.24, -2.08];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 
@@ -507,8 +507,8 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../../PK.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+        const response = await fetch('../../../Scenes/Languages.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching Languages.ksplat`);
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -537,7 +537,7 @@ async function loadScene() {
         showHeroTitle();
     } catch (err) {
         console.error(err);
-        showLoadFailure(info, err, { scenePath: '../../../PK.ksplat' });
+        showLoadFailure(info, err, { scenePath: '../../../Scenes/Languages.ksplat' });
     }
 }
 

@@ -253,8 +253,8 @@ updateViewIndicator();
 
 async function loadScene() {
     try {
-        const response = await fetch('../../../Scenes/practice_room1.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching practice_room1.ksplat`);
+        const response = await fetch('../../../Scenes/Practiceroom_2.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching Practiceroom_2.ksplat`);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         await viewer.addSplatScene(blobUrl, {
@@ -279,7 +279,7 @@ async function loadScene() {
         showHeroTitle();
     } catch (err) {
         console.error(err);
-        showLoadFailure(info, err, { scenePath: '../../../Scenes/practice_room1.ksplat' });
+        showLoadFailure(info, err, { scenePath: '../../../Scenes/Practiceroom_2.ksplat' });
     }
 }
 

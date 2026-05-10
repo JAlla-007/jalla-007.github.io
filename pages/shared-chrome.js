@@ -1506,6 +1506,7 @@ export function initSharedChrome(options = {}) {
 
 export function bindSceneCoordinatePicker({ viewer, THREE }) {
     if (!viewer || !THREE) return;
+    bindCameraViewClipboard({ viewer });
 
     let coordinatePopover = document.getElementById('coordinate-popover');
     if (!coordinatePopover) {
@@ -1561,6 +1562,128 @@ export function bindSceneCoordinatePicker({ viewer, THREE }) {
         const { x, y, z } = hits[0].origin;
         const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
         await copyPickedCoordinates(coordinateMessage);
+    });
+}
+
+export function bindCameraViewClipboard({ viewer }) {
+    if (!viewer) return;
+    window.__sceneCameraClipboardViewer = viewer;
+    if (window.__sceneCameraClipboardBound === true) return;
+    window.__sceneCameraClipboardBound = true;
+
+    const formatVector = (vector) => `[${vector.x.toFixed(2)}, ${vector.y.toFixed(2)}, ${vector.z.toFixed(2)}]`;
+
+    const copyText = async (text) => {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        textarea.remove();
+        if (!copied) throw new Error('Clipboard copy blocked.');
+    };
+
+    const showNotice = (message) => {
+        let notice = document.getElementById('camera-copy-notice');
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'camera-copy-notice';
+            notice.style.cssText = [
+                'position:fixed',
+                'left:28px',
+                'top:28px',
+                'z-index:10001',
+                'padding:12px 14px',
+                'border:1px solid rgba(255,255,255,.22)',
+                'border-radius:10px',
+                'background:rgba(0,0,0,.72)',
+                'color:white',
+                'font:12px/1.4 Helvetica Neue,Arial,sans-serif',
+                'letter-spacing:.03em',
+                'white-space:pre',
+                'pointer-events:none',
+                'opacity:0',
+                'transition:opacity .18s ease'
+            ].join(';');
+            document.body.appendChild(notice);
+        }
+        notice.textContent = message;
+        notice.style.opacity = '1';
+        window.clearTimeout(notice.hideTimer);
+        notice.hideTimer = window.setTimeout(() => {
+            notice.style.opacity = '0';
+        }, 2600);
+    };
+
+    const showManualCopy = (snippet) => {
+        let panel = document.getElementById('camera-copy-panel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'camera-copy-panel';
+            panel.style.cssText = [
+                'position:fixed',
+                'left:28px',
+                'top:28px',
+                'z-index:10000',
+                'width:min(520px,calc(100vw - 56px))',
+                'padding:14px',
+                'border:1px solid rgba(255,255,255,.24)',
+                'border-radius:12px',
+                'background:rgba(0,0,0,.82)',
+                'color:white',
+                'font:12px/1.4 Helvetica Neue,Arial,sans-serif',
+                'box-shadow:0 18px 42px rgba(0,0,0,.35)'
+            ].join(';');
+            panel.innerHTML = `
+                <div style="margin-bottom:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.62);">Camera values</div>
+                <textarea id="camera-copy-textarea" style="box-sizing:border-box;width:100%;height:86px;padding:10px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.08);color:white;font:12px/1.45 monospace;resize:none;"></textarea>
+                <div style="margin-top:8px;color:rgba(255,255,255,.7);">Copy these values, then press Esc to close.</div>
+            `;
+            document.body.appendChild(panel);
+        }
+
+        const textarea = document.getElementById('camera-copy-textarea');
+        textarea.value = snippet;
+        textarea.focus();
+        textarea.select();
+    };
+
+    const copyCameraView = async () => {
+        const activeViewer = window.__sceneCameraClipboardViewer;
+        if (!activeViewer?.camera?.position) return;
+
+        const target = activeViewer.controls?.target || { x: 0, y: 0, z: 0 };
+        const cameraSnippet = `const initialCameraPosition = ${formatVector(activeViewer.camera.position)};\nconst initialCameraLookAt = ${formatVector(target)};`;
+        window.__lastCameraSnippet = cameraSnippet;
+
+        try {
+            await copyText(cameraSnippet);
+            showNotice(`Camera copied:\n${cameraSnippet}`);
+            console.log(cameraSnippet);
+        } catch (err) {
+            console.error(err);
+            showManualCopy(cameraSnippet);
+            showNotice('Auto-copy blocked. Select box opened.');
+            console.log(cameraSnippet);
+        }
+    };
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            document.getElementById('camera-copy-panel')?.remove();
+            return;
+        }
+        if (!event.ctrlKey || event.key !== '7') return;
+        event.preventDefault();
+        copyCameraView();
     });
 }
 

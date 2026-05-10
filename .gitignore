@@ -1,2 +1,22 @@
 .DS_Store
 **/.DS_Store
+
+# Local secrets and machine-specific config
+.env
+.env.*
+!.env.example
+*.local
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# Tool caches
+.cache/
+.turbo/

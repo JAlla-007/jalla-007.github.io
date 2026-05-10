@@ -1285,7 +1285,6 @@
             margin-top: 10px;
         }
 
-
         #page-identity-card {
             position: fixed;
             left: 20px;
@@ -1315,7 +1314,7 @@
         .page-identity-title {
             margin: 6px 0 6px;
             color: rgba(255, 255, 255, 0.96);
-            font-family: "Times New Roman", Times, serif;
+            font-family: "Castle Regular", "Times New Roman", Times, serif;
             font-size: clamp(17px, 2vw, 22px);
             font-weight: 700;
             line-height: 1;
@@ -1663,7 +1662,12 @@ const sceneCatalog = [
     { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.48, 0.55, -9.64), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-0.24, 2.66, 10.83), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
+    { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'languages', label: 'Languages', path: './Scenes/Languages.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'practice-room-2', label: 'Practice 2', path: './Scenes/Practiceroom_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'the-arts', label: 'The Arts', path: './Scenes/TheArts.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'friends-sign', label: 'Friends Sign', path: './Scenes/Friends_sign.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
+    { id: 'coastal-path-sign', label: 'Coastal Sign', path: './Scenes/coastal_path_sign.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView }
 ];
 const noItemSceneIds = new Set(['ac-day', 'ac-alt', 'ac-night']);
 let motionFrame = null;
@@ -2416,6 +2420,11 @@ function getDefaultHomepageSceneId() {
     return 'ac-night';
 }
 
+function getHashSceneId() {
+    const sceneId = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+    return sceneCatalog.some(({ id }) => id === sceneId) ? sceneId : null;
+}
+
 function applySceneUi(scene, isLoading = false) {
     reviewMemosButton.disabled = !scene.memories;
     reviewMemosButton.style.opacity = scene.memories ? '1' : '0.45';
@@ -2572,7 +2581,6 @@ ambientAudio.addEventListener('ended', async () => {
 });
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
-
 mapToggle.addEventListener('click', openMapOverlay);
 memoToggle.addEventListener('click', openMemoOverlay);
 mapClose.addEventListener('click', closeMapOverlay);
@@ -2819,7 +2827,7 @@ async function loadScene(sceneId = currentSceneId) {
     }
 }
 
-currentSceneId = getDefaultHomepageSceneId();
+currentSceneId = getHashSceneId() || getDefaultHomepageSceneId();
 loadScene(currentSceneId);
 </script>
 
