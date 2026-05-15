@@ -54,6 +54,7 @@
         body.scene-loading #subpages-panel,
         body.scene-loading #branch-panel,
         body.scene-loading #scene-hotspot,
+        body.scene-loading .destination-link,
         body.scene-loading #memory-overlay,
         body.scene-loading #focus-mask,
         body.scene-loading #side-tags,
@@ -273,6 +274,70 @@
         .hero-title-line { color: rgba(255, 255, 255, 0.98); font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(42px, 8vw, 92px); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58); }
 
         .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
+
+        .destination-link {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 123;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            text-transform: uppercase;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -100%) scale(0.92);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .destination-link.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -100%) scale(1);
+        }
+
+        .destination-link-pin {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 50% 50% 50% 8px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32);
+            transform: rotate(-45deg);
+            transition: background 0.22s ease, transform 0.22s ease;
+        }
+
+        .destination-link:hover .destination-link-pin {
+            background: rgba(255, 255, 255, 0.16);
+            transform: rotate(-45deg) translateY(-2px);
+        }
+
+        .destination-link-icon {
+            display: grid;
+            place-items: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 15px;
+            line-height: 1;
+            transform: rotate(45deg);
+        }
+
+        .destination-link-label {
+            white-space: nowrap;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.84);
+        }
     </style>
 </head>
 <body class="scene-loading">
@@ -309,6 +374,14 @@
 </div>
 
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><button id="audio-toggle" type="button" aria-label="Toggle sound">Sound Off</button>
+<a class="destination-link" id="music-department-link" href="../Music_Department_folder/Music_Department.html" aria-label="Open Music Department">
+    <span class="destination-link-pin" aria-hidden="true"><span class="destination-link-icon">♪</span></span>
+    <span class="destination-link-label">Music</span>
+</a>
+<a class="destination-link" id="glassroom-link" href="./The_Arts_regional/Glassroom.html" aria-label="Open Glassroom">
+    <span class="destination-link-pin" aria-hidden="true"><span class="destination-link-icon">◇</span></span>
+    <span class="destination-link-label">Glassroom</span>
+</a>
 
 <audio id="ambient-audio" loop preload="auto">
     <source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg">
@@ -325,13 +398,15 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260501a';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260501f';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
+const musicDepartmentLink = document.getElementById('music-department-link');
+const glassroomLink = document.getElementById('glassroom-link');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -379,6 +454,10 @@ const viewer = new GaussianSplats3D.Viewer({
 });
 
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const destinationLinks = [
+    { element: musicDepartmentLink, anchor: new THREE.Vector3(20.32, 5.21, -10.70) },
+    { element: glassroomLink, anchor: new THREE.Vector3(-8.10, 0.06, 10.91) }
+];
 
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
@@ -438,6 +517,34 @@ function showHeroTitle() {
     });
 }
 
+function updateDestinationLinks() {
+    if (!viewer.camera) {
+        window.requestAnimationFrame(updateDestinationLinks);
+        return;
+    }
+
+    destinationLinks.forEach(({ element, anchor }) => {
+        if (!element) return;
+        const projectedPoint = anchor.clone().project(viewer.camera);
+        const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+            && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+            && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+
+        if (!isVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+
+        const x = ((projectedPoint.x + 1) / 2) * window.innerWidth;
+        const y = ((-projectedPoint.y + 1) / 2) * window.innerHeight;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        element.classList.add('visible');
+    });
+
+    window.requestAnimationFrame(updateDestinationLinks);
+}
+
 
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
@@ -446,6 +553,7 @@ window.addEventListener('pointerdown', hideHeroTitle, { once: true });
 window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
 updateViewIndicator();
+updateDestinationLinks();
 
 async function loadScene() {
     try {

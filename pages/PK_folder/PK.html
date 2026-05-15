@@ -421,13 +421,11 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, initSharedMusicPlayer, bindCameraViewClipboard, showLoadFailure } from '../shared-chrome.js?v=20260501a';
+import { initSharedChrome, initSharedMusicPlayer, bindSceneCoordinatePicker, showLoadFailure } from '../shared-chrome.js?v=20260501f';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
-const coordinatePopover = document.getElementById('coordinate-popover');
-const coordinatePopoverValue = document.getElementById('coordinate-popover-value');
 const memoryOverlay = document.getElementById('memory-overlay');
 const memoryClose = document.getElementById('memory-close');
 const memoryKicker = document.getElementById('memory-kicker');
@@ -506,7 +504,6 @@ let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
 let activeMemory = null;
 let activeMemoryImageIndex = 0;
-let coordinatePopoverTimer = null;
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
     const cameraPosition = viewer.camera.position;
@@ -520,44 +517,6 @@ function enforceCameraConstraints() {
 function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
 function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
 function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
-function showCoordinatePopover(message) {
-    coordinatePopoverValue.textContent = message;
-    coordinatePopover.classList.add('visible');
-    if (coordinatePopoverTimer) window.clearTimeout(coordinatePopoverTimer);
-    coordinatePopoverTimer = window.setTimeout(() => {
-        coordinatePopover.classList.remove('visible');
-    }, 2600);
-}
-async function copyPickedCoordinates(message) {
-    try {
-        await navigator.clipboard.writeText(message);
-        showCoordinatePopover(`${message} Copied.`);
-    } catch (err) {
-        showCoordinatePopover(message);
-    }
-}
-function bindCoordinatePicker() {
-    const canvas = viewer.renderer?.domElement;
-    if (!canvas || canvas.dataset.coordinatePickerBound === 'true') return;
-    canvas.dataset.coordinatePickerBound = 'true';
-    canvas.addEventListener('dblclick', async (event) => {
-        if (!viewer.camera || !viewer.splatMesh) return;
-        const rect = canvas.getBoundingClientRect();
-        const mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
-        const renderDimensions = new THREE.Vector2();
-        const hits = [];
-        viewer.getRenderDimensions(renderDimensions);
-        viewer.raycaster.setFromCameraAndScreenPosition(viewer.camera, mousePosition, renderDimensions);
-        viewer.raycaster.intersectSplatMesh(viewer.splatMesh, hits);
-        if (!hits.length) {
-            showCoordinatePopover('No splat hit found at that point.');
-            return;
-        }
-        const { x, y, z } = hits[0].origin;
-        const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
-        await copyPickedCoordinates(coordinateMessage);
-    });
-}
 function projectSceneBeacon(anchor, element) {
     const projectedPoint = anchor.clone().project(viewer.camera);
     const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
@@ -714,8 +673,7 @@ async function loadScene() {
         window.setTimeout(() => { info.style.display = 'none'; }, 450);
         viewer.start();
         document.body.classList.remove('scene-loading');
-        bindCoordinatePicker();
-        bindCameraViewClipboard({ viewer });
+        bindSceneCoordinatePicker({ viewer, THREE });
         showHeroTitle();
     } catch (err) {
         console.error(err);

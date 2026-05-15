@@ -249,12 +249,6 @@
             mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
         }
 
-        .map-line {
-            position: absolute;
-            border-top: 1px dashed rgba(255, 255, 255, 0.22);
-            transform-origin: left center;
-        }
-
         .map-node {
             position: absolute;
             display: inline-flex;
@@ -645,7 +639,7 @@
         .items-title {
             margin: 14px 0 10px;
             color: white;
-            font-family: "Times New Roman", Times, serif;
+            font-family: "Castle Regular", "Times New Roman", Times, serif;
             font-size: clamp(32px, 4.4vw, 50px);
             line-height: 0.98;
         }
@@ -1437,12 +1431,6 @@
             <div class="map-grid"></div>
             <div class="map-caption">Interactive Map</div>
             <div class="map-coordinate-marker" id="map-coordinate-marker" aria-hidden="true"></div>
-            <div class="map-line" style="left: 38%; top: 50%; width: 19%; transform: rotate(-18deg);"></div>
-            <div class="map-line" style="left: 42%; top: 52%; width: 17%; transform: rotate(28deg);"></div>
-            <div class="map-line" style="left: 32%; top: 44%; width: 20%; transform: rotate(160deg);"></div>
-            <div class="map-line" style="left: 34%; top: 55%; width: 18%; transform: rotate(208deg);"></div>
-            <div class="map-line" style="left: 47%; top: 44%; width: 20%; transform: rotate(350deg);"></div>
-            <div class="map-line" style="left: 36%; top: 40%; width: 18%; transform: rotate(268deg);"></div>
             <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Atlantic College Memo</span></div>
             <a class="map-node has-icon" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;"><img class="map-node-icon" src="./iconntext/Map_icons/TheArts_icon.PNG" alt=""><span>The Arts</span></a>
             <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
@@ -1484,12 +1472,9 @@
     <div class="items-panel">
         <button class="map-close" id="items-close" type="button" aria-label="Close items prompt">×</button>
         <div class="items-kicker">Find Items</div>
-        <h2 class="items-title">Meaning hides inside objects.</h2>
-        <p class="items-copy">
-            Items contain memories, and some of them carry a little more meaning than the rest.
-            Would you like to discover the items and the stories behind them?
-        </p>
-        <div class="items-actions">
+        <h2 class="items-title">no items to be found in this region</h2>
+        <p class="items-copy"></p>
+        <div class="items-actions" style="display: none;">
             <button class="items-action" id="items-yes" type="button">Yes</button>
             <button class="items-action" id="items-hell-yes" type="button">Hell Yes</button>
         </div>
@@ -1572,7 +1557,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { bindSceneCoordinatePicker, showLoadFailure } from './pages/shared-chrome.js?v=20260501a';
+import { bindSceneCoordinatePicker, showLoadFailure } from './pages/shared-chrome.js?v=20260501f';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -2119,17 +2104,9 @@ function closeMemoOverlay() {
 }
 
 function openItemsOverlay() {
-    if (noItemSceneIds.has(currentSceneId)) {
-        if (itemsTitle) itemsTitle.textContent = 'no items to be found in this region';
-        if (itemsCopy) itemsCopy.textContent = '';
-        if (itemsActions) itemsActions.style.display = 'none';
-    } else {
-        if (itemsTitle) itemsTitle.textContent = 'Meaning hides inside objects.';
-        if (itemsCopy) {
-            itemsCopy.textContent = 'Items contain memories, and some of them carry a little more meaning than the rest. Would you like to discover the items and the stories behind them?';
-        }
-        if (itemsActions) itemsActions.style.display = '';
-    }
+    if (itemsTitle) itemsTitle.textContent = 'no items to be found in this region';
+    if (itemsCopy) itemsCopy.textContent = '';
+    if (itemsActions) itemsActions.style.display = 'none';
 
     itemsOverlay.classList.add('visible');
     itemsOverlay.setAttribute('aria-hidden', 'false');

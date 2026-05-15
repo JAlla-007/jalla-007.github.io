@@ -391,12 +391,6 @@ body[data-shared-chrome="true"] .map-close {
     cursor: pointer;
 }
 
-body[data-shared-chrome="true"] .map-line {
-    position: absolute;
-    border-top: 1px dashed rgba(255, 255, 255, 0.22);
-    transform-origin: left center;
-}
-
 body[data-shared-chrome="true"] .map-node {
     position: absolute;
     display: inline-flex;
@@ -765,7 +759,7 @@ body[data-shared-chrome="true"] #coordinate-popover {
     right: 18px;
     bottom: 18px;
     z-index: 151;
-    max-width: min(320px, calc(100vw - 36px));
+    width: min(360px, calc(100vw - 36px));
     padding: 10px 12px;
     border-radius: 16px;
     background: rgba(0, 0, 0, 0.62);
@@ -782,6 +776,7 @@ body[data-shared-chrome="true"] #coordinate-popover {
 
 body[data-shared-chrome="true"] #coordinate-popover.visible {
     opacity: 1;
+    pointer-events: auto;
     transform: translateY(0);
 }
 
@@ -799,6 +794,31 @@ body[data-shared-chrome="true"] .coordinate-popover-value {
     font-size: 12px;
     letter-spacing: 0.04em;
     line-height: 1.45;
+}
+
+body[data-shared-chrome="true"] .coordinate-copy-field {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 8px;
+    padding: 8px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.96);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    outline: none;
+}
+
+body[data-shared-chrome="true"] .coordinate-copy-field:focus {
+    border-color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+body[data-shared-chrome="true"] .coordinate-copy-field[hidden] {
+    display: none;
 }
 `;
 
@@ -891,10 +911,6 @@ function ensureTopNav(homeHref) {
 }
 
 function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
-    const lines = (mapConfig.lines || []).map((line) => `
-        <div class="map-line" style="left: ${line.left}; top: ${line.top}; width: ${line.width}; transform: rotate(${line.rotate});"></div>
-    `).join('');
-
     const nodes = (mapConfig.nodes || []).map((node) => `
         <a class="map-node${node.icon ? ' has-icon' : ''}" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.icon ? `<img class="map-node-icon" src="${node.icon}" alt="">` : ''}<span>${node.label}</span></a>
     `).join('');
@@ -904,7 +920,6 @@ function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
             <div class="map-viewport">
                 <div class="map-canvas" data-map-canvas>
                     <div class="map-grid"></div>
-                    ${lines}
                     <div class="map-node home-node${mapConfig.center.icon ? ' has-icon' : ''}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></div>
                     ${nodes}
                 </div>
@@ -1023,13 +1038,11 @@ function bindMapPan(overlayId, mapConfig) {
 
 function buildItemsOverlayMarkup(itemsConfig = {}) {
     const kicker = itemsConfig.kicker || 'Find Items';
-    const title = itemsConfig.title || 'Meaning hides inside objects.';
-    const copy = itemsConfig.copy || `
-        Items contain memories, and some of them carry a little more meaning than the rest.
-        Would you like to discover the items and the stories behind them?
-    `;
+    const title = itemsConfig.title || 'no items to be found in this region';
+    const copy = itemsConfig.copy || '';
     const primaryLabel = itemsConfig.primaryLabel || 'Yes';
     const secondaryLabel = itemsConfig.secondaryLabel || 'Hell Yes';
+    const hasActions = Boolean(itemsConfig.primaryHref || itemsConfig.secondaryHref);
 
     return `
         <div class="items-panel">
@@ -1037,7 +1050,7 @@ function buildItemsOverlayMarkup(itemsConfig = {}) {
             <div class="items-kicker">${kicker}</div>
             <h2 class="items-title">${title}</h2>
             <p class="items-copy">${copy}</p>
-            <div class="items-actions">
+            <div class="items-actions" ${hasActions ? '' : 'hidden'}>
                 <button class="items-action" id="items-yes" type="button">${primaryLabel}</button>
                 <button class="items-action" id="items-hell-yes" type="button">${secondaryLabel}</button>
             </div>
@@ -1516,29 +1529,52 @@ export function bindSceneCoordinatePicker({ viewer, THREE }) {
         coordinatePopover.innerHTML = `
             <span class="coordinate-popover-label">Picked Point</span>
             <span class="coordinate-popover-value" id="coordinate-popover-value">Double-click the scene to capture coordinates.</span>
+            <input class="coordinate-copy-field" id="coordinate-copy-field" type="text" readonly hidden aria-label="Selected coordinates">
         `;
         document.body.appendChild(coordinatePopover);
     }
 
     const coordinatePopoverValue = document.getElementById('coordinate-popover-value');
+    let coordinateCopyField = document.getElementById('coordinate-copy-field');
+    if (!coordinateCopyField) {
+        coordinateCopyField = document.createElement('input');
+        coordinateCopyField.className = 'coordinate-copy-field';
+        coordinateCopyField.id = 'coordinate-copy-field';
+        coordinateCopyField.type = 'text';
+        coordinateCopyField.readOnly = true;
+        coordinateCopyField.hidden = true;
+        coordinateCopyField.setAttribute('aria-label', 'Selected coordinates');
+        coordinatePopover.appendChild(coordinateCopyField);
+    }
     let coordinatePopoverTimer = null;
 
-    const showCoordinatePopover = (message) => {
+    const selectCoordinateField = () => {
+        coordinateCopyField.focus();
+        coordinateCopyField.select();
+    };
+
+    coordinateCopyField.addEventListener('focus', selectCoordinateField);
+    coordinateCopyField.addEventListener('pointerdown', () => {
+        window.setTimeout(selectCoordinateField, 0);
+    });
+
+    const showCoordinatePopover = (message, coordinateText = '') => {
         coordinatePopoverValue.textContent = message;
+        coordinateCopyField.value = coordinateText;
+        coordinateCopyField.hidden = !coordinateText;
         coordinatePopover.classList.add('visible');
         if (coordinatePopoverTimer) window.clearTimeout(coordinatePopoverTimer);
+        if (coordinateText) {
+            window.setTimeout(selectCoordinateField, 0);
+            return;
+        }
         coordinatePopoverTimer = window.setTimeout(() => {
             coordinatePopover.classList.remove('visible');
         }, 2600);
     };
 
-    const copyPickedCoordinates = async (message) => {
-        try {
-            await navigator.clipboard.writeText(message);
-            showCoordinatePopover(`${message} Copied.`);
-        } catch (err) {
-            showCoordinatePopover(message);
-        }
+    const showPickedCoordinates = (message) => {
+        showCoordinatePopover('Coordinates ready to copy.', message);
     };
 
     const canvas = viewer.renderer?.domElement;
@@ -1561,7 +1597,7 @@ export function bindSceneCoordinatePicker({ viewer, THREE }) {
         }
         const { x, y, z } = hits[0].origin;
         const coordinateMessage = `X ${x.toFixed(2)} Y ${y.toFixed(2)} Z ${z.toFixed(2)}`;
-        await copyPickedCoordinates(coordinateMessage);
+        showPickedCoordinates(coordinateMessage);
     });
 }
 
