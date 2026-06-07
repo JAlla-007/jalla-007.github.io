@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Watch Tower - Atlantic College Memo</title>
+    <style>
+        @font-face {
+            font-family: "Castle Regular";
+            src: url("../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 125;
+            pointer-events: none;
+            opacity: 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.68) 28%, rgba(0, 0, 0, 0.24) 58%, rgba(0, 0, 0, 0) 100%);
+            transition: opacity 2s ease;
+        }
+
+        body.intro-mask-hidden::before { opacity: 0; }
+
+        #info {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+
+        #info.hidden { opacity: 0; }
+        body.scene-loading #nav,
+        body.scene-loading #audio-toggle,
+        body.scene-loading #view-indicator,
+        body.scene-loading #hero-title,
+        body.scene-loading #subpages-panel,
+        body.scene-loading #branch-panel,
+        body.scene-loading #scene-hotspot,
+        body.scene-loading #memory-overlay,
+        body.scene-loading #focus-mask,
+        body.scene-loading #side-tags,
+        body.scene-loading #page-identity-card,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+
+        #nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            z-index: 160;
+        }
+
+        #nav:hover .nav-shell, #nav:focus-within .nav-shell { transform: translateY(0); }
+
+        .nav-shell {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr);
+            align-items: center;
+            width: 100%;
+            height: 54px;
+            margin: 0;
+            padding: 0 18px;
+            border-radius: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+                rgba(10, 10, 10, 0.26);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+            transform: translateY(-38px);
+            transition: transform 0.32s ease;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 34px;
+            padding: 0 10px;
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-link:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+        .nav-icon { font-size: 14px; line-height: 1; }
+        .nav-connector { width: 72px; height: 1px; background: rgba(255, 255, 255, 0.58); justify-self: center; }
+
+        #subpages-panel {
+            position: fixed;
+            left: 24px;
+            bottom: 24px;
+            z-index: 135;
+            width: min(360px, calc(100vw - 48px));
+            padding: 20px 18px 18px;
+            border-radius: 24px;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%), rgba(10, 10, 10, 0.66);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+        }
+        .subpages-kicker { color: rgba(255, 255, 255, 0.56); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+        .subpages-title { margin: 10px 0 8px; color: white; font-family: "Castle Regular", "Times New Roman", Times, serif; font-size: 30px; line-height: 1; }
+        .subpages-copy { margin: 0 0 16px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
+        .subpages-list { display: grid; gap: 10px; }
+        .subpage-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.92); text-decoration: none; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease, transform 0.2s ease; }
+        .subpage-link:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(2px); }
+        .subpage-link span:last-child { color: rgba(255, 255, 255, 0.54); font-size: 13px; letter-spacing: normal; }
+
+        .loading-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        .loading-gif {
+            display: block;
+            width: min(220px, 42vw);
+            height: auto;
+            border-radius: 18px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.34));
+        }
+
+        .loading-text {
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            padding-left: 0.28em;
+        }
+
+        #hint, #audio-toggle {
+            position: fixed;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.88);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        #hint {
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 120;
+            max-width: min(92vw, 420px);
+            padding: 12px 16px;
+            font-size: 12px;
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        #hint.hidden { opacity: 0; transform: translateX(-50%) translateY(10px); }
+
+        #audio-toggle {
+            right: 16px;
+            bottom: 18px;
+            z-index: 145;
+            min-width: 132px;
+            min-height: 42px;
+            padding: 0 16px;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        #view-indicator { position: fixed; top: 68px; right: 18px; z-index: 150; min-width: 228px; padding: 12px 14px; border-radius: 18px; background: rgba(0,0,0,0.58); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(0,0,0,0.24); color: rgba(255,255,255,0.92); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        .view-indicator-label { display: block; color: rgba(255,255,255,0.54); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+        .view-indicator-value { display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.04em; line-height: 1.45; }
+        .view-indicator-row + .view-indicator-row { margin-top: 10px; }
+
+        #hero-title {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 130;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 2s ease, transform 2s ease;
+        }
+
+        #hero-title.visible { opacity: 1; transform: translateY(0); }
+        #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
+
+        .hero-text { text-align: center; padding: 0 24px; }
+
+        .hero-title-line { color: rgba(255, 255, 255, 0.98); font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(42px, 8vw, 92px); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58); }
+
+        .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
+        .scene-beacon {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 122;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid rgba(255, 228, 176, 0.22);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.9);
+            transition: opacity 0.22s ease, transform 0.22s ease, background 0.22s ease, width 0.22s ease, padding 0.22s ease;
+        }
+        .scene-beacon.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .scene-beacon.near {
+            width: auto;
+            min-height: 40px;
+            padding: 0 14px 0 8px;
+            background: rgba(28, 18, 10, 0.74);
+        }
+        .scene-beacon-core {
+            position: relative;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            flex: 0 0 26px;
+            overflow: hidden;
+            mix-blend-mode: screen;
+        }
+        .scene-beacon-gif {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.9);
+        }
+        .scene-beacon-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: max-width 0.22s ease, opacity 0.18s ease, transform 0.22s ease, margin-left 0.22s ease;
+        }
+        .scene-beacon.near .scene-beacon-label {
+            max-width: 150px;
+            margin-left: 10px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .floating-scene-sentence {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 123;
+            max-width: min(360px, 78vw);
+            color: rgba(255,255,255,0.92);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.25;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.75);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            text-align: center;
+            white-space: normal;
+        }
+        .floating-scene-sentence.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+        #memory-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 175;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.56);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #memory-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .memory-panel {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 48%) minmax(0, 1fr);
+            gap: 24px;
+            width: min(94vw, 920px);
+            height: min(80vh, 720px);
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 24px;
+            border-radius: 28px;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 24%), rgba(12, 12, 12, 0.9);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 28px 70px rgba(0,0,0,0.42);
+        }
+        .memory-panel.memory-panel-photo-only {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 56px);
+            max-height: calc(100vh - 56px);
+            padding: 12px;
+            overflow: visible;
+        }
+        .memory-panel.memory-panel-photo-only .memory-title,
+        .memory-panel.memory-panel-photo-only .memory-copy {
+            display: none;
+        }
+        .memory-panel.memory-panel-photo-only .memory-gallery {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border-radius: 18px;
+            background: transparent;
+            border: 0;
+        }
+        .memory-panel.memory-panel-photo-only .memory-photo {
+            width: auto;
+            height: auto;
+            max-width: inherit;
+            max-height: inherit;
+            border-radius: 16px;
+        }
+        .memory-panel.memory-panel-photo-only .memory-photo img {
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            object-fit: contain;
+            border-radius: 16px;
+        }
+        .memory-panel.memory-panel-photo-only .memory-gallery-count {
+            display: none;
+        }
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .memory-gallery-nav[hidden] {
+            display: none;
+        }
+        .memory-gallery-prev { left: 12px; }
+        .memory-gallery-next { right: 12px; }
+        .memory-close {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .memory-title {
+            min-width: 0;
+            margin: 0;
+            padding-right: 62px;
+            color: white;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(26px, 3vw, 40px);
+            line-height: 1.05;
+        }
+        .memory-copy {
+            margin: 14px 0 0;
+            color: rgba(255,255,255,0.78);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+        .memory-gallery {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .memory-photo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        .memory-photo img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+        @media (max-width: 720px) {
+            .memory-panel {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px auto;
+                height: auto;
+                max-height: 88vh;
+            }
+        }
+    </style>
+</head>
+<body class="scene-loading">
+<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"></div></div>
+<nav id="nav" aria-label="Primary"><div class="nav-shell">
+    <a class="nav-link" href="../The_Arts_folder/The_Arts.html"><span class="nav-icon">+</span><span>The Arts</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html"><span class="nav-icon">#</span><span>Academic</span></a>
+</div></nav>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Watch Tower</div><div class="hero-subtitle">The adventurer's base</div></div></div>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><div id="subpages-panel"><div class="subpages-kicker">Watch Tower</div><h2 class="subpages-title">Scene</h2><p class="subpages-copy">A dedicated watch tower scan page for orbiting the new processed scene.</p><div class="subpages-list">
+    <a class="subpage-link" href="../Seafront_folder/Seafront.html"><span>Seafront</span><span>↗</span></a>
+    <a class="subpage-link" href="../../index.html"><span>Home</span><span>↗</span></a>
+</div></div>
+<div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-gallery" id="memory-gallery"></div><div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p></div></div></div>
+<button id="audio-toggle" type="button">Sound Off</button>
+<audio id="ambient-audio" loop preload="auto"><source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import * as THREE from 'three';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260604nochurch';
+const info = document.getElementById('info');
+const hint = document.getElementById('hint');
+const nav = document.getElementById('nav');
+const heroTitle = document.getElementById('hero-title');
+const ambientAudio = document.getElementById('ambient-audio');
+const memoryOverlay = document.getElementById('memory-overlay');
+const memoryClose = document.getElementById('memory-close');
+const memoryTitle = document.getElementById('memory-title');
+const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
+const memoryPanel = memoryOverlay.querySelector('.memory-panel');
+initSharedChrome({
+    homeHref: '../../index.html',
+    regionalMap: {
+        caption: 'Watch Tower Map',
+        center: { label: 'Watch Tower', left: '38%', top: '45%' },
+        lines: [
+            { left: '39%', top: '50%', width: '17%', rotate: '28deg' }
+        ],
+        nodes: [
+            { label: 'Seafront', href: '../Seafront_folder/Seafront.html', left: '58%', top: '34%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Watch Tower',
+            copy: 'A dedicated scan page for the watch tower scene.',
+            actions: []
+        }
+    }
+});
+initSharedMusicPlayer({ homeHref: '../../index.html' });
+const initialCameraPosition = [4.28, 2.63, 3.40];
+const initialCameraLookAt = [1.81, 0.50, 0.74];
+const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const MEMORY_LABEL_REVEAL_DISTANCE = 4.2;
+const FLOATING_SENTENCE_REVEAL_DISTANCE = 6;
+const MEMORY_BEACONS = [
+    {
+        id: 'carpe-diem',
+        label: 'Carpe Diem',
+        anchor: new THREE.Vector3(1.29, -0.42, -0.82),
+        title: 'Carpe Diem',
+        copy: '',
+        images: ['./Memories/Carpe Diem/e8785068f99ca6201c931ab447d23478.jpg']
+    },
+    {
+        id: 'bbq',
+        label: 'BBQ',
+        anchor: new THREE.Vector3(2.45, -1.18, 0.61),
+        title: 'Barbecue on the Tower',
+        copy: 'Great views, great vibes\nhowever\nI don’t recommend\nThe wind is too strong up here\nSuch a pain…',
+        images: [
+            './Memories/BBQ/93eeb24f744cf3099fb5561f460e1fe0.jpg',
+            './Memories/BBQ/3c0c48c06ab1a2888fc34aa556ca13c5.jpg',
+            './Memories/BBQ/59096771a13de9be2e498fa3ae7df5c8.jpg'
+        ]
+    },
+    {
+        id: 'light-house',
+        label: 'Light House',
+        anchor: new THREE.Vector3(-0.12, -0.14, 1.10),
+        title: 'Light House',
+        copy: '',
+        images: ['./Memories/light house/X -0.12 Y -0.14 Z 1.10.jpg']
+    }
+];
+const FLOATING_SENTENCES = [
+    {
+        anchor: new THREE.Vector3(1.89, 1.00, -1.57),
+        text: 'spy on the castle...'
+    },
+    {
+        anchor: new THREE.Vector3(-0.92, 1.02, -0.74),
+        text: 'wait for a sunset or sunrise'
+    },
+    {
+        anchor: new THREE.Vector3(1.63, -0.39, -1.29),
+        text: 'leave your name...'
+    },
+    {
+        anchor: new THREE.Vector3(0.88, 0.55, -0.58),
+        text: "spend a night up here? (or perhaps don't)"
+    }
+];
+let memoryBeaconsVisible = false;
+let memoryBeaconElements = [];
+let floatingSentenceElements = [];
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
+let memoryCloseResetTimer = null;
+function updateViewIndicator() { if (viewer.camera?.position) { const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); } window.requestAnimationFrame(updateViewIndicator); }
+function hideHint() { if (!hint || hint.classList.contains('hidden')) return; hint.classList.add('hidden'); window.setTimeout(() => { hint.style.display = 'none'; }, 350); }
+function hideHeroTitle() { if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return; heroTitle.classList.add('hidden'); document.body.classList.add('intro-mask-hidden'); window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000); }
+function showHeroTitle() { heroTitle.style.display = 'flex'; heroTitle.classList.remove('hidden'); document.body.classList.remove('intro-mask-hidden'); window.requestAnimationFrame(() => { heroTitle.classList.add('visible'); }); }
+function projectSceneBeacon(anchor, element) {
+    const projectedPoint = anchor.clone().project(viewer.camera);
+    const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+        && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+        && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+    if (!isVisible) {
+        element.classList.remove('visible', 'near');
+        return false;
+    }
+    element.style.left = `${((projectedPoint.x + 1) / 2) * window.innerWidth}px`;
+    element.style.top = `${((-projectedPoint.y + 1) / 2) * window.innerHeight}px`;
+    element.classList.add('visible');
+    return true;
+}
+function renderMemoryGallery() {
+    if (!activeMemory?.images?.length) {
+        memoryPanel.classList.remove('memory-panel-photo-only');
+        memoryGallery.innerHTML = '';
+        return;
+    }
+    const isPhotoOnly = activeMemory.images.length === 1 && !(activeMemory.copy || '').trim();
+    memoryPanel.classList.toggle('memory-panel-photo-only', isPhotoOnly);
+    activeMemoryImageIndex = ((activeMemoryImageIndex % activeMemory.images.length) + activeMemory.images.length) % activeMemory.images.length;
+    const showNav = activeMemory.images.length > 1;
+    memoryGallery.innerHTML = `
+        <figure class="memory-photo">
+            <img src="${activeMemory.images[activeMemoryImageIndex]}" alt="${activeMemory.title}" decoding="async">
+        </figure>
+        <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo" ${showNav ? '' : 'hidden'}>‹</button>
+        <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo" ${showNav ? '' : 'hidden'}>›</button>
+        <div class="memory-gallery-count">${activeMemoryImageIndex + 1} / ${activeMemory.images.length}</div>
+    `;
+}
+function openMemory(memory) {
+    if (memoryCloseResetTimer) {
+        window.clearTimeout(memoryCloseResetTimer);
+        memoryCloseResetTimer = null;
+    }
+    activeMemory = memory;
+    activeMemoryImageIndex = 0;
+    memoryTitle.textContent = memory.title;
+    memoryCopy.textContent = memory.copy;
+    renderMemoryGallery();
+    memoryOverlay.classList.add('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+function closeMemory() {
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+    if (memoryCloseResetTimer) window.clearTimeout(memoryCloseResetTimer);
+    memoryCloseResetTimer = window.setTimeout(() => {
+        if (memoryOverlay.classList.contains('visible')) return;
+        memoryPanel.classList.remove('memory-panel-photo-only');
+        memoryCloseResetTimer = null;
+    }, 320);
+}
+function stepMemoryGallery(direction) {
+    if (!activeMemory?.images?.length) return;
+    activeMemoryImageIndex += direction;
+    renderMemoryGallery();
+}
+function ensureMemoryBeacons() {
+    if (memoryBeaconElements.length) return;
+    memoryBeaconElements = MEMORY_BEACONS.map((memory) => {
+        const element = document.createElement('button');
+        element.type = 'button';
+        element.className = 'scene-beacon memory-beacon';
+        element.setAttribute('aria-label', `Open memory ${memory.title}`);
+        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../iconntext/Beacon.GIF" alt=""></span><span class="scene-beacon-label">${memory.label}</span>`;
+        element.addEventListener('click', () => openMemory(memory));
+        document.body.appendChild(element);
+        return { element, memory };
+    });
+    floatingSentenceElements = FLOATING_SENTENCES.map((sentence) => {
+        const element = document.createElement('div');
+        element.className = 'floating-scene-sentence';
+        element.textContent = sentence.text;
+        document.body.appendChild(element);
+        return { element, sentence };
+    });
+}
+function updateMemoryBeacons() {
+    if (!viewer.camera) {
+        window.requestAnimationFrame(updateMemoryBeacons);
+        return;
+    }
+    memoryBeaconElements.forEach(({ element, memory }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible', 'near');
+            return;
+        }
+        if (projectSceneBeacon(memory.anchor, element)) {
+            element.classList.toggle('near', viewer.camera.position.distanceTo(memory.anchor) <= MEMORY_LABEL_REVEAL_DISTANCE);
+        }
+    });
+    floatingSentenceElements.forEach(({ element, sentence }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        if (projectSceneBeacon(sentence.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(sentence.anchor);
+            element.classList.toggle('visible', cameraDistance <= FLOATING_SENTENCE_REVEAL_DISTANCE);
+        }
+    });
+    window.requestAnimationFrame(updateMemoryBeacons);
+}
+function bindReviewMemosButton() {
+    const reviewMemosButton = document.getElementById('review-memos');
+    if (!reviewMemosButton || reviewMemosButton.dataset.watchTowerMemoriesBound === 'true') return;
+    const replacement = reviewMemosButton.cloneNode(true);
+    replacement.dataset.watchTowerMemoriesBound = 'true';
+    reviewMemosButton.replaceWith(replacement);
+    replacement.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        ensureMemoryBeacons();
+        memoryBeaconsVisible = !memoryBeaconsVisible;
+        replacement.classList.toggle('active', memoryBeaconsVisible);
+        if (!memoryBeaconsVisible) closeMemory();
+    });
+}
+window.addEventListener('pointerdown', hideHint, { once: true });
+window.addEventListener('wheel', hideHint, { once: true });
+window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', hideHeroTitle, { once: true });
+window.addEventListener('wheel', hideHeroTitle, { once: true });
+window.addEventListener('keydown', hideHeroTitle, { once: true });
+updateViewIndicator();
+updateMemoryBeacons();
+bindReviewMemosButton();
+memoryClose.addEventListener('click', closeMemory);
+memoryOverlay.addEventListener('click', (event) => {
+    if (event.target === memoryOverlay) closeMemory();
+});
+memoryGallery.addEventListener('click', (event) => {
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
+});
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeMemory();
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowLeft') {
+        stepMemoryGallery(-1);
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowRight') {
+        stepMemoryGallery(1);
+    }
+});
+async function loadScene() {
+    try {
+        const response = await fetch('../../Scenes/watchtower.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching watchtower.ksplat`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        await viewer.addSplatScene(blobUrl, { format: GaussianSplats3D.SceneFormat.KSplat, rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w], showLoadingUI: false, progressiveLoad: false });
+        if (viewer.controls) { viewer.controls.minPolarAngle = 0; viewer.controls.maxPolarAngle = Math.PI; viewer.controls.enablePan = true; viewer.controls.update(); }
+        info.classList.add('hidden');
+        window.setTimeout(() => { info.style.display = 'none'; }, 450);
+        viewer.start();
+        document.body.classList.remove('scene-loading');
+        bindSceneCoordinatePicker({ viewer, THREE });
+        showHeroTitle();
+    } catch (err) {
+        console.error(err);
+        showLoadFailure(info, err, { scenePath: '../../Scenes/watchtower.ksplat' });
+    }
+}
+loadScene();
+</script>
+</body>
+</html>

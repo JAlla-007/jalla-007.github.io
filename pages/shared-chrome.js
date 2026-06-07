@@ -491,6 +491,23 @@ body[data-shared-chrome="true"] .items-copy {
     line-height: 1.7;
 }
 
+body[data-shared-chrome="true"] .items-media {
+    margin-top: 18px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body[data-shared-chrome="true"] .items-media video,
+body[data-shared-chrome="true"] .items-media img {
+    display: block;
+    width: 100%;
+    max-height: min(48vh, 420px);
+    object-fit: contain;
+    background: black;
+}
+
 body[data-shared-chrome="true"] .place-actions,
 body[data-shared-chrome="true"] .items-actions {
     display: flex;
@@ -914,13 +931,16 @@ function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
     const nodes = (mapConfig.nodes || []).map((node) => `
         <a class="map-node${node.icon ? ' has-icon' : ''}" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.icon ? `<img class="map-node-icon" src="${node.icon}" alt="">` : ''}<span>${node.label}</span></a>
     `).join('');
+    const centerNode = mapConfig.hideCenter ? '' : `
+                    <div class="map-node home-node${mapConfig.center.icon ? ' has-icon' : ''}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></div>
+    `;
 
     return `
         <div class="map-panel">
             <div class="map-viewport">
                 <div class="map-canvas" data-map-canvas>
                     <div class="map-grid"></div>
-                    <div class="map-node home-node${mapConfig.center.icon ? ' has-icon' : ''}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></div>
+                    ${centerNode}
                     ${nodes}
                 </div>
             </div>
@@ -1040,9 +1060,21 @@ function buildItemsOverlayMarkup(itemsConfig = {}) {
     const kicker = itemsConfig.kicker || 'Find Items';
     const title = itemsConfig.title || 'no items to be found in this region';
     const copy = itemsConfig.copy || '';
+    const media = itemsConfig.media || null;
     const primaryLabel = itemsConfig.primaryLabel || 'Yes';
     const secondaryLabel = itemsConfig.secondaryLabel || 'Hell Yes';
-    const hasActions = Boolean(itemsConfig.primaryHref || itemsConfig.secondaryHref);
+    const hasActions = itemsConfig.showActions !== false && Boolean(itemsConfig.primaryHref || itemsConfig.secondaryHref);
+    const mediaMarkup = media?.type === 'video'
+        ? `<div class="items-media"><video controls playsinline preload="metadata" src="${media.src}"></video></div>`
+        : media?.type === 'image'
+            ? `<div class="items-media"><img src="${media.src}" alt="${media.alt || ''}" decoding="async"></div>`
+            : '';
+    const actionsMarkup = hasActions
+        ? `<div class="items-actions">
+                <button class="items-action" id="items-yes" type="button">${primaryLabel}</button>
+                <button class="items-action" id="items-hell-yes" type="button">${secondaryLabel}</button>
+            </div>`
+        : '';
 
     return `
         <div class="items-panel">
@@ -1050,10 +1082,8 @@ function buildItemsOverlayMarkup(itemsConfig = {}) {
             <div class="items-kicker">${kicker}</div>
             <h2 class="items-title">${title}</h2>
             <p class="items-copy">${copy}</p>
-            <div class="items-actions" ${hasActions ? '' : 'hidden'}>
-                <button class="items-action" id="items-yes" type="button">${primaryLabel}</button>
-                <button class="items-action" id="items-hell-yes" type="button">${secondaryLabel}</button>
-            </div>
+            ${mediaMarkup}
+            ${actionsMarkup}
         </div>
     `;
 }
@@ -1465,14 +1495,14 @@ function buildGlobalMapConfig(homeHref) {
             { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
             { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
             { left: '32%', top: '44%', width: '20%', rotate: '160deg' },
-            { left: '34%', top: '55%', width: '18%', rotate: '208deg' },
             { left: '47%', top: '44%', width: '20%', rotate: '350deg' },
-            { left: '36%', top: '40%', width: '18%', rotate: '268deg' }
+            { left: '36%', top: '40%', width: '18%', rotate: '268deg' },
+            { left: '34%', top: '45%', width: '14%', rotate: '218deg' }
         ],
         nodes: [
             { label: 'The Arts', href: `${rootHref}pages/The_Arts_folder/The_Arts.html`, left: '58%', top: '34%', icon: `${rootHref}iconntext/Map_icons/TheArts_icon.PNG` },
             { label: 'Seafront', href: `${rootHref}pages/Seafront_folder/Seafront.html`, left: '14%', top: '26%' },
-            { label: 'Church', href: `${rootHref}pages/Church_folder/Church.html`, left: '15%', top: '67%', icon: `${rootHref}iconntext/Map_icons/Church_icon.PNG` },
+            { label: 'Watch Tower', href: `${rootHref}pages/Watchtower_folder/Watchtower.html`, left: '26%', top: '34%' },
             { label: 'PK', href: `${rootHref}pages/PK_folder/PK.html`, left: '76%', top: '44%', icon: `${rootHref}iconntext/Map_icons/PK_icon.PNG` },
             { label: 'Academic Blocks', href: `${rootHref}pages/Academic_Blocks_folder/Academic_Blocks.html`, left: '37%', top: '18%', icon: `${rootHref}iconntext/Map_icons/AcademicBlocks_icon.PNG` }
         ]
@@ -1712,12 +1742,18 @@ export function bindCameraViewClipboard({ viewer }) {
         }
     };
 
+    const isCameraCopyShortcut = (event) => {
+        const isMacCameraShortcut = event.metaKey && event.shiftKey && event.code === 'Digit1';
+        const isLegacyCameraShortcut = event.ctrlKey && event.key === '7';
+        return isMacCameraShortcut || isLegacyCameraShortcut;
+    };
+
     window.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             document.getElementById('camera-copy-panel')?.remove();
             return;
         }
-        if (!event.ctrlKey || event.key !== '7') return;
+        if (!isCameraCopyShortcut(event)) return;
         event.preventDefault();
         copyCameraView();
     });
@@ -1779,6 +1815,10 @@ export function initSharedMusicPlayer(options = {}) {
     let shuffleEnabled = false;
     let loopMode = 'all';
     let audioStarted = false;
+    const defaultAmbientVolume = 0.6;
+    let ambientFadeFrame = null;
+    let ambientWasInterruptedByVideo = false;
+    let ambientResumeVolume = defaultAmbientVolume;
 
     const setMusicPlayerExpanded = (expanded) => {
         musicPlayerExpanded = expanded;
@@ -1811,6 +1851,93 @@ export function initSharedMusicPlayer(options = {}) {
         return nextIndex;
     };
 
+    const fadeAmbientVolume = (targetVolume, { pauseWhenDone = false } = {}) => new Promise((resolve) => {
+        if (ambientFadeFrame) window.cancelAnimationFrame(ambientFadeFrame);
+        const startVolume = ambientAudio.volume;
+        const startTime = performance.now();
+        const duration = 520;
+        const step = (time) => {
+            const progress = Math.min(1, (time - startTime) / duration);
+            ambientAudio.volume = startVolume + ((targetVolume - startVolume) * progress);
+            if (progress < 1) {
+                ambientFadeFrame = window.requestAnimationFrame(step);
+                return;
+            }
+            ambientFadeFrame = null;
+            ambientAudio.volume = targetVolume;
+            if (pauseWhenDone) ambientAudio.pause();
+            updateAudioButton();
+            resolve();
+        };
+        ambientFadeFrame = window.requestAnimationFrame(step);
+    });
+
+    const getPlayingVideos = () => Array.from(document.querySelectorAll('video')).filter((video) => !video.paused && !video.ended);
+
+    const fadeOutAmbientForVideo = async () => {
+        if (ambientAudio.paused || ambientAudio.muted) {
+            ambientWasInterruptedByVideo = audioStarted && !ambientAudio.muted;
+            ambientAudio.pause();
+            updateAudioButton();
+            return;
+        }
+        ambientWasInterruptedByVideo = true;
+        ambientResumeVolume = ambientAudio.volume || defaultAmbientVolume;
+        await fadeAmbientVolume(0, { pauseWhenDone: true });
+    };
+
+    const resumeAmbientAfterVideos = async () => {
+        if (!ambientWasInterruptedByVideo || getPlayingVideos().length) return;
+        ambientWasInterruptedByVideo = false;
+        try {
+            ambientAudio.muted = false;
+            ambientAudio.volume = 0;
+            await ambientAudio.play();
+            await fadeAmbientVolume(ambientResumeVolume || defaultAmbientVolume);
+        } catch (err) {
+            console.error(err);
+            ambientAudio.muted = true;
+            updateAudioButton();
+        }
+    };
+
+    const bindExclusiveVideoAudio = () => {
+        const pauseHiddenVideos = () => {
+            document.querySelectorAll('video').forEach((video) => {
+                if (video.paused) return;
+                if (!video.closest('[hidden], [aria-hidden="true"]')) return;
+                video.pause();
+            });
+        };
+
+        document.addEventListener('play', (event) => {
+            const video = event.target;
+            if (!(video instanceof HTMLVideoElement)) return;
+            getPlayingVideos().forEach((playingVideo) => {
+                if (playingVideo !== video) playingVideo.pause();
+            });
+            fadeOutAmbientForVideo();
+        }, true);
+
+        document.addEventListener('pause', (event) => {
+            if (!(event.target instanceof HTMLVideoElement)) return;
+            window.setTimeout(resumeAmbientAfterVideos, 0);
+        }, true);
+
+        document.addEventListener('ended', (event) => {
+            if (!(event.target instanceof HTMLVideoElement)) return;
+            window.setTimeout(resumeAmbientAfterVideos, 0);
+        }, true);
+
+        const hiddenVideoObserver = new MutationObserver(pauseHiddenVideos);
+        hiddenVideoObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['aria-hidden', 'hidden', 'class'],
+            subtree: true
+        });
+        document.addEventListener('visibilitychange', pauseHiddenVideos);
+    };
+
     const loadTrack = async (index, { autoplay = audioStarted && !ambientAudio.paused && !ambientAudio.muted } = {}) => {
         if (!playlist.length) return;
         currentTrackIndex = (index + playlist.length) % playlist.length;
@@ -1824,7 +1951,7 @@ export function initSharedMusicPlayer(options = {}) {
         if (autoplay) {
             try {
                 ambientAudio.muted = false;
-                ambientAudio.volume = 0.6;
+                ambientAudio.volume = defaultAmbientVolume;
                 await ambientAudio.play();
             } catch (err) {
                 console.error(err);
@@ -1834,9 +1961,13 @@ export function initSharedMusicPlayer(options = {}) {
     };
 
     const playCurrentTrack = async () => {
+        if (getPlayingVideos().length) {
+            updateAudioButton();
+            return;
+        }
         try {
             ambientAudio.muted = false;
-            ambientAudio.volume = 0.6;
+            ambientAudio.volume = defaultAmbientVolume;
             await ambientAudio.play();
         } catch (err) {
             console.error(err);
@@ -1848,6 +1979,10 @@ export function initSharedMusicPlayer(options = {}) {
     const startAmbientAudio = async () => {
         if (audioStarted) return;
         audioStarted = true;
+        if (getPlayingVideos().length) {
+            updateAudioButton();
+            return;
+        }
         await playCurrentTrack();
     };
 
@@ -1926,6 +2061,9 @@ export function initSharedMusicPlayer(options = {}) {
 
     ambientAudio.addEventListener('pause', updateAudioButton);
     ambientAudio.addEventListener('play', updateAudioButton);
+    ambientAudio.addEventListener('play', () => {
+        getPlayingVideos().forEach((video) => video.pause());
+    });
 
     document.addEventListener('click', (event) => {
         if (!musicPlayerExpanded) return;
@@ -1933,6 +2071,7 @@ export function initSharedMusicPlayer(options = {}) {
         setMusicPlayerExpanded(false);
     });
 
+    bindExclusiveVideoAudio();
     updateAudioButton();
 
     return {

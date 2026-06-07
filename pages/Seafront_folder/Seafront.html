@@ -235,7 +235,7 @@
     <div class="nav-connector" aria-hidden="true"></div>
     <a class="nav-link" href="../Academic_Blocks_folder/Academic_Blocks.html"><span class="nav-icon">#</span><span>Academic</span></a>
 </div></nav>
-<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Seafront</div><div class="hero-subtitle">A location within Atlantic College Memo</div></div></div>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Seafront</div><div class="hero-subtitle">the waves that sing you to sleep</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><div id="subpages-panel"><div class="subpages-kicker">Inside Seafront</div><h2 class="subpages-title">Sub-Locations</h2><p class="subpages-copy">Let the shoreline split into smaller remembered viewpoints, each with its own atmosphere and details.</p><div class="subpages-list">
     <a class="subpage-link" href="./Cliff_Path.html"><span>Cliff Path</span><span>↗</span></a>
     <a class="subpage-link" href="./Pebble_Shore.html"><span>Pebble Shore</span><span>↗</span></a>
@@ -249,7 +249,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260501f';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260604nochurch';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
@@ -279,8 +279,8 @@ initSharedChrome({
     }
 });
 initSharedMusicPlayer({ homeHref: '../../index.html' });
-const initialCameraPosition = [0, -8, 8];
-const initialCameraLookAt = [0, 0, 0];
+const initialCameraPosition = [0.58, 1.53, -9.48];
+const initialCameraLookAt = [0.57, 2.86, 1.75];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCameraLookAt, sharedMemoryForWorkers: false, gpuAcceleratedSort: false, dynamicScene: true, sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual, sceneFadeInRateMultiplier: 0.8 });
@@ -298,8 +298,8 @@ window.addEventListener('keydown', hideHeroTitle, { once: true });
 updateViewIndicator();
 async function loadScene() {
     try {
-        const response = await fetch('../../PK.ksplat');
-        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching PK.ksplat`);
+        const response = await fetch('../../Scenes/seafront.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching seafront.ksplat`);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         await viewer.addSplatScene(blobUrl, { format: GaussianSplats3D.SceneFormat.KSplat, rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w], showLoadingUI: false, progressiveLoad: false });
@@ -312,7 +312,7 @@ async function loadScene() {
         showHeroTitle();
     } catch (err) {
         console.error(err);
-        showLoadFailure(info, err, { scenePath: '../../PK.ksplat' });
+        showLoadFailure(info, err, { scenePath: '../../Scenes/seafront.ksplat' });
     }
 }
 loadScene();

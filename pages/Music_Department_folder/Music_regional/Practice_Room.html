@@ -133,13 +133,38 @@
         .scene-beacon-gif { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; object-fit: contain; object-position: center; pointer-events: none; transform: translate(-50%, -50%) scale(1.9); }
         .scene-beacon-label { max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0; transform: translateX(-4px); transition: max-width 0.22s ease, opacity 0.18s ease, transform 0.22s ease, margin-left 0.22s ease; }
         .scene-beacon.near .scene-beacon-label { max-width: 150px; margin-left: 10px; opacity: 1; transform: translateX(0); }
+        .floating-scene-sentence { position: fixed; left: 0; top: 0; z-index: 121; max-width: min(360px, 72vw); color: rgba(255, 255, 255, 0.9); font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.45; text-align: center; text-shadow: 0 10px 26px rgba(0,0,0,0.72); opacity: 0; pointer-events: none; transform: translate(-50%, -50%) translateY(8px); transition: opacity 0.28s ease, transform 0.28s ease; }
+        .floating-scene-sentence.visible { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
         #memory-overlay { position: fixed; inset: 0; z-index: 175; display: flex; align-items: center; justify-content: center; padding: 28px; background: rgba(0, 0, 0, 0.56); backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         #memory-overlay.visible { opacity: 1; pointer-events: auto; }
         .memory-panel { position: relative; width: min(92vw, 720px); max-height: min(82vh, 720px); box-sizing: border-box; overflow: auto; padding: 30px 28px 28px; border-radius: 28px; background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%), rgba(12, 12, 12, 0.9); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42); }
+        .memory-panel-with-gallery { display: grid; grid-template-columns: minmax(260px, 0.92fr) minmax(260px, 1fr); grid-template-rows: auto auto minmax(0, 1fr); gap: 0 24px; width: min(92vw, 980px); max-height: min(84vh, 760px); overflow: hidden; }
+        .memory-panel-with-gallery .memory-kicker,
+        .memory-panel-with-gallery .memory-title,
+        .memory-panel-with-gallery .memory-copy { grid-column: 2; }
+        .memory-panel-with-gallery .memory-copy { min-height: 0; overflow: auto; padding-right: 6px; }
+        .memory-panel-with-gallery .memory-gallery { grid-column: 1; grid-row: 1 / 4; }
+        .memory-panel-media-only { display: block; width: auto; max-width: min(92vw, 680px); max-height: min(84vh, 760px); overflow: visible; padding: 24px; }
+        .memory-panel-media-only .memory-kicker,
+        .memory-panel-media-only .memory-title,
+        .memory-panel-media-only .memory-copy { display: none; }
+        .memory-panel-media-only .memory-gallery { display: block; width: min(82vw, 420px); max-height: min(72vh, 620px); }
         .memory-close { position: absolute; right: 18px; top: 18px; width: 42px; height: 42px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: white; font-size: 22px; cursor: pointer; }
         .memory-kicker { color: rgba(255, 255, 255, 0.58); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; }
         .memory-title { margin: 12px 56px 18px 0; color: white; font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; }
         .memory-copy { margin: 0; color: rgba(255, 255, 255, 0.8); font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.7; white-space: pre-line; }
+        .memory-gallery { display: none; position: relative; min-height: 0; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        .memory-panel-with-gallery .memory-gallery { display: block; }
+        .memory-photo { margin: 0; width: 100%; height: 100%; min-height: min(62vh, 560px); }
+        .memory-gallery-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+        .memory-gallery-video { display: block; width: 100%; max-height: min(72vh, 620px); object-fit: contain; object-position: center; border-radius: inherit; background: rgba(0,0,0,0.42); }
+        .memory-gallery-count { position: absolute; left: 16px; bottom: 14px; padding: 5px 9px; border-radius: 999px; background: rgba(0,0,0,0.42); color: rgba(255,255,255,0.88); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.08em; }
+        @media (max-width: 760px) {
+            .memory-panel-with-gallery { display: block; overflow: auto; }
+            .memory-panel-with-gallery .memory-gallery { height: min(54vh, 420px); margin-bottom: 22px; }
+            .memory-photo { min-height: 0; height: 100%; }
+            .memory-panel-media-only .memory-gallery { width: min(80vw, 420px); }
+        }
 
         .loading-shell {
             display: flex;
@@ -180,6 +205,7 @@
 <div id="memory-overlay" aria-hidden="true">
     <div class="memory-panel">
         <button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button>
+        <div class="memory-gallery" id="memory-gallery"></div>
         <div class="memory-kicker" id="memory-kicker">Memory Fragment</div>
         <h2 class="memory-title" id="memory-title">Untitled</h2>
         <p class="memory-copy" id="memory-copy"></p>
@@ -191,7 +217,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, showLoadFailure } from '../../shared-chrome.js?v=20260501f';
+import { initSharedChrome, bindSceneCoordinatePicker, showLoadFailure } from '../../shared-chrome.js?v=20260604nochurch';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -201,6 +227,8 @@ const memoryClose = document.getElementById('memory-close');
 const memoryKicker = document.getElementById('memory-kicker');
 const memoryTitle = document.getElementById('memory-title');
 const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
+const memoryPanel = memoryOverlay.querySelector('.memory-panel');
 
 initSharedChrome({
     homeHref: '../../../index.html',
@@ -231,6 +259,7 @@ const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const MEMORY_REVEAL_DISTANCE = 6;
+const FLOATING_SENTENCE_REVEAL_DISTANCE = 4;
 const MEMORY_BEACONS = [
     {
         id: 'practice-20241104',
@@ -238,6 +267,13 @@ const MEMORY_BEACONS = [
         anchor: new THREE.Vector3(2.17, -0.07, 0.98),
         kicker: 'Memory Fragment',
         title: '2024-11-04',
+        media: [
+            {
+                type: 'image',
+                src: './Practice_room1_sub/Memories/P_1_20241104/2a731d0a0a91d18a0788754632b15c56.jpg',
+                alt: '2024-11-04 photo'
+            }
+        ],
         copy: `Dear Diary,
 (11:00)
 peace
@@ -249,7 +285,7 @@ finally
 Anthropology真的好好玩啊
 真喜欢
 
-(19:30)
+(19：30)
 又在music department呆了一整天
 救救
 效率贼低
@@ -261,11 +297,11 @@ Anthropology真的好好玩啊
         anchor: new THREE.Vector3(0.48, -0.15, 0.53),
         kicker: 'Memory Fragment',
         title: 'Feb 02, 2025',
-        copy: `Dear John,
+        copy: `Dear Diary
 (13:39)
 i need to study
 
-(14:38)
+（14：38）
 com'n, just get rid of this sickness
 
 (16:44)
@@ -281,10 +317,43 @@ also, im beginning to change
 哎真好
 现在哪怕看其他人不顺眼，或者不喜欢什么人我也会告诉自己
 “im just having a bad day, or in a mood. That's why it effects the way I see people. Perception. There's always good things about them, i just can't see it right now."`
+    },
+    {
+        id: 'red-string-club',
+        label: 'Red String',
+        anchor: new THREE.Vector3(0.18, -1.69, 1.83),
+        kicker: 'Memory Fragment',
+        title: 'Red string club',
+        copy: '',
+        media: [
+            {
+                type: 'video',
+                src: './Practice_room1_sub/Memories/Red string club/X 0.18 Y -1.69 Z 1.83.mp4'
+            }
+        ]
+    }
+];
+const FLOATING_SENTENCES = [
+    {
+        anchor: new THREE.Vector3(-176.36, 2.98, -156.17),
+        text: 'countless of hours in front this piano'
+    },
+    {
+        anchor: new THREE.Vector3(1.37, -0.12, -0.41),
+        text: 'this room always smells like perfume or fart'
+    },
+    {
+        anchor: new THREE.Vector3(0.02, -0.99, 0.52),
+        text: 'good place to break down'
+    },
+    {
+        anchor: new THREE.Vector3(-0.33, -0.48, 1.85),
+        text: 'my back hurts...'
     }
 ];
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
+let floatingSentenceElements = [];
 const viewer = new GaussianSplats3D.Viewer({
     initialCameraPosition,
     initialCameraLookAt,
@@ -351,8 +420,43 @@ function openMemory(memory) {
     memoryKicker.textContent = memory.kicker;
     memoryTitle.textContent = memory.title;
     memoryCopy.textContent = memory.copy;
+    renderMemoryGallery(memory);
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function renderMemoryGallery(memory) {
+    const media = Array.isArray(memory.media) ? memory.media : [];
+    const hasCopy = Boolean(memory.copy?.trim());
+    memoryPanel.classList.toggle('memory-panel-with-gallery', media.length > 0 && hasCopy);
+    memoryPanel.classList.toggle('memory-panel-media-only', media.length > 0 && !hasCopy);
+    memoryGallery.innerHTML = '';
+    if (!media.length) return;
+
+    const item = media[0];
+    if (item.type === 'video') {
+        const video = document.createElement('video');
+        video.className = 'memory-gallery-video';
+        video.src = item.src;
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        memoryGallery.appendChild(video);
+    } else {
+        const figure = document.createElement('figure');
+        figure.className = 'memory-photo';
+        const img = document.createElement('img');
+        img.className = 'memory-gallery-image';
+        img.src = item.src;
+        img.alt = item.alt || memory.title;
+        figure.appendChild(img);
+        memoryGallery.appendChild(figure);
+    }
+
+    const count = document.createElement('span');
+    count.className = 'memory-gallery-count';
+    count.textContent = `1 / ${media.length}`;
+    memoryGallery.appendChild(count);
 }
 
 function closeMemory() {
@@ -372,6 +476,13 @@ function ensureMemoryBeacons() {
         document.body.appendChild(element);
         return { element, memory };
     });
+    floatingSentenceElements = FLOATING_SENTENCES.map((sentence) => {
+        const element = document.createElement('div');
+        element.className = 'floating-scene-sentence';
+        element.textContent = sentence.text;
+        document.body.appendChild(element);
+        return { element, sentence };
+    });
 }
 
 function updateMemoryBeacons() {
@@ -389,6 +500,16 @@ function updateMemoryBeacons() {
         if (projectSceneBeacon(memory.anchor, element)) {
             const cameraDistance = viewer.camera.position.distanceTo(memory.anchor);
             element.classList.toggle('near', cameraDistance <= MEMORY_REVEAL_DISTANCE);
+        }
+    });
+    floatingSentenceElements.forEach(({ element, sentence }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        if (projectSceneBeacon(sentence.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(sentence.anchor);
+            element.classList.toggle('visible', cameraDistance <= FLOATING_SENTENCE_REVEAL_DISTANCE);
         }
     });
 
@@ -434,6 +555,11 @@ async function loadScene() {
             viewer.controls.minPolarAngle = 0;
             viewer.controls.maxPolarAngle = Math.PI;
             viewer.controls.enablePan = true;
+            viewer.controls.rotateSpeed = 0.36;
+            viewer.controls.zoomSpeed = 0.55;
+            viewer.controls.panSpeed = 0.42;
+            viewer.controls.enableDamping = true;
+            viewer.controls.dampingFactor = 0.08;
             viewer.controls.update();
         }
         info.classList.add('hidden');

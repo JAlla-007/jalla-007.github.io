@@ -13,144 +13,250 @@
 
         body {
             margin: 0;
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 22%),
-                linear-gradient(180deg, #070707 0%, #101010 100%);
-            color: white;
+            background: black;
+            overflow: hidden;
         }
 
-        #nav {
+        body.scene-loading #nav,
+        body.scene-loading #hint,
+        body.scene-loading #hero-title,
+        body.scene-loading #side-tags,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        #info {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 54px;
-            z-index: 160;
-        }
-
-        #nav:hover .nav-shell,
-        #nav:focus-within .nav-shell {
-            transform: translateY(0);
-        }
-
-        .nav-shell {
-            position: relative;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr);
-            align-items: center;
-            width: 100%;
-            height: 54px;
-            margin: 0;
-            padding: 0 18px;
-            background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
-                rgba(10, 10, 10, 0.26);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(16px);
-            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
-            transform: translateY(-38px);
-            transition: transform 0.32s ease;
-        }
-
-        .nav-link {
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            min-height: 34px;
-            padding: 0 10px;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+
+        #info.hidden { opacity: 0; }
+
+        .loading-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        .loading-gif {
+            display: block;
+            width: min(220px, 42vw);
+            height: auto;
+            border-radius: 18px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 28px rgba(0,0,0,0.34));
+        }
+
+        #hero-title {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 130;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 2s ease, transform 2s ease;
+        }
+
+        #hero-title.visible { opacity: 1; transform: translateY(0); }
+        #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
+
+        .hero-text { text-align: center; padding: 0 24px; }
+
+        .hero-title-line {
+            color: rgba(255, 255, 255, 0.98);
+            font-family: "Castle Regular", "Times New Roman", serif;
+            font-size: clamp(42px, 8vw, 92px);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58);
+        }
+
+        .hero-subtitle {
+            margin-top: 14px;
+            color: rgba(255, 255, 255, 0.72);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+        }
+
+        #hint {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 120;
+            max-width: min(92vw, 420px);
+            padding: 12px 16px;
             border-radius: 999px;
-            color: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(10px);
+            color: rgba(255,255,255,0.88);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 12px;
-            letter-spacing: 0.14em;
-            text-decoration: none;
-            text-transform: uppercase;
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
         }
 
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .nav-icon {
-            font-size: 14px;
-            line-height: 1;
-        }
-
-        .nav-connector {
-            width: 72px;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.58);
-            justify-self: center;
-        }
-
-        main {
-            display: grid;
-            place-items: center;
-            min-height: 100vh;
-            padding: 96px 24px 32px;
-        }
-
-        .page-card {
-            width: min(760px, 100%);
-            padding: 28px 24px 24px;
-            border-radius: 28px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%),
-                rgba(12, 12, 12, 0.82);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.34);
-            backdrop-filter: blur(14px);
-        }
-
-        .kicker {
-            color: rgba(255, 255, 255, 0.56);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            margin: 12px 0 10px;
-            font-family: "Castle Regular", "Times New Roman", Times, serif;
-            font-size: clamp(40px, 6vw, 72px);
-            line-height: 0.95;
-        }
-
-        p {
-            margin: 0;
-            color: rgba(255, 255, 255, 0.74);
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 15px;
-            line-height: 1.7;
+        #hint.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
         }
     </style>
 </head>
-<body>
-<nav id="nav" aria-label="Primary">
-    <div class="nav-shell">
-        <a class="nav-link" href="./Practice_Room.html"><span class="nav-icon">←</span><span>Back</span></a>
-        <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../Music_Department.html"><span class="nav-icon">+</span><span>Music</span></a>
-        <div class="nav-connector" aria-hidden="true"></div>
-        <a class="nav-link" href="../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
-    </div>
-</nav>
+<body class="scene-loading">
+<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../../iconntext/loading.GIF" alt="Loading animation"></div></div>
+<nav id="nav" aria-label="Primary"></nav>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">My Corner</div><div class="hero-subtitle">my second dorm</div></div></div>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
 
-<main>
-    <section class="page-card">
-        <div class="kicker">Music Department / Sub-Location</div>
-        <h1>My Corner</h1>
-        <p>
-            This gives you a more personal subspace under Music Department. You can turn it into a diary-like room, an object archive, or another 3D stop once you have more scans ready to drop in.
-        </p>
-    </section>
-</main>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
 <script type="module">
-import { initSharedChrome } from '../../shared-chrome.js?v=20260501f';
-initSharedChrome({ homeHref: '../../../index.html', regionalMap: { caption: 'Music Regional Map', center: { label: 'My Corner', left: '38%', top: '45%' }, lines: [{ left: '39%', top: '50%', width: '17%', rotate: '-24deg' }, { left: '39%', top: '50%', width: '17%', rotate: '22deg' }], nodes: [{ label: 'Music Classroom', href: './Music_Classroom.html', left: '58%', top: '34%' }, { label: 'Practice Room', href: './Practice_Room.html', left: '58%', top: '62%' }], placeCard: { kicker: 'Branch', title: 'Inside Music', copy: 'This local map keeps your personal corner anchored to the nearby music spaces.', actions: [] } } });
+import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import * as THREE from 'three';
+import { initSharedChrome, bindSceneCoordinatePicker, showLoadFailure } from '../../shared-chrome.js?v=20260604nochurch';
+
+const info = document.getElementById('info');
+const hint = document.getElementById('hint');
+const heroTitle = document.getElementById('hero-title');
+
+initSharedChrome({
+    homeHref: '../../../index.html',
+    regionalMap: {
+        caption: 'Music Regional Map',
+        center: { label: 'My Corner', left: '38%', top: '45%' },
+        lines: [
+            { left: '39%', top: '50%', width: '17%', rotate: '-24deg' },
+            { left: '39%', top: '50%', width: '17%', rotate: '22deg' }
+        ],
+        nodes: [
+            { label: 'Music Classroom', href: './Music_Classroom.html', left: '58%', top: '34%' },
+            { label: 'Practice Room', href: './Practice_Room.html', left: '58%', top: '62%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside Music',
+            copy: 'This local map keeps your personal corner anchored to the nearby music spaces.',
+            actions: []
+        }
+    },
+    keepSubpagesPanel: true
+});
+
+const initialCameraPosition = [0.24, 1.22, 1.70];
+const initialCameraLookAt = [-0.18, 0.72, -0.97];
+const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+
+const viewer = new GaussianSplats3D.Viewer({
+    initialCameraPosition,
+    initialCameraLookAt,
+    sharedMemoryForWorkers: false,
+    gpuAcceleratedSort: false,
+    dynamicScene: true,
+    sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual,
+    sceneFadeInRateMultiplier: 0.8
+});
+
+function updateViewIndicator() {
+    if (viewer.camera?.position) {
+        const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
+        Math.max(1, Math.round((initialDistance / currentDistance) * 100));
+    }
+    window.requestAnimationFrame(updateViewIndicator);
+}
+
+function hideHint() {
+    if (!hint || hint.classList.contains('hidden')) return;
+    hint.classList.add('hidden');
+    window.setTimeout(() => {
+        hint.style.display = 'none';
+    }, 350);
+}
+
+function hideHeroTitle() {
+    if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
+    heroTitle.classList.add('hidden');
+    window.setTimeout(() => {
+        heroTitle.style.display = 'none';
+    }, 2000);
+}
+
+function showHeroTitle() {
+    heroTitle.style.display = 'flex';
+    heroTitle.classList.remove('hidden');
+    window.requestAnimationFrame(() => {
+        heroTitle.classList.add('visible');
+    });
+}
+
+window.addEventListener('pointerdown', hideHint, { once: true });
+window.addEventListener('wheel', hideHint, { once: true });
+window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', hideHeroTitle, { once: true });
+window.addEventListener('wheel', hideHeroTitle, { once: true });
+window.addEventListener('keydown', hideHeroTitle, { once: true });
+
+updateViewIndicator();
+
+async function loadScene() {
+    try {
+        const response = await fetch('../../../Scenes/mycorner.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching mycorner.ksplat`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        await viewer.addSplatScene(blobUrl, {
+            format: GaussianSplats3D.SceneFormat.KSplat,
+            rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
+            showLoadingUI: false,
+            progressiveLoad: false
+        });
+        if (viewer.controls) {
+            viewer.controls.minPolarAngle = 0;
+            viewer.controls.maxPolarAngle = Math.PI;
+            viewer.controls.enablePan = true;
+            viewer.controls.rotateSpeed = 0.4;
+            viewer.controls.zoomSpeed = 0.6;
+            viewer.controls.panSpeed = 0.45;
+            viewer.controls.enableDamping = true;
+            viewer.controls.dampingFactor = 0.08;
+            viewer.controls.update();
+        }
+        info.classList.add('hidden');
+        window.setTimeout(() => {
+            info.style.display = 'none';
+        }, 450);
+        viewer.start();
+        document.body.classList.remove('scene-loading');
+        bindSceneCoordinatePicker({ viewer, THREE });
+        showHeroTitle();
+    } catch (err) {
+        console.error(err);
+        showLoadFailure(info, err, { scenePath: '../../../Scenes/mycorner.ksplat' });
+    }
+}
+
+loadScene();
 </script>
 </body>
 </html>

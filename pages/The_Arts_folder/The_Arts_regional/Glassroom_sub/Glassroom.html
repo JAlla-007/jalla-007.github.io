@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Glassroom - Atlantic College Memo</title>
+    <style>
+        @font-face {
+            font-family: "Castle Regular";
+            src: url("../../../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 125;
+            pointer-events: none;
+            opacity: 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.68) 28%, rgba(0, 0, 0, 0.24) 58%, rgba(0, 0, 0, 0) 100%);
+            transition: opacity 2s ease;
+        }
+
+        body.intro-mask-hidden::before {
+            opacity: 0;
+        }
+
+        #info {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+
+        #info.hidden {
+            opacity: 0;
+        }
+
+        body.scene-loading #nav,
+        body.scene-loading #audio-toggle,
+        body.scene-loading #view-indicator,
+        body.scene-loading #hero-title,
+        body.scene-loading #subpages-panel,
+        body.scene-loading #branch-panel,
+        body.scene-loading #scene-hotspot,
+        body.scene-loading #memory-overlay,
+        body.scene-loading #focus-mask,
+        body.scene-loading #side-tags,
+        body.scene-loading #page-identity-card,
+        body.scene-loading #screenshot-button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        #nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            z-index: 160;
+        }
+
+        #nav:hover .nav-shell,
+        #nav:focus-within .nav-shell {
+            transform: translateY(0);
+        }
+
+        .nav-shell {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) 72px minmax(0, 1fr);
+            align-items: center;
+            width: 100%;
+            height: 54px;
+            margin: 0;
+            padding: 0 18px;
+            border-radius: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+                rgba(10, 10, 10, 0.26);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+            transform: translateY(-38px);
+            transition: transform 0.32s ease;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 34px;
+            padding: 0 10px;
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .nav-icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .nav-connector {
+            width: 72px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.58);
+            justify-self: center;
+        }
+
+        .loading-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        .loading-gif {
+            display: block;
+            width: min(220px, 42vw);
+            height: auto;
+            border-radius: 18px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.34));
+        }
+
+        .loading-text {
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            padding-left: 0.28em;
+        }
+
+        #hint {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 120;
+            max-width: min(92vw, 420px);
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            color: rgba(255, 255, 255, 0.88);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        #hint.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        #audio-toggle {
+            position: fixed;
+            right: 16px;
+            bottom: 18px;
+            z-index: 145;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 132px;
+            min-height: 42px;
+            padding: 0 16px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        #view-indicator {
+            position: fixed;
+            top: 68px;
+            right: 18px;
+            z-index: 150;
+            min-width: 228px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .view-indicator-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.54);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .view-indicator-value {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            line-height: 1.45;
+        }
+
+        .view-indicator-row + .view-indicator-row {
+            margin-top: 10px;
+        }
+
+        .scene-beacon {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 122;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.12);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.24);
+            color: rgba(255,255,255,0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.9);
+            transition: opacity 0.22s ease, transform 0.22s ease, background 0.22s ease, width 0.22s ease, padding 0.22s ease;
+        }
+
+        .scene-beacon.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .scene-beacon.near {
+            width: auto;
+            min-height: 40px;
+            padding: 0 14px 0 8px;
+            background: rgba(0,0,0,0.68);
+        }
+
+        .scene-beacon-core {
+            position: relative;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            flex: 0 0 26px;
+            overflow: hidden;
+            mix-blend-mode: screen;
+        }
+
+        .scene-beacon-gif {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.9);
+        }
+
+        .scene-beacon-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: max-width 0.22s ease, opacity 0.18s ease, transform 0.22s ease, margin-left 0.22s ease;
+        }
+
+        .scene-beacon.near .scene-beacon-label {
+            max-width: 140px;
+            margin-left: 10px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .memory-beacon {
+            z-index: 121;
+            border: 1px solid rgba(255, 228, 176, 0.22);
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .memory-beacon.near {
+            background: rgba(28, 18, 10, 0.74);
+        }
+
+        .floating-memory-note {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 123;
+            max-width: min(320px, 78vw);
+            padding: 0;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+            color: rgba(255,255,255,0.92);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.25;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.75);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            white-space: nowrap;
+        }
+
+        .floating-memory-note.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+
+        #memory-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 175;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.56);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #memory-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .memory-panel {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+            grid-template-rows: minmax(90px, auto) minmax(0, 1fr);
+            align-items: stretch;
+            gap: 24px;
+            width: min(94vw, 980px);
+            height: min(84vh, 820px);
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 28px 24px 24px;
+            border-radius: 28px;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 24%), rgba(12, 12, 12, 0.9);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 28px 70px rgba(0,0,0,0.42);
+        }
+
+        .memory-close {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .memory-kicker {
+            display: none;
+        }
+
+        .memory-title {
+            grid-column: 2;
+            grid-row: 1;
+            align-self: start;
+            min-width: 0;
+            margin: 0;
+            padding-right: 62px;
+            color: white;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(24px, 2.6vw, 34px);
+            line-height: 1.05;
+        }
+
+        .memory-copy {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            min-width: 0;
+            min-height: 0;
+            overflow: auto;
+            margin: 0;
+            color: rgba(255,255,255,0.78);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .memory-gallery {
+            grid-column: 1;
+            grid-row: 1 / -1;
+            position: relative;
+            contain: layout paint;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .memory-photo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .memory-photo img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .memory-photo [hidden] {
+            display: none;
+        }
+
+        .memory-photo video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: black;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .memory-gallery-nav[hidden] {
+            display: none;
+        }
+
+        .memory-gallery-prev { left: 12px; }
+        .memory-gallery-next { right: 12px; }
+
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        @media (max-width: 720px) {
+            .memory-panel {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto minmax(0, 1fr) 300px;
+            }
+            .memory-gallery,
+            .memory-title,
+            .memory-copy {
+                grid-column: 1;
+            }
+            .memory-title {
+                grid-row: 1;
+                padding-right: 58px;
+            }
+            .memory-copy {
+                grid-row: 2;
+            }
+            .memory-gallery {
+                grid-row: 3;
+                height: 300px;
+                min-height: 0;
+            }
+        }
+
+        #hero-title {
+            position: fixed;
+            inset: 0;
+            z-index: 130;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        #hero-title.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #hero-title.hidden {
+            opacity: 0;
+        }
+
+        .hero-text { text-align: center; padding: 0 24px; }
+
+        .hero-title-line { color: rgba(255, 255, 255, 0.98); font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(42px, 8vw, 92px); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58); }
+
+        .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
+    </style>
+</head>
+<body class="scene-loading">
+<div id="info"><div class="loading-shell"><img class="loading-gif" src="../../../../iconntext/loading.GIF" alt="Loading animation"></div></div>
+<nav id="nav" aria-label="Primary"><div class="nav-shell">
+    <a class="nav-link" href="../../The_Arts.html"><span class="nav-icon">←</span><span>The Arts</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../../../index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <div class="nav-connector" aria-hidden="true"></div>
+    <a class="nav-link" href="../../../Music_Department_folder/Music_Department.html"><span class="nav-icon">♫</span><span>Music</span></a>
+</div></nav>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Glassroom</div><div class="hero-subtitle">Sunlight, music, arts that flows in the air...</div></div></div>
+<div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
+<div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-gallery" id="memory-gallery"></div></div></div>
+<button id="audio-toggle" type="button">Sound Off</button>
+<audio id="ambient-audio" loop preload="auto"><source src="../../../../Music/Misty.mp3" type="audio/mpeg"></audio>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+import * as THREE from 'three';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../../shared-chrome.js?v=20260604nochurch';
+
+const info = document.getElementById('info');
+const hint = document.getElementById('hint');
+const heroTitle = document.getElementById('hero-title');
+const ambientAudio = document.getElementById('ambient-audio');
+const memoryOverlay = document.getElementById('memory-overlay');
+const memoryClose = document.getElementById('memory-close');
+const memoryTitle = document.getElementById('memory-title');
+const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
+
+initSharedChrome({
+    homeHref: '../../../../index.html',
+    regionalMap: {
+        caption: 'The Arts Map',
+        center: { label: 'Glassroom', left: '38%', top: '45%' },
+        lines: [
+            { left: '39%', top: '49%', width: '18%', rotate: '8deg' }
+        ],
+        nodes: [
+            { label: 'The Arts', href: '../../The_Arts.html', left: '58%', top: '44%' }
+        ],
+        placeCard: {
+            kicker: 'Branch',
+            title: 'Inside The Arts',
+            copy: 'A cafe-concert corner nested inside The Arts, where sunlight, music, and quiet performances meet.',
+            actions: []
+        }
+    }
+});
+initSharedMusicPlayer({
+    homeHref: '../../../../index.html',
+    playlist: [
+        { label: 'Misty', src: '../../../../Music/Misty.mp3' },
+        { label: 'Outer Wilds Cover', src: '../../../../Music/outerwilds_cleancover.mp3' },
+        { label: 'Homepage Ambience', src: '../../../../Music/homepoage_ambiencemusic.mp3?v=20260501c' },
+        { label: 'Bird Ambience', src: '../../../../Sound_effects/ambience/Birdambience.mp3?v=20260501a' },
+        { label: "Kelly's Theme", src: "../../../../Music/kelly's_themecover.mp3" },
+        { label: 'Moonsong Hmm', src: '../../../../Music/Moonsong_hmmcover.mp3' }
+    ]
+});
+
+const initialCameraPosition = [0.60, 2.11, 7.64];
+const initialCameraLookAt = [0, 0, 0];
+const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
+const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
+const DEFAULT_ZOOM_PERCENT = 142;
+const zoomReferenceDistance = initialDistance * (DEFAULT_ZOOM_PERCENT / 100);
+
+const viewer = new GaussianSplats3D.Viewer({
+    initialCameraPosition,
+    initialCameraLookAt,
+    sharedMemoryForWorkers: false,
+    gpuAcceleratedSort: false,
+    dynamicScene: true,
+    sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual,
+    sceneFadeInRateMultiplier: 0.8
+});
+
+const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+let memoryBeaconsVisible = false;
+let memoryBeaconElements = [];
+let floatingNoteElements = [];
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
+const MEMORY_LABEL_REVEAL_DISTANCE = 5.5;
+const FLOATING_NOTE_REVEAL_DISTANCE = 5.5;
+const MEMORY_BEACONS = [
+    {
+        id: 'komorebi',
+        label: 'Komorebi',
+        anchor: new THREE.Vector3(-0.76, 0.83, -0.14),
+        kicker: 'Memory Fragment',
+        title: 'Komorebi Activity log',
+        copy: `Music CMM could really drive you crazy
+This is just absolute madness...
+
+Feb 12
+Third rehearsal.
+Problems:
+1. My pianist friend was sick and couldn't make it to the rehearsal.
+2. Although I don't think he is going to be sick for the whole week, I came up with a plan D just in case: playing piano on the left hand and organ on the right hand simultaneously.
+
+Feb 13
+Met with the pianist and tested Plan C. The trial showed that the backup plan was technically workable.
+
+Feb 16
+I received confirmation that the saxophonist had recovered and would be able to return for rehearsals and the final performance.
+
+Feb 17
+Fourth rehearsal (piano and saxophone)
+Problems:
+1. The saxophonist was able to play the piece, but the part was still not secured or well practiced.
+2. The sax is a very old instrument that has some tuning problem.
+
+Feb 18
+Fifth rehearsal / third full trio rehearsal (saxophone, violin, piano)
+Overall ensemble coordination was okay, but several tuning and intonation issues became obvious when moving from MIDI playback to real instruments.
+
+Problems:
+1. The parallel perfect 4ths and 5ths between the sax and violin that sounded fine in the computer version created noticeable tuning tension in live performance.
+2. The saxophonist is still adjusting to a newly acquired and very old instrument, which currently has some stability problems.
+3. The saxophonist did not practice enough for the piece, most ornaments could not be performed.
+
+Solution:
+I cut out parts of the saxophone solos and replaced it with violin to avoid it sounding extremely dissonant and not well practiced.
+
+Feb 19
+Sixth rehearsal / second full trio rehearsal (saxophone, violin, piano)
+
+Improvement:
+The accuracy of the sax has improved.
+
+Problems:
+The part where the violin comes in still sounds dissonant.
+
+Solution:
+This issue can probably be improved with more rehearsal. The piece is intentionally written to sound somewhat dissonant at this point, but because the violin and saxophone are both quite sensitive in terms of intonation, the dissonance can come across as more tense than intended in live performance.
+
+Also, since the performance is tomorrow, it's realistically too late to make major changes to the scoring. For now, the focus will be on careful listening within the ensemble to keep the balance under control.
+
+In simple words:
+This is it, I give up.
+
+Feb 20
+The performance
+Ko`,
+        images: [
+            './Memories/Komorebi/61823cfeb7505f763c3278459129ce8f.jpg'
+        ]
+    },
+    {
+        id: 'logos',
+        label: 'Logos',
+        anchor: new THREE.Vector3(-0.76, 0.37, -0.06),
+        kicker: 'Memory Fragment',
+        title: 'Logos Activity log',
+        copy: `More pain of CMM
+
+Feb 18
+The rehearsal was cancelled due to a logistical mistake. After discussing with the ensemble, I concluded that it would be unrealistic to present the full live performance on February 20 given our current level of preparation.
+
+Instead, we decided to produce a multitrack recording on the morning of February 20 and play the recording to the audience during the performance. This made sure the trilogy can still be presented to the audience in a complete and controlled form.
+
+Feb 20
+Multitrack recording`,
+        images: [
+            './Memories/Logos/161ab84dfdd58c9f82ded3affddde838.jpg',
+            './Memories/Logos/792a42f1a74cafb7aac7e4fa2ec0c063.jpg'
+        ]
+    },
+    {
+        id: 'refugee-xchange',
+        label: 'X-change',
+        anchor: new THREE.Vector3(2.4, 0.7, -1.9),
+        kicker: 'Memory Fragment',
+        title: 'Refugee X-change',
+        copy: 'Photos from the Refugee X-change memory folder.',
+        images: [
+            './Memories/Refugee X-change/169aaf5717f7c1c446470b3fa404e790.jpg',
+            './Memories/Refugee X-change/3497a8b29c08f9ae0b575b2ab56fabf7.jpg'
+        ]
+    },
+    {
+        id: 'the-start',
+        label: 'The Start',
+        anchor: new THREE.Vector3(-0.89, 0.70, -0.13),
+        kicker: 'Memory Fragment',
+        title: 'The Start',
+        copy: 'Dear Diary,\n(11:08)\nchill class\n(19:45)\nlife is beautiful\nDiscovering beauty in every single bit\nsuch a blessing to be here\ni will always be grateful\nThere is beauty in every thing\nArts, knowledge, thoughts, humans, nature, order and disorder...\nthey are such beautiful beings\n\nI think AC is the place where I really began my Jazz journey\nI still don\'t understand how music can be this beautiful\n\nSo colourful\nSo charming\nSo alive\nJust like the dawn that day\n...',
+        media: [
+            { type: 'video', src: './Memories/the start/0594ac1aba9818761904eb52e1c35b7b.mp4' }
+        ]
+    },
+    {
+        id: 'random',
+        label: 'Random',
+        anchor: new THREE.Vector3(0.02, -0.23, 2.99),
+        kicker: 'Memory Fragment',
+        title: '9th Nov, 2025',
+        copy: 'Dear Diary,\n(14:24)\nok my plan was too naive, too ideal\ni didn\'t end up finishing my math IA just yet...\nso there\'s gonna be a lot of time dedicated to that.\nok\nfocus\nim gonna nap for an hour later so that i can wake up tomorrow\n...\nYet even in the toughest time\nmusic is always the priority',
+        images: [
+            './Memories/random/5571687b35381676fba431c9f0384806.jpg'
+        ]
+    }
+];
+const FLOATING_MEMORY_NOTES = [
+    {
+        id: 'out-of-tune',
+        anchor: new THREE.Vector3(-2.19, 0.75, -0.27),
+        text: 'This kid is NEVER in tune...'
+    },
+    {
+        id: 'ocean-piano',
+        anchor: new THREE.Vector3(-2.32, 0.63, -4.31),
+        text: 'you could see the ocean while playing on the piano...'
+    }
+];
+
+function updateViewIndicator() {
+    if (viewer.camera?.position) {
+        const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector);
+        const zoomPercent = Math.max(1, Math.round((zoomReferenceDistance / currentDistance) * 100));
+    }
+
+    window.requestAnimationFrame(updateViewIndicator);
+}
+
+function hideHint() {
+    if (!hint || hint.classList.contains('hidden')) return;
+    hint.classList.add('hidden');
+    window.setTimeout(() => {
+        hint.style.display = 'none';
+    }, 350);
+}
+
+function hideHeroTitle() {
+    if (!heroTitle || !heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
+    heroTitle.classList.add('hidden');
+    document.body.classList.add('intro-mask-hidden');
+    window.setTimeout(() => {
+        heroTitle.style.display = 'none';
+    }, 2000);
+}
+
+function showHeroTitle() {
+    heroTitle.style.display = 'flex';
+    heroTitle.classList.remove('hidden');
+    document.body.classList.remove('intro-mask-hidden');
+    window.requestAnimationFrame(() => {
+        heroTitle.classList.add('visible');
+    });
+}
+
+function projectSceneBeacon(anchor, element) {
+    const projectedPoint = anchor.clone().project(viewer.camera);
+    const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+        && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+        && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+    if (!isVisible) {
+        element.classList.remove('visible');
+        element.classList.remove('near');
+        return false;
+    }
+    const x = ((projectedPoint.x + 1) / 2) * window.innerWidth;
+    const y = ((-projectedPoint.y + 1) / 2) * window.innerHeight;
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
+    element.classList.add('visible');
+    return true;
+}
+
+function openMemory(memory) {
+    activeMemory = memory;
+    activeMemoryImageIndex = 0;
+    memoryTitle.textContent = memory.title;
+    memoryCopy.textContent = memory.copy;
+    memoryGallery.dataset.memoryId = '';
+    renderMemoryGallery();
+    memoryOverlay.classList.add('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function preloadMemoryImages(images) {
+    images.forEach((imagePath) => {
+        const image = new Image();
+        image.src = imagePath;
+    });
+}
+
+function renderMemoryGallery() {
+    if (!memoryGallery || !activeMemory) return;
+    const media = activeMemory.media || (activeMemory.images || []).map((src) => ({ type: 'image', src }));
+    if (!media.length) return;
+    activeMemoryImageIndex = ((activeMemoryImageIndex % media.length) + media.length) % media.length;
+    const currentMedia = media[activeMemoryImageIndex];
+    const showNav = media.length > 1;
+    if (memoryGallery.dataset.memoryId !== activeMemory.id) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
+        memoryGallery.innerHTML = `
+            <figure class="memory-photo">
+                <img class="memory-gallery-image" alt="" decoding="async" hidden>
+                <video class="memory-gallery-video" controls playsinline hidden></video>
+            </figure>
+            <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo">‹</button>
+            <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo">›</button>
+            <div class="memory-gallery-count"></div>
+        `;
+        preloadMemoryImages(media.filter((item) => item.type === 'image').map((item) => item.src));
+    }
+
+    const galleryImage = memoryGallery.querySelector('.memory-gallery-image');
+    const galleryVideo = memoryGallery.querySelector('.memory-gallery-video');
+    const galleryPrev = memoryGallery.querySelector('.memory-gallery-prev');
+    const galleryNext = memoryGallery.querySelector('.memory-gallery-next');
+    const galleryCount = memoryGallery.querySelector('.memory-gallery-count');
+
+    if (galleryImage && galleryVideo) {
+        const isVideo = currentMedia.type === 'video';
+        galleryImage.hidden = isVideo;
+        galleryVideo.hidden = !isVideo;
+        if (isVideo) {
+            galleryVideo.src = currentMedia.src;
+            galleryVideo.load();
+            galleryImage.removeAttribute('src');
+        } else {
+            galleryImage.src = currentMedia.src;
+            galleryVideo.removeAttribute('src');
+        }
+        galleryImage.alt = `${activeMemory.title} photo ${activeMemoryImageIndex + 1}`;
+    }
+    if (galleryPrev) galleryPrev.hidden = !showNav;
+    if (galleryNext) galleryNext.hidden = !showNav;
+    if (galleryCount) galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${media.length}`;
+}
+
+function stepMemoryGallery(direction) {
+    const media = activeMemory?.media || (activeMemory?.images || []).map((src) => ({ type: 'image', src }));
+    if (!media.length) return;
+    activeMemoryImageIndex += direction;
+    renderMemoryGallery();
+}
+
+function ensureMemoryBeacons() {
+    if (memoryBeaconElements.length) return;
+    memoryBeaconElements = MEMORY_BEACONS.map((memory) => {
+        const element = document.createElement('button');
+        element.type = 'button';
+        element.className = 'scene-beacon memory-beacon';
+        element.setAttribute('aria-label', `Open memory ${memory.title}`);
+        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../../../iconntext/Beacon.GIF" alt=""></span><span class="scene-beacon-label">${memory.label}</span>`;
+        element.addEventListener('click', () => {
+            openMemory(memory);
+        });
+        document.body.appendChild(element);
+        return { element, memory };
+    });
+    floatingNoteElements = FLOATING_MEMORY_NOTES.map((note) => {
+        const element = document.createElement('div');
+        element.className = 'floating-memory-note';
+        element.textContent = note.text;
+        document.body.appendChild(element);
+        return { element, note };
+    });
+}
+
+function updateMemoryBeacons() {
+    if (!viewer.camera) {
+        window.requestAnimationFrame(updateMemoryBeacons);
+        return;
+    }
+    memoryBeaconElements.forEach(({ element, memory }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            element.classList.remove('near');
+            return;
+        }
+        if (projectSceneBeacon(memory.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(memory.anchor);
+            element.classList.toggle('near', cameraDistance <= MEMORY_LABEL_REVEAL_DISTANCE);
+        }
+    });
+    floatingNoteElements.forEach(({ element, note }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        if (projectSceneBeacon(note.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(note.anchor);
+            const revealDistance = note.revealDistance || FLOATING_NOTE_REVEAL_DISTANCE;
+            element.classList.toggle('visible', cameraDistance <= revealDistance);
+        }
+    });
+    window.requestAnimationFrame(updateMemoryBeacons);
+}
+
+function toggleMemoryBeacons() {
+    ensureMemoryBeacons();
+    memoryBeaconsVisible = !memoryBeaconsVisible;
+    if (!memoryBeaconsVisible) {
+        memoryOverlay.classList.remove('visible');
+        memoryOverlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+window.addEventListener('pointerdown', hideHint, { once: true });
+window.addEventListener('wheel', hideHint, { once: true });
+window.addEventListener('keydown', hideHint, { once: true });
+window.addEventListener('pointerdown', hideHeroTitle, { once: true });
+window.addEventListener('wheel', hideHeroTitle, { once: true });
+window.addEventListener('keydown', hideHeroTitle, { once: true });
+updateViewIndicator();
+updateMemoryBeacons();
+
+memoryClose.addEventListener('click', () => {
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+});
+
+memoryOverlay.addEventListener('click', (event) => {
+    if (event.target !== memoryOverlay) return;
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+});
+
+memoryGallery.addEventListener('click', (event) => {
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
+});
+
+async function loadScene() {
+    try {
+        const response = await fetch('../../../../Scenes/Glassroom.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching Glassroom.ksplat`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        await viewer.addSplatScene(blobUrl, {
+            format: GaussianSplats3D.SceneFormat.KSplat,
+            rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
+            showLoadingUI: false,
+            progressiveLoad: false
+        });
+        if (viewer.controls) {
+            viewer.controls.minPolarAngle = 0;
+            viewer.controls.maxPolarAngle = Math.PI;
+            viewer.controls.enablePan = true;
+            viewer.controls.update();
+        }
+        info.classList.add('hidden');
+        window.setTimeout(() => {
+            info.style.display = 'none';
+        }, 450);
+        viewer.start();
+        document.body.classList.remove('scene-loading');
+        bindSceneCoordinatePicker({ viewer, THREE });
+        showHeroTitle();
+    } catch (err) {
+        console.error(err);
+        showLoadFailure(info, err, { scenePath: '../../../../Scenes/Glassroom.ksplat' });
+    }
+}
+
+loadScene();
+
+const reviewMemosButton = document.getElementById('review-memos');
+if (reviewMemosButton) {
+    const replacement = reviewMemosButton.cloneNode(true);
+    reviewMemosButton.replaceWith(replacement);
+    replacement.addEventListener('click', toggleMemoryBeacons);
+}
+
+window.addEventListener('keydown', (event) => {
+    if (!memoryOverlay.classList.contains('visible')) return;
+    if (event.key === 'Escape') {
+        memoryOverlay.classList.remove('visible');
+        memoryOverlay.setAttribute('aria-hidden', 'true');
+    } else if (event.key === 'ArrowLeft') {
+        stepMemoryGallery(-1);
+    } else if (event.key === 'ArrowRight') {
+        stepMemoryGallery(1);
+    }
+});
+</script>
+</body>
+</html>

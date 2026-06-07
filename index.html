@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>St. Donats - 3D Viewer</title>
+    <title>AC memo</title>
     <style>
         @font-face {
             font-family: "Castle Regular";
@@ -439,20 +439,20 @@
             line-height: 1.7;
         }
 
-        .memo-grid {
+        .more-sections {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
+            gap: 14px;
         }
 
-        .memo-card {
-            padding: 18px 18px 16px;
-            border-radius: 22px;
+        .more-section {
+            padding: 20px 20px 18px;
+            border-radius: 18px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
         }
 
+        .more-section-title,
         .memo-label {
             margin-bottom: 10px;
             color: rgba(255, 255, 255, 0.56);
@@ -460,6 +460,44 @@
             font-size: 10px;
             letter-spacing: 0.18em;
             text-transform: uppercase;
+        }
+
+        .more-section-copy {
+            margin: 0;
+            max-width: 680px;
+            color: rgba(255, 255, 255, 0.84);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.13);
+            transform: translateY(-1px);
         }
 
         .memo-body {
@@ -500,19 +538,17 @@
         }
 
         .gift-card {
-            margin-top: 8px;
-            padding: 22px 22px 18px;
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+            display: grid;
+            grid-template-columns: minmax(90px, 140px) minmax(0, 1fr);
+            align-items: center;
+            gap: 18px;
         }
 
         .gift-visual {
             display: block;
-            width: min(220px, 100%);
+            width: 100%;
             height: auto;
-            margin: 0 auto 14px;
+            margin: 0;
             border-radius: 14px;
             object-fit: contain;
         }
@@ -584,6 +620,17 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 12px;
             line-height: 1.45;
+        }
+
+        @media (max-width: 640px) {
+            .gift-card {
+                grid-template-columns: 1fr;
+            }
+
+            .gift-visual {
+                width: min(160px, 100%);
+                margin: 0 auto;
+            }
         }
 
         .memo-emphasis {
@@ -1049,19 +1096,18 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: var(--bubble-size, 88px);
-            height: var(--bubble-size, 88px);
-            padding: 10px;
-            border-radius: 50%;
+            width: 96px;
+            min-height: 108px;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            background:
-                radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.16), transparent 34%),
-                rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(12px);
+            gap: 4px;
+            background: transparent;
             color: rgba(255, 255, 255, 0.95);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 10px;
@@ -1069,7 +1115,7 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             text-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
-            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+            box-shadow: none;
             user-select: none;
             pointer-events: auto;
             transform: translate(-50%, -50%) scale(0.9);
@@ -1087,52 +1133,114 @@
         }
 
         .billboard-text:hover {
-            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%) scale(1.04);
         }
 
         .billboard-text.dragging {
             cursor: grabbing;
-            background: rgba(255, 255, 255, 0.14);
         }
 
         .billboard-text.expanded {
-            width: min(280px, calc(100vw - 36px));
+            width: min(300px, calc(100vw - 36px));
             height: auto;
             min-height: 0;
-            padding: 16px 18px 18px;
-            border-radius: 22px;
+            padding: 0;
+            border-radius: 0;
             text-transform: none;
             letter-spacing: normal;
             z-index: 2;
+            display: flex;
+            text-align: center;
+        }
+
+        .billboard-beacon-core {
+            display: grid;
+            place-items: center;
+            width: 74px;
+            height: 74px;
+            border: 0;
+            background: transparent;
+            filter:
+                drop-shadow(0 0 10px rgba(255, 255, 255, 0.52))
+                drop-shadow(0 12px 26px rgba(0, 0, 0, 0.34));
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .billboard-text:hover .billboard-beacon-core,
+        .billboard-text.expanded .billboard-beacon-core {
+            transform: translateY(-2px) scale(1.06);
+            filter:
+                drop-shadow(0 0 16px rgba(255, 255, 255, 0.7))
+                drop-shadow(0 14px 30px rgba(0, 0, 0, 0.42));
+        }
+
+        .billboard-beacon-gif {
             display: block;
-            text-align: left;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
         }
 
         .billboard-title {
             display: block;
+            opacity: 0;
+            transform: translateY(-4px);
             font-size: 10px;
             font-weight: 600;
             line-height: 1.1;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             max-width: 100%;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .billboard-text.near .billboard-title,
+        .billboard-text.expanded .billboard-title {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .billboard-card {
+            display: none;
+            width: 100%;
+            margin-top: 8px;
+            padding: 16px 18px 18px;
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at 30% 16%, rgba(255, 255, 255, 0.12), transparent 34%),
+                rgba(8, 8, 8, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+            text-align: left;
+        }
+
+        .billboard-text.expanded .billboard-card {
+            display: block;
         }
 
         .billboard-body {
-            display: none;
-            margin-top: 10px;
+            display: block;
+            margin-top: 0;
             color: rgba(255, 255, 255, 0.86);
             font-family: "Times New Roman", Times, serif;
             font-size: 19px;
             line-height: 1.35;
         }
 
-        .billboard-text.expanded .billboard-body {
+        .billboard-image {
             display: block;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            margin-top: 12px;
+            border-radius: 14px;
+            object-fit: cover;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
         }
 
         .billboard-hint {
-            display: none;
+            display: block;
             margin-top: 10px;
             color: rgba(255, 255, 255, 0.62);
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -1141,8 +1249,397 @@
             text-transform: uppercase;
         }
 
-        .billboard-text.expanded .billboard-hint {
+        .floating-memory-sentence {
+            width: min(340px, calc(100vw - 42px));
+            min-height: 0;
+            padding: 0;
+            color: rgba(255, 255, 255, 0.88);
+            font-family: "Castle Regular", "Times New Roman", Times, serif;
+            font-size: clamp(14px, 1.6vw, 22px);
+            line-height: 1.18;
+            letter-spacing: 0;
+            text-transform: none;
+            text-align: left;
+            text-shadow: 0 3px 16px rgba(0, 0, 0, 0.62), 0 0 22px rgba(255, 255, 255, 0.18);
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .scene-beacon {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 122;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.9);
+            transition: opacity 0.22s ease, transform 0.22s ease, background 0.22s ease, width 0.22s ease, padding 0.22s ease;
+        }
+
+        .scene-beacon.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .scene-beacon.near {
+            width: auto;
+            min-height: 40px;
+            padding: 0 14px 0 8px;
+            background: rgba(0, 0, 0, 0.68);
+            pointer-events: auto;
+        }
+
+        .scene-beacon:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .scene-beacon.near:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .scene-beacon-core {
+            position: relative;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            flex: 0 0 26px;
+            overflow: hidden;
+            mix-blend-mode: screen;
+        }
+
+        .scene-beacon-gif {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.9);
+        }
+
+        .scene-beacon-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: max-width 0.22s ease, opacity 0.18s ease, transform 0.22s ease, margin-left 0.22s ease;
+        }
+
+        .scene-beacon.near .scene-beacon-label {
+            max-width: 140px;
+            margin-left: 10px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .memory-beacon {
+            z-index: 121;
+            border: 1px solid rgba(255, 228, 176, 0.22);
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .memory-beacon.visible {
+            pointer-events: auto;
+        }
+
+        .memory-beacon.near {
+            background: rgba(28, 18, 10, 0.74);
+        }
+
+        #memory-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 175;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.56);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #memory-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .memory-panel {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+            grid-template-rows: minmax(90px, auto) minmax(0, 1fr);
+            align-items: stretch;
+            gap: 24px;
+            width: min(94vw, 980px);
+            height: min(84vh, 820px);
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 28px 24px 24px;
+            border-radius: 28px;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%), rgba(12, 12, 12, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+        }
+
+        .memory-close {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .memory-kicker {
+            display: none;
+        }
+
+        .memory-title {
+            grid-column: 2;
+            grid-row: 1;
+            align-self: start;
+            min-width: 0;
+            margin: 0;
+            padding-right: 62px;
+            color: white;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(24px, 2.6vw, 34px);
+            line-height: 1.05;
+        }
+
+        .memory-copy {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            min-width: 0;
+            min-height: 0;
+            overflow: auto;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.78);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+
+        .memory-gallery {
+            grid-column: 1;
+            grid-row: 1 / -1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .memory-panel.memory-panel-no-gallery {
+            grid-template-columns: 1fr;
+        }
+
+        .memory-panel.memory-panel-no-gallery .memory-title,
+        .memory-panel.memory-panel-no-gallery .memory-copy {
+            grid-column: 1;
+        }
+
+        .memory-panel.memory-panel-no-gallery .memory-gallery {
+            display: none;
+        }
+
+        .memory-panel.memory-panel-photo-only {
             display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 56px);
+            max-height: calc(100vh - 56px);
+            padding: 12px;
+            overflow: visible;
+        }
+
+        .memory-panel.memory-panel-photo-only .memory-title,
+        .memory-panel.memory-panel-photo-only .memory-copy,
+        .memory-panel.memory-panel-photo-only .memory-kicker {
+            display: none;
+        }
+
+        .memory-panel.memory-panel-photo-only .memory-gallery {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border-radius: 18px;
+            background: transparent;
+            border: 0;
+        }
+
+        .memory-panel.memory-panel-photo-only .memory-photo {
+            width: auto;
+            height: auto;
+            max-width: inherit;
+            max-height: inherit;
+            border-radius: 16px;
+        }
+
+        .memory-panel.memory-panel-photo-only .memory-photo img {
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            object-fit: contain;
+            border-radius: 16px;
+        }
+
+        .memory-panel.memory-panel-photo-only .memory-gallery-count {
+            display: none;
+        }
+
+        .memory-panel.memory-panel-media-only {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 56px);
+            max-height: calc(100vh - 56px);
+            padding: 12px;
+            overflow: visible;
+        }
+
+        .memory-panel.memory-panel-media-only .memory-title,
+        .memory-panel.memory-panel-media-only .memory-copy,
+        .memory-panel.memory-panel-media-only .memory-kicker {
+            display: none;
+        }
+
+        .memory-panel.memory-panel-media-only .memory-gallery {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border-radius: 18px;
+            background: transparent;
+            border: 0;
+        }
+
+        .memory-panel.memory-panel-media-only .memory-photo {
+            width: auto;
+            height: auto;
+            max-width: inherit;
+            max-height: inherit;
+            border-radius: 16px;
+        }
+
+        .memory-panel.memory-panel-media-only .memory-photo video {
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border-radius: 16px;
+        }
+
+        .memory-panel.memory-panel-media-only .memory-gallery-count {
+            display: none;
+        }
+
+        .memory-photo,
+        .memory-photo img,
+        .memory-photo video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        .memory-photo img {
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .memory-photo video {
+            background: black;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .memory-photo [hidden],
+        .memory-gallery-nav[hidden] {
+            display: none;
+        }
+
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .memory-gallery-prev { left: 12px; }
+        .memory-gallery-next { right: 12px; }
+
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.48);
+            color: rgba(255, 255, 255, 0.78);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        @media (max-width: 760px) {
+            .memory-panel {
+                display: block;
+                height: auto;
+                max-height: 88vh;
+                overflow: auto;
+            }
+
+            .memory-gallery {
+                height: min(52vh, 420px);
+                margin-bottom: 18px;
+            }
         }
 
         #hero-title {
@@ -1431,10 +1928,10 @@
             <div class="map-grid"></div>
             <div class="map-caption">Interactive Map</div>
             <div class="map-coordinate-marker" id="map-coordinate-marker" aria-hidden="true"></div>
-            <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Atlantic College Memo</span></div>
+            <div class="map-node home-node has-icon" style="left: 38%; top: 45%;"><img class="map-node-icon" src="./iconntext/Map_icons/Castle_icon.PNG" alt=""><span>Castle</span></div>
             <a class="map-node has-icon" href="./pages/The_Arts_folder/The_Arts.html" style="left: 58%; top: 34%;"><img class="map-node-icon" src="./iconntext/Map_icons/TheArts_icon.PNG" alt=""><span>The Arts</span></a>
             <a class="map-node" href="./pages/Seafront_folder/Seafront.html" style="left: 14%; top: 26%;">Seafront</a>
-            <a class="map-node has-icon" href="./pages/Church_folder/Church.html" style="left: 15%; top: 67%;"><img class="map-node-icon" src="./iconntext/Map_icons/Church_icon.PNG" alt=""><span>Church</span></a>
+            <a class="map-node" href="./pages/Watchtower_folder/Watchtower.html" style="left: 26%; top: 34%;">Watch Tower</a>
             <a class="map-node has-icon" href="./pages/PK_folder/PK.html" style="left: 76%; top: 44%;"><img class="map-node-icon" src="./iconntext/Map_icons/PK_icon.PNG" alt=""><span>PK</span></a>
             <a class="map-node has-icon" href="./pages/Academic_Blocks_folder/Academic_Blocks.html" style="left: 37%; top: 18%;"><img class="map-node-icon" src="./iconntext/Map_icons/AcademicBlocks_icon.PNG" alt=""><span>Academic Blocks</span></a>
         </div>
@@ -1446,24 +1943,41 @@
         <button class="map-close" id="memo-close" type="button" aria-label="Close more panel">×</button>
         <div class="memo-kicker">Atlantic College Memo</div>
         <h2 class="memo-title">More</h2>
-        <p class="memo-intro">
-            Private access card
-        </p>
-        <div class="gift-card">
-            <img class="gift-visual" src="./iconntext/waving.GIF" alt="Waving animation">
-            <p class="gift-question">Did you receive a gift?</p>
-            <div class="gift-actions">
-                <button class="gift-action" id="gift-yes" type="button">Yes</button>
-                <button class="gift-action" id="gift-no" type="button">No</button>
-            </div>
-            <form class="gift-form" id="gift-form" autocomplete="off">
-                <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
-                <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
-                <div class="gift-actions">
-                    <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+        <div class="more-sections">
+            <section class="more-section" aria-labelledby="more-introduction-title">
+                <div class="more-section-title" id="more-introduction-title">Introduction</div>
+                <p class="more-section-copy">
+                    A small archive of Atlantic College places, fragments, and private memories.
+                    Wander through the scenes, reveal what is hidden, and let each place keep its own little weather.
+                </p>
+            </section>
+            <section class="more-section" aria-labelledby="more-social-title">
+                <div class="more-section-title" id="more-social-title">Social Media</div>
+                <div class="social-links">
+                    <a class="social-link" href="https://github.com/JAlla-007" target="_blank" rel="noreferrer">GitHub</a>
+                    <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noreferrer">YouTube</a>
+                    <a class="social-link" href="mailto:duoa0404@gmail.com">Gmail</a>
                 </div>
-            </form>
-            <p class="gift-note" id="gift-note">Choose an option to continue.</p>
+            </section>
+            <section class="more-section gift-card" aria-labelledby="more-gift-title">
+                <img class="gift-visual" src="./iconntext/waving.GIF" alt="Waving animation">
+                <div>
+                    <div class="more-section-title" id="more-gift-title">Gift Card</div>
+                    <p class="gift-question">Did you receive a gift?</p>
+                    <div class="gift-actions">
+                        <button class="gift-action" id="gift-yes" type="button">Yes</button>
+                        <button class="gift-action" id="gift-no" type="button">No</button>
+                    </div>
+                    <form class="gift-form" id="gift-form" autocomplete="off">
+                        <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
+                        <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
+                        <div class="gift-actions">
+                            <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+                        </div>
+                    </form>
+                    <p class="gift-note" id="gift-note">Choose an option to continue.</p>
+                </div>
+            </section>
         </div>
     </div>
 </div>
@@ -1478,6 +1992,16 @@
             <button class="items-action" id="items-yes" type="button">Yes</button>
             <button class="items-action" id="items-hell-yes" type="button">Hell Yes</button>
         </div>
+    </div>
+</div>
+
+<div id="memory-overlay" aria-hidden="true">
+    <div class="memory-panel">
+        <button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button>
+        <div class="memory-kicker" id="memory-kicker">Memory</div>
+        <h2 class="memory-title" id="memory-title">Untitled</h2>
+        <p class="memory-copy" id="memory-copy"></p>
+        <div class="memory-gallery" id="memory-gallery"></div>
     </div>
 </div>
 
@@ -1557,7 +2081,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { bindSceneCoordinatePicker, showLoadFailure } from './pages/shared-chrome.js?v=20260501f';
+import { bindSceneCoordinatePicker, showLoadFailure } from './pages/shared-chrome.js?v=20260604nochurch';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -1583,6 +2107,13 @@ const itemsHellYes = document.getElementById('items-hell-yes');
 const itemsTitle = itemsOverlay?.querySelector('.items-title');
 const itemsCopy = itemsOverlay?.querySelector('.items-copy');
 const itemsActions = itemsOverlay?.querySelector('.items-actions');
+const memoryOverlay = document.getElementById('memory-overlay');
+const memoryClose = document.getElementById('memory-close');
+const memoryKicker = document.getElementById('memory-kicker');
+const memoryTitle = document.getElementById('memory-title');
+const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
+const memoryPanel = memoryOverlay?.querySelector('.memory-panel');
 const homeReset = document.getElementById('home-reset');
 const heroTitle = document.getElementById('hero-title');
 const introScrim = document.getElementById('intro-scrim');
@@ -1643,10 +2174,10 @@ const baseModelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Ma
 const defaultCameraUp = new THREE.Vector3(0, 1, 0);
 const sceneCatalog = [
     { id: 'pk', label: 'PK', path: './PK.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
-    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, azimuthRestricted: true, initialView: { position: new THREE.Vector3(0.18, 1.65, 9.07), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.48, 0.55, -9.64), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(-0.24, 2.66, 10.83), target: new THREE.Vector3(0, 0, 0) } },
-    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-day', label: 'AC Day', path: './Scenes/AC_day.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, azimuthRestricted: true, initialView: { position: new THREE.Vector3(0.18, 1.65, 9.07), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-night', label: 'AC Night', path: './Scenes/AC_night.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.48, 0.55, -9.64), target: new THREE.Vector3(0, 0, 0) } },
+    { id: 'ac-alt', label: 'AC 2', path: './Scenes/AC_2.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(0.50, 1.37, 11.77), target: new THREE.Vector3(-4.01, 1.29, 1.57) } },
+    { id: 'ac-close', label: 'AC Close', path: './Scenes/ACcloseup.ksplat', memories: true, rotationCorrection: null, cameraUp: defaultCameraUp, initialView: { position: new THREE.Vector3(1.64, 1.64, 10.99), target: new THREE.Vector3(0, 0, 0) } },
     { id: 'music-dep', label: 'Music Dep', path: './Scenes/musicdep_1.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
     { id: 'languages', label: 'Languages', path: './Scenes/Languages.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
     { id: 'practice-room-2', label: 'Practice 2', path: './Scenes/Practiceroom_2.ksplat', memories: false, rotationCorrection: null, cameraUp: defaultCameraUp, initialView },
@@ -1668,66 +2199,127 @@ let initialSceneRevealPlayed = false;
 const minZoomDistance = 4;
 const maxZoomDistance = 22;
 let audioStarted = false;
+const defaultAmbientVolume = 0.6;
+let ambientFadeFrame = null;
+let ambientWasInterruptedByVideo = false;
+let ambientResumeVolume = defaultAmbientVolume;
+const MEMORY_LABEL_REVEAL_DISTANCE = 2;
 const memoryBillboards = [
     {
+        id: 'departure',
+        label: 'Departure',
         title: 'Departure',
-        body: 'Into the Great Wilds and Misty Future!',
-        worldPosition: new THREE.Vector3(-3.9, 2.4, 1.3),
-        size: 118,
-        drift: { x: 0.18, y: 0.14, z: 0.08, speed: 0.72, phase: 0.3 }
+        kicker: 'Memory Fragment',
+        copy: 'Into the Great Wilds and Misty Future!',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(-3.9, 2.4, 1.3),
+        images: []
     },
     {
+        id: 'corridor',
+        label: 'Corridor',
         title: 'Corridor',
-        body: 'The corridors still hum even after everyone leaves.',
-        worldPosition: new THREE.Vector3(3.6, 2.1, 1.6),
-        size: 88,
-        drift: { x: 0.14, y: 0.1, z: 0.05, speed: 0.94, phase: 1.1 }
+        kicker: 'Memory Fragment',
+        copy: 'The corridors still hum even after everyone leaves.',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(3.6, 2.1, 1.6),
+        images: []
     },
     {
+        id: 'sea-air',
+        label: 'Sea Air',
         title: 'Sea Air',
-        body: 'Somewhere between sea air and song, we became ourselves.',
-        worldPosition: new THREE.Vector3(-4.4, -0.7, -0.1),
-        size: 104,
-        drift: { x: 0.16, y: 0.12, z: 0.07, speed: 0.81, phase: 2.4 }
+        kicker: 'Memory Fragment',
+        copy: 'Somewhere between sea air and song, we became ourselves.',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(-4.4, -0.7, -0.1),
+        images: []
     },
     {
+        id: 'promise',
+        label: 'Promise',
         title: 'Promise',
-        body: 'Every goodbye here sounds a little like a promise.',
-        worldPosition: new THREE.Vector3(4.2, -0.3, 0.3),
-        size: 92,
-        drift: { x: 0.12, y: 0.18, z: 0.06, speed: 0.69, phase: 3.2 }
+        kicker: 'Memory Fragment',
+        copy: 'Every goodbye here sounds a little like a promise.',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(4.2, -0.3, 0.3),
+        images: []
     },
     {
+        id: 'hilltop',
+        label: 'Hilltop',
         title: 'Hilltop',
-        body: 'The hill kept our footsteps long after the day was gone.',
-        worldPosition: new THREE.Vector3(-1.6, -2.3, -1.4),
-        size: 126,
-        drift: { x: 0.15, y: 0.13, z: 0.08, speed: 0.88, phase: 4.1 }
+        kicker: 'Memory Fragment',
+        copy: 'The hill kept our footsteps long after the day was gone.',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(-1.6, -2.3, -1.4),
+        images: []
     },
     {
+        id: 'choir',
+        label: 'Choir',
         title: 'Choir',
-        body: 'Some notes still feel suspended in the air, waiting for someone to finish the phrase.',
-        worldPosition: new THREE.Vector3(1.7, -2.0, -1.1),
-        size: 80,
-        drift: { x: 0.1, y: 0.16, z: 0.05, speed: 1.02, phase: 5.4 }
+        kicker: 'Memory Fragment',
+        copy: 'Some notes still feel suspended in the air, waiting for someone to finish the phrase.',
+        sceneIds: ['pk'],
+        anchor: new THREE.Vector3(1.7, -2.0, -1.1),
+        images: []
+    },
+    {
+        id: 'ac-night-light',
+        label: 'Light',
+        title: 'Light',
+        kicker: 'AC Night Memory',
+        copy: '',
+        sceneIds: ['ac-night'],
+        anchor: new THREE.Vector3(15.69, 0.65, -0.10),
+        media: [
+            { type: 'video', src: './pages/AC_folder/AC night/Memories/light/X 15.69 Y 0.65 Z -0.10.browser.mp4' }
+        ]
+    },
+    {
+        id: 'ac-night-rain',
+        label: 'Rain',
+        title: 'Rain',
+        kicker: 'AC Night Memory',
+        copy: '',
+        sceneIds: ['ac-night'],
+        anchor: new THREE.Vector3(4.09, -1.04, 27.56),
+        media: [
+            { type: 'video', src: './pages/AC_folder/AC night/Memories/rain/X 4.09 Y -1.04 Z 27.56.browser.mp4' }
+        ]
+    },
+    {
+        id: 'ac-night-dinner-text',
+        type: 'sentence',
+        copy: "It's dinner time, walking down the road to get some food.",
+        sceneIds: ['ac-night'],
+        anchor: new THREE.Vector3(1.38, -1.76, 7.83),
+        revealDistance: 1.5
     }
 ].map((note, index) => {
-    const element = document.createElement('div');
-    element.className = 'billboard-text';
-    element.style.setProperty('--bubble-size', `${note.size}px`);
-    element.innerHTML = `
-        <span class="billboard-title">${note.title}</span>
-        <span class="billboard-body">${note.body}</span>
-        <span class="billboard-hint">Drag to move</span>
-    `;
+    const element = document.createElement(note.type === 'sentence' ? 'div' : 'button');
+    if (note.type === 'sentence') {
+        element.className = 'billboard-text floating-memory-sentence';
+        element.textContent = note.copy;
+        element.setAttribute('aria-hidden', 'true');
+    } else {
+        element.type = 'button';
+        element.className = 'scene-beacon memory-beacon';
+        element.setAttribute('aria-label', `Open memory ${note.title}`);
+        element.innerHTML = `
+            <span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="./iconntext/Beacon.GIF" alt=""></span>
+            <span class="scene-beacon-label">${note.label}</span>
+        `;
+    }
     element.style.transitionDelay = `${index * 90}ms`;
     billboardLayer.appendChild(element);
 
     return {
         ...note,
         element,
-        baseWorldPosition: note.worldPosition.clone(),
-        renderedWorldPosition: note.worldPosition.clone(),
+        baseWorldPosition: note.anchor.clone(),
+        renderedWorldPosition: note.anchor.clone(),
         dragPlane: new THREE.Plane(),
         dragOffset: new THREE.Vector3(),
         intersectPoint: new THREE.Vector3(),
@@ -1739,6 +2331,9 @@ let memoriesVisible = false;
 const billboardRaycaster = new THREE.Raycaster();
 const billboardPointer = new THREE.Vector2();
 let activeBillboard = null;
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
+let memoryCloseResetTimer = null;
 let dragMoved = false;
 let dragStartX = 0;
 let dragStartY = 0;
@@ -1884,7 +2479,7 @@ function getSceneDistanceBounds(scene = getActiveScene()) {
     const sceneView = getSceneView(scene);
     const defaultDistance = sceneView.position.distanceTo(sceneView.target);
     return {
-        minDistance: Math.max(2.5, defaultDistance * 0.6),
+        minDistance: Math.max(1.4, defaultDistance * 0.35),
         maxDistance: defaultDistance
     };
 }
@@ -2117,26 +2712,126 @@ function closeItemsOverlay() {
     itemsOverlay.setAttribute('aria-hidden', 'true');
 }
 
+function getMemoryMedia(memory) {
+    if (memory?.media?.length) return memory.media;
+    return (memory?.images || []).map((src) => ({ type: 'image', src }));
+}
+
+function renderMemoryGallery() {
+    if (!memoryGallery || !memoryPanel || !activeMemory) return;
+    const media = getMemoryMedia(activeMemory);
+    const isSingleMediaOnly = media.length === 1 && !(activeMemory.copy || '').trim();
+    const isPhotoOnly = isSingleMediaOnly && media[0].type !== 'video';
+    memoryPanel.classList.toggle('memory-panel-photo-only', isPhotoOnly);
+    memoryPanel.classList.toggle('memory-panel-media-only', isSingleMediaOnly);
+    if (!media.length) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
+        memoryGallery.innerHTML = '';
+        memoryGallery.hidden = true;
+        memoryPanel.classList.add('memory-panel-no-gallery');
+        return;
+    }
+
+    memoryGallery.hidden = false;
+    memoryPanel.classList.remove('memory-panel-no-gallery');
+    activeMemoryImageIndex = ((activeMemoryImageIndex % media.length) + media.length) % media.length;
+    const currentMedia = media[activeMemoryImageIndex];
+    const showNav = media.length > 1;
+
+    if (memoryGallery.dataset.memoryId !== activeMemory.id) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
+        memoryGallery.innerHTML = `
+            <figure class="memory-photo">
+                <img class="memory-gallery-image" alt="" decoding="async" hidden>
+                <video class="memory-gallery-video" controls playsinline preload="metadata" hidden></video>
+            </figure>
+            <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo">‹</button>
+            <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo">›</button>
+            <div class="memory-gallery-count"></div>
+        `;
+    }
+
+    const galleryImage = memoryGallery.querySelector('.memory-gallery-image');
+    const galleryVideo = memoryGallery.querySelector('.memory-gallery-video');
+    const galleryPrev = memoryGallery.querySelector('.memory-gallery-prev');
+    const galleryNext = memoryGallery.querySelector('.memory-gallery-next');
+    const galleryCount = memoryGallery.querySelector('.memory-gallery-count');
+
+    galleryImage.hidden = currentMedia.type === 'video';
+    galleryVideo.hidden = currentMedia.type !== 'video';
+    galleryVideo.pause();
+    galleryVideo.removeAttribute('src');
+
+    if (currentMedia.type === 'video') {
+        galleryVideo.src = currentMedia.src;
+        galleryVideo.load();
+    } else {
+        galleryImage.src = currentMedia.src;
+        galleryImage.alt = activeMemory.title;
+    }
+
+    galleryPrev.hidden = !showNav || isPhotoOnly;
+    galleryNext.hidden = !showNav || isPhotoOnly;
+    galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${media.length}`;
+    galleryCount.hidden = isPhotoOnly;
+}
+
+function openMemory(memory) {
+    if (memoryCloseResetTimer) {
+        window.clearTimeout(memoryCloseResetTimer);
+        memoryCloseResetTimer = null;
+    }
+    activeMemory = memory;
+    activeMemoryImageIndex = 0;
+    memoryKicker.textContent = memory.kicker || 'Memory Fragment';
+    memoryTitle.textContent = memory.title;
+    memoryCopy.textContent = memory.copy || '';
+    if (memoryGallery) memoryGallery.dataset.memoryId = '';
+    renderMemoryGallery();
+    memoryOverlay.classList.add('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeMemoryOverlay() {
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+    if (memoryCloseResetTimer) window.clearTimeout(memoryCloseResetTimer);
+    memoryCloseResetTimer = window.setTimeout(() => {
+        if (memoryOverlay.classList.contains('visible')) return;
+        memoryPanel?.classList.remove('memory-panel-photo-only', 'memory-panel-media-only');
+        memoryCloseResetTimer = null;
+    }, 320);
+    memoryGallery?.querySelectorAll('video').forEach((video) => video.pause());
+}
+
+function stepMemoryGallery(direction) {
+    if (!getMemoryMedia(activeMemory).length) return;
+    activeMemoryImageIndex += direction;
+    renderMemoryGallery();
+}
+
 function updateBillboardPositions() {
     if (!viewer.camera) return;
 
-    const now = performance.now() * 0.001;
-
     memoryBillboards.forEach((billboard) => {
-        if (!activeBillboard || activeBillboard !== billboard) {
-            billboard.renderedWorldPosition.copy(billboard.baseWorldPosition);
-            billboard.renderedWorldPosition.x += Math.sin(now * billboard.drift.speed + billboard.drift.phase) * billboard.drift.x;
-            billboard.renderedWorldPosition.y += Math.cos(now * (billboard.drift.speed * 0.87) + billboard.drift.phase * 1.3) * billboard.drift.y;
-            billboard.renderedWorldPosition.z += Math.sin(now * (billboard.drift.speed * 0.63) + billboard.drift.phase * 0.8) * billboard.drift.z;
-        } else {
-            billboard.renderedWorldPosition.copy(billboard.baseWorldPosition);
+        if (billboard.sceneIds && !billboard.sceneIds.includes(currentSceneId)) {
+            billboard.element.classList.remove('visible', 'near', 'expanded', 'dragging');
+            billboard.expanded = false;
+            return;
         }
 
-        const projected = billboard.renderedWorldPosition.clone().project(viewer.camera);
-        const isVisible = projected.z > -1 && projected.z < 1;
+        billboard.renderedWorldPosition.copy(billboard.anchor);
 
-        if (!memoriesVisible || !isVisible) {
-            billboard.element.classList.remove('visible');
+        const projected = billboard.renderedWorldPosition.clone().project(viewer.camera);
+        const isVisible = projected.z > -1 && projected.z < 1
+            && projected.x >= -1.15 && projected.x <= 1.15
+            && projected.y >= -1.15 && projected.y <= 1.15;
+
+        const distanceToMemory = viewer.camera.position.distanceTo(billboard.renderedWorldPosition);
+        const isWithinRevealDistance = !billboard.revealDistance || distanceToMemory <= billboard.revealDistance;
+
+        if (!memoriesVisible || !isVisible || !isWithinRevealDistance) {
+            billboard.element.classList.remove('visible', 'near');
             return;
         }
 
@@ -2147,6 +2842,7 @@ function updateBillboardPositions() {
         billboard.element.style.top = `${y}px`;
         billboard.element.style.zIndex = billboard.expanded ? '2' : '1';
         billboard.element.classList.add('visible');
+        billboard.element.classList.toggle('near', distanceToMemory <= MEMORY_LABEL_REVEAL_DISTANCE);
     });
 }
 
@@ -2173,8 +2869,7 @@ function startBillboardLoop() {
 }
 
 function syncFocusMask() {
-    const hasExpanded = memoriesVisible && memoryBillboards.some((billboard) => billboard.expanded);
-    focusMask.classList.toggle('visible', hasExpanded);
+    focusMask.classList.remove('visible');
 }
 
 function toggleMemories() {
@@ -2184,10 +2879,7 @@ function toggleMemories() {
     memoriesVisible = !memoriesVisible;
     reviewMemosButton.classList.toggle('active', memoriesVisible);
     if (!memoriesVisible) {
-        memoryBillboards.forEach((billboard) => {
-            billboard.expanded = false;
-            billboard.element.classList.remove('expanded', 'dragging');
-        });
+        closeMemoryOverlay();
         activeBillboard = null;
     }
     syncFocusMask();
@@ -2324,6 +3016,97 @@ function loadTrack(index) {
     renderMusicPlaylist();
 }
 
+function fadeAmbientVolume(targetVolume, { pauseWhenDone = false } = {}) {
+    return new Promise((resolve) => {
+        if (ambientFadeFrame) window.cancelAnimationFrame(ambientFadeFrame);
+        const startVolume = ambientAudio.volume;
+        const startTime = performance.now();
+        const duration = 520;
+        const step = (time) => {
+            const progress = Math.min(1, (time - startTime) / duration);
+            ambientAudio.volume = startVolume + ((targetVolume - startVolume) * progress);
+            if (progress < 1) {
+                ambientFadeFrame = window.requestAnimationFrame(step);
+                return;
+            }
+            ambientFadeFrame = null;
+            ambientAudio.volume = targetVolume;
+            if (pauseWhenDone) ambientAudio.pause();
+            updateAudioButton();
+            resolve();
+        };
+        ambientFadeFrame = window.requestAnimationFrame(step);
+    });
+}
+
+function getPlayingVideos() {
+    return Array.from(document.querySelectorAll('video')).filter((video) => !video.paused && !video.ended);
+}
+
+async function fadeOutAmbientForVideo() {
+    if (ambientAudio.paused || ambientAudio.muted) {
+        ambientWasInterruptedByVideo = audioStarted && !ambientAudio.muted;
+        ambientAudio.pause();
+        updateAudioButton();
+        return;
+    }
+    ambientWasInterruptedByVideo = true;
+    ambientResumeVolume = ambientAudio.volume || defaultAmbientVolume;
+    await fadeAmbientVolume(0, { pauseWhenDone: true });
+}
+
+async function resumeAmbientAfterVideos() {
+    if (!ambientWasInterruptedByVideo || getPlayingVideos().length) return;
+    ambientWasInterruptedByVideo = false;
+    try {
+        ambientAudio.muted = false;
+        ambientAudio.volume = 0;
+        await ambientAudio.play();
+        await fadeAmbientVolume(ambientResumeVolume || defaultAmbientVolume);
+    } catch (err) {
+        console.error(err);
+        ambientAudio.muted = true;
+        updateAudioButton();
+    }
+}
+
+function bindExclusiveVideoAudio() {
+    const pauseHiddenVideos = () => {
+        document.querySelectorAll('video').forEach((video) => {
+            if (video.paused) return;
+            if (!video.closest('[hidden], [aria-hidden="true"]')) return;
+            video.pause();
+        });
+    };
+
+    document.addEventListener('play', (event) => {
+        const video = event.target;
+        if (!(video instanceof HTMLVideoElement)) return;
+        getPlayingVideos().forEach((playingVideo) => {
+            if (playingVideo !== video) playingVideo.pause();
+        });
+        fadeOutAmbientForVideo();
+    }, true);
+
+    document.addEventListener('pause', (event) => {
+        if (!(event.target instanceof HTMLVideoElement)) return;
+        window.setTimeout(resumeAmbientAfterVideos, 0);
+    }, true);
+
+    document.addEventListener('ended', (event) => {
+        if (!(event.target instanceof HTMLVideoElement)) return;
+        window.setTimeout(resumeAmbientAfterVideos, 0);
+    }, true);
+
+    const hiddenVideoObserver = new MutationObserver(pauseHiddenVideos);
+    hiddenVideoObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['aria-hidden', 'hidden', 'class'],
+        subtree: true
+    });
+    document.addEventListener('visibilitychange', pauseHiddenVideos);
+}
+
 function getSceneRotation(scene) {
     const rotation = baseModelRotation.clone();
     if (scene.rotationCorrection) {
@@ -2407,12 +3190,24 @@ function applySceneUi(scene, isLoading = false) {
     reviewMemosButton.style.opacity = scene.memories ? '1' : '0.45';
     reviewMemosButton.style.cursor = scene.memories ? 'pointer' : 'not-allowed';
 
+    if (activeMemory?.sceneIds && !activeMemory.sceneIds.includes(scene.id)) {
+        activeMemory = null;
+        closeMemoryOverlay();
+    }
+
+    memoryBillboards.forEach((billboard) => {
+        if (!billboard.sceneIds || billboard.sceneIds.includes(scene.id)) return;
+        billboard.element.classList.remove('near', 'expanded', 'dragging', 'visible');
+        if (activeBillboard === billboard) activeBillboard = null;
+        if (activeMemory === billboard) activeMemory = null;
+    });
+
     if (!scene.memories && memoriesVisible) {
         memoriesVisible = false;
         reviewMemosButton.classList.remove('active');
+        closeMemoryOverlay();
         memoryBillboards.forEach((billboard) => {
-            billboard.expanded = false;
-            billboard.element.classList.remove('expanded', 'dragging', 'visible');
+            billboard.element.classList.remove('near', 'expanded', 'dragging', 'visible');
         });
         activeBillboard = null;
         syncFocusMask();
@@ -2421,10 +3216,14 @@ function applySceneUi(scene, isLoading = false) {
 
 async function startAmbientAudio() {
     if (!audioStarted) audioStarted = true;
+    if (getPlayingVideos().length) {
+        updateAudioButton();
+        return;
+    }
 
     try {
         ambientAudio.muted = false;
-        ambientAudio.volume = 0.6;
+        ambientAudio.volume = defaultAmbientVolume;
         await ambientAudio.play();
         updateAudioButton();
     } catch (err) {
@@ -2556,6 +3355,12 @@ ambientAudio.addEventListener('ended', async () => {
         console.error(err);
     }
 });
+ambientAudio.addEventListener('play', () => {
+    getPlayingVideos().forEach((video) => video.pause());
+});
+ambientAudio.addEventListener('pause', updateAudioButton);
+ambientAudio.addEventListener('play', updateAudioButton);
+bindExclusiveVideoAudio();
 
 screenshotButton.addEventListener('click', captureSceneScreenshot);
 mapToggle.addEventListener('click', openMapOverlay);
@@ -2654,12 +3459,28 @@ memoOverlay.addEventListener('click', (event) => {
 itemsOverlay.addEventListener('click', (event) => {
     if (event.target === itemsOverlay) closeItemsOverlay();
 });
+memoryClose.addEventListener('click', closeMemoryOverlay);
+memoryOverlay.addEventListener('click', (event) => {
+    if (event.target === memoryOverlay) closeMemoryOverlay();
+});
+memoryGallery.addEventListener('click', (event) => {
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
+});
 window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
         setMusicPlayerExpanded(false);
         closeMapOverlay();
         closeMemoOverlay();
         closeItemsOverlay();
+        closeMemoryOverlay();
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowLeft') {
+        stepMemoryGallery(-1);
+    } else if (memoryOverlay.classList.contains('visible') && event.key === 'ArrowRight') {
+        stepMemoryGallery(1);
     }
 });
 
@@ -2687,12 +3508,9 @@ giftForm?.addEventListener('submit', (event) => {
 });
 
 memoryBillboards.forEach((billboard) => {
-    billboard.element.addEventListener('pointerdown', (event) => beginBillboardDrag(event, billboard));
+    if (billboard.type === 'sentence') return;
+    billboard.element.addEventListener('click', () => openMemory(billboard));
 });
-
-window.addEventListener('pointermove', moveBillboardDrag);
-window.addEventListener('pointerup', endBillboardDrag);
-window.addEventListener('pointercancel', endBillboardDrag);
 
 updateAudioButton();
 updateViewIndicator();

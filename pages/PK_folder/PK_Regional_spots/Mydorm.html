@@ -342,6 +342,30 @@
             background: rgba(28, 18, 10, 0.74);
         }
 
+        .floating-scene-sentence {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 123;
+            max-width: min(360px, 78vw);
+            color: rgba(255,255,255,0.92);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.25;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.75);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            white-space: normal;
+        }
+
+        .floating-scene-sentence.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+
         #memory-overlay {
             position: fixed;
             inset: 0;
@@ -447,7 +471,56 @@
             border: 1px solid rgba(255,255,255,0.1);
             overflow: hidden;
         }
-
+        .memory-panel.memory-panel-no-gallery {
+            grid-template-columns: 1fr;
+        }
+        .memory-panel.memory-panel-no-gallery .memory-title,
+        .memory-panel.memory-panel-no-gallery .memory-copy {
+            grid-column: 1;
+        }
+        .memory-panel.memory-panel-no-gallery .memory-gallery {
+            display: none;
+        }
+        .memory-panel.memory-panel-media-only {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 56px);
+            max-height: calc(100vh - 56px);
+            padding: 12px;
+            overflow: visible;
+        }
+        .memory-panel.memory-panel-media-only .memory-title,
+        .memory-panel.memory-panel-media-only .memory-copy,
+        .memory-panel.memory-panel-media-only .memory-kicker {
+            display: none;
+        }
+        .memory-panel.memory-panel-media-only .memory-gallery {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border: 0;
+            border-radius: 18px;
+            background: transparent;
+        }
+        .memory-panel.memory-panel-media-only .memory-photo {
+            width: auto;
+            height: auto;
+            max-width: inherit;
+            max-height: inherit;
+            border-radius: 16px;
+        }
+        .memory-panel.memory-panel-media-only .memory-photo img,
+        .memory-panel.memory-panel-media-only .memory-photo video {
+            width: auto;
+            height: auto;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 80px);
+            border-radius: 16px;
+            object-fit: contain;
+        }
         .memory-photo {
             display: block;
             width: 100%;
@@ -463,6 +536,15 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
+        }
+
+        .memory-photo video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: black;
+            object-fit: contain;
             object-position: center;
         }
 
@@ -538,6 +620,9 @@
                 grid-row: 3;
                 height: 300px;
                 min-height: 0;
+            }
+            .memory-panel.memory-panel-no-gallery {
+                grid-template-rows: auto minmax(0, 1fr);
             }
         }
 
@@ -698,7 +783,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260501f';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260604nochurch';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -710,6 +795,7 @@ const memoryKicker = document.getElementById('memory-kicker');
 const memoryTitle = document.getElementById('memory-title');
 const memoryCopy = document.getElementById('memory-copy');
 const memoryGallery = document.getElementById('memory-gallery');
+const memoryPanel = memoryOverlay.querySelector('.memory-panel');
 const memoryLightbox = document.getElementById('memory-lightbox');
 const memoryLightboxClose = document.getElementById('memory-lightbox-close');
 const memoryLightboxPrev = document.getElementById('memory-lightbox-prev');
@@ -719,14 +805,34 @@ const memoryLightboxMeta = document.getElementById('memory-lightbox-meta');
 
 initSharedChrome({
     homeHref: '../../../index.html',
-    regionalMap: {
+    globalMap: {
         caption: 'PK Regional Map',
-        center: { label: 'My Dorm', left: '38%', top: '45%' },
+        hideCenter: true,
+        center: { label: 'PK Cluster', left: '42%', top: '48%' },
         lines: [
-            { left: '39%', top: '49%', width: '18%', rotate: '8deg' }
+            { left: '42%', top: '48%', width: '12%', rotate: '-18deg' },
+            { left: '42%', top: '48%', width: '13%', rotate: '16deg' },
+            { left: '42%', top: '48%', width: '14%', rotate: '48deg' }
         ],
         nodes: [
-            { label: 'PK', href: '../PK.html', left: '58%', top: '44%' }
+            { label: 'PK', href: '../PK.html', left: '55%', top: '39%' },
+            { label: 'Quiet Room', href: './QR.html', left: '57%', top: '53%' },
+            { label: 'My Dorm', href: './Mydorm.html', left: '56%', top: '66%' }
+        ]
+    },
+    regionalMap: {
+        caption: 'PK Regional Map',
+        hideCenter: true,
+        center: { label: 'PK Cluster', left: '42%', top: '48%' },
+        lines: [
+            { left: '42%', top: '48%', width: '12%', rotate: '-18deg' },
+            { left: '42%', top: '48%', width: '13%', rotate: '16deg' },
+            { left: '42%', top: '48%', width: '14%', rotate: '48deg' }
+        ],
+        nodes: [
+            { label: 'PK', href: '../PK.html', left: '55%', top: '39%' },
+            { label: 'Quiet Room', href: './QR.html', left: '57%', top: '53%' },
+            { label: 'My Dorm', href: './Mydorm.html', left: '56%', top: '66%' }
         ],
         placeCard: {
             kicker: 'Branch',
@@ -734,6 +840,16 @@ initSharedChrome({
             copy: 'A dorm scan nested under the PK branch, reachable from its regional map.',
             actions: []
         }
+    },
+    itemsExperience: {
+        kicker: 'Object',
+        title: 'Lantern String',
+        copy: 'You could do anything to procrastinate\nreally,\nAnything',
+        media: {
+            type: 'video',
+            src: './Mydorm_sub/Objects/latern string/X -0.78 Y 0.04 Z -1.26.mp4'
+        },
+        showActions: false
     }
 });
 initSharedMusicPlayer({ homeHref: '../../../index.html' });
@@ -760,21 +876,25 @@ const viewer = new GaussianSplats3D.Viewer({
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 let memoryBeaconsVisible = false;
 let memoryBeaconElements = [];
+let floatingSentenceElements = [];
+let objectBeaconsVisible = false;
+let objectBeaconElements = [];
 let activeMemory = null;
 let activeMemoryImageIndex = 0;
+let beaconLayerSwitchTimer = null;
 const MEMORY_REVEAL_DISTANCE = 3.9;
+const FLOATING_SENTENCE_REVEAL_DISTANCE = 3.9;
+const OBJECT_REVEAL_DISTANCE = 3.9;
+const BEACON_LAYER_SWITCH_DELAY = 240;
 const MEMORY_BEACONS = [
     {
         id: 'desk',
         label: 'Desk',
         anchor: new THREE.Vector3(-0.02, 0.02, -0.06),
         kicker: 'Memory Fragment',
-        title: 'October 21st, 2025',
-        copy: '1.\n(9:10)\n昨天数学考试成绩出来了\n耶\n不会去保底校\n太好了\n但是我的语文好像要炸了\n救命\n\n2.\nOctober 13th, 2025\n(22:31)\nbro\nwhat should i do with my EE\nI mean I could definitely finish it\nbut\nbruh\ni could not meet the meeting',
-        images: [
-            './Mydorm_sub/Memories/Desk/IMG_8583.HEIC',
-            './Mydorm_sub/Memories/Desk/ad340e671081d2945779aa9326587874.JPG'
-        ]
+        title: 'October 4th, 2025',
+        copy: 'Dear Diary,\n(13:24)\n人生极度幸福了\n今天好开心\n现在好开心\n嗐真好，还好当初把桌子搬回来了\n我太喜欢宿舍学习这种氛围了\n本来以为不会喜欢的\n没想到这么一来学习的过程都变得有趣了\n(13:29)\nbro they are sooooo cuteNo\nthese cuties\nawwww\nlove them\nI love my life\n(23:10)\nTalked to xxx, checked on them, for an hour\nthis guy bro\nI began to realise that they actually has a horrible memory\nanyways\nstill one of a kind\nan interesting human being',
+        images: []
     },
     {
         id: 'dormpics',
@@ -782,15 +902,115 @@ const MEMORY_BEACONS = [
         anchor: new THREE.Vector3(-1.57, 0.91, -0.64),
         kicker: 'Memory Fragment',
         title: 'Dormpics',
-        copy: 'Lovely small home to live in',
+        copy: '',
         images: [
-            './Mydorm_sub/Memories/Dormpics/IMG_1686.JPEG',
+            './Mydorm_sub/Memories/Dormpics/X -1.57 Y 0.91 Z -0.64.JPEG',
             './Mydorm_sub/Memories/Dormpics/IMG_1689.JPEG',
             './Mydorm_sub/Memories/Dormpics/IMG_1708.JPEG',
             './Mydorm_sub/Memories/Dormpics/IMG_1715.JPEG',
             './Mydorm_sub/Memories/Dormpics/IMG_1717.JPEG',
             './Mydorm_sub/Memories/Dormpics/IMG_1720.JPEG'
         ]
+    },
+    {
+        id: 'working-on-bed',
+        label: 'Working',
+        anchor: new THREE.Vector3(-1.87, 0.12, -0.46),
+        kicker: 'Memory Fragment',
+        title: 'May 14th, 2026',
+        copy: 'Sometimes I wonder\nwhy putting so much effort\njust to record the memories?\nshould I not\nperhaps\nuse this time to live and experience more\n.\nleave memories as it is\nnot to be preserved...\nbut shall be recalled when it is meant to\n.\nbut,\nI don\'t know\nI want to record\nto remember\nto create\nand perhaps romanticise a bit\nI think this is my way of saying goodbye\nto those two years...',
+        images: [
+            './Mydorm_sub/Memories/Working on bed/8fa1b8435c77eada453e8a6097f22f02.jpg'
+        ]
+    },
+    {
+        id: 'cramp-study',
+        label: 'Study',
+        anchor: new THREE.Vector3(-1.10, 0.04, 0.25),
+        kicker: 'Memory Fragment',
+        title: 'May 12th, 2026',
+        copy: 'Dear Diary,\n(14:08)\nI swear I will never do this to myself ever again\nI have\nTWO DAYS\nbefore the\nACTUAL Math exam\nand I just began revising\nWhat is wrong with me seriously',
+        images: [
+            './Mydorm_sub/Memories/cramp study/8c8fbce93ad9211709f76352587a6350.jpg'
+        ]
+    },
+    {
+        id: 'sick-as-hell',
+        label: 'Sick',
+        anchor: new THREE.Vector3(-1.40, 0.20, -0.69),
+        kicker: 'Memory Fragment',
+        title: 'January 19th, 2026',
+        copy: 'Dear Diary,\n(21:55)\nbeen sick for almost a week\nworked too hard\nanyways\ngonna go back to my daily routine tomorrow\nwadyou say\nwell\nlet\'s hope I could get this through',
+        images: [
+            './Mydorm_sub/Memories/sick as hell/05fe675a934b3cdd6caad9a56e908fee.jpg',
+            './Mydorm_sub/Memories/sick as hell/2b35c54ecb7f7a65582bff6bf38ddc23.jpg',
+            './Mydorm_sub/Memories/sick as hell/dbcec6a0ff260464e5f6416a90c44c4e.jpg',
+            './Mydorm_sub/Memories/sick as hell/f838411aefa3bbb8bc33ac5e857ffa96.jpg'
+        ]
+    },
+    {
+        id: 'notes',
+        label: 'Notes',
+        anchor: new THREE.Vector3(-0.07, 0.60, 0.25),
+        kicker: 'Memory Fragment',
+        title: 'October 15th, 2025',
+        copy: 'These cuties.\n\nGot really stressed for my Math exams today\nthis is my last chance to keep my current grade\nWhile I was working they just came in as a row\nwith\nudon\ncakes\nsnacks\n...\nHow do people like this even exist...?',
+        media: [
+            { type: 'image', src: './Mydorm_sub/Memories/notes/1dbd20f27ec99cf0bfcf5b63d184877c.jpeg' },
+            { type: 'image', src: './Mydorm_sub/Memories/notes/IMG_9664.jpeg' },
+            { type: 'image', src: './Mydorm_sub/Memories/notes/e8d6a124a6c67b4552621465ab12daa7.jpeg' }
+        ]
+    },
+    {
+        id: 'random',
+        label: 'Random',
+        anchor: new THREE.Vector3(0.21, 0.15, 0.78),
+        kicker: 'Memory Fragment',
+        title: 'Random',
+        copy: '',
+        media: [
+            { type: 'video', src: './Mydorm_sub/Memories/random/X 0.21 Y 0.15 Z 0.78.mp4' }
+        ]
+    },
+    {
+        id: 'summer-alone',
+        label: 'Summer',
+        anchor: new THREE.Vector3(-1.78, -0.70, 0.86),
+        kicker: 'Memory Fragment',
+        title: 'Summer Alone',
+        copy: '',
+        media: [
+            { type: 'video', src: './Mydorm_sub/Memories/summer alone/X -1.78 Y -0.70 Z 0.86.mp4' }
+        ]
+    }
+];
+const FLOATING_SENTENCES = [
+    {
+        anchor: new THREE.Vector3(0.21, 1.14, -0.38),
+        text: 'in summer time, you get waked up by sunshine every morning'
+    },
+    {
+        anchor: new THREE.Vector3(-0.25, -0.43, 0.70),
+        text: 'There are always works undone... and lives waiting to be lived'
+    },
+    {
+        anchor: new THREE.Vector3(0.28, -0.48, 0.07),
+        text: 'You could hear people night riding running by'
+    },
+    {
+        anchor: new THREE.Vector3(-0.91, 1.39, -1.45),
+        text: 'Haribo gummy bears... yum!'
+    },
+    {
+        anchor: new THREE.Vector3(-1.87, 0.19, -0.48),
+        text: "I don't wanna go to codes ahhhhh"
+    }
+];
+const OBJECT_BEACONS = [
+    {
+        id: 'lantern-string',
+        label: 'Lantern',
+        anchor: new THREE.Vector3(-0.78, 0.04, -1.26)
     }
 ];
 
@@ -881,47 +1101,72 @@ function preloadMemoryImages(images) {
     });
 }
 
+function getMemoryMedia(memory) {
+    if (memory.media?.length) return memory.media;
+    return (memory.images || []).map((src) => ({ type: 'image', src }));
+}
+
 function renderMemoryGallery() {
     if (!memoryGallery || !activeMemory) return;
-    const images = activeMemory.images || [];
-    if (!images.length) {
+    const media = getMemoryMedia(activeMemory);
+    const isMediaOnly = media.length > 0 && !activeMemory.copy?.trim();
+    memoryPanel.classList.toggle('memory-panel-media-only', isMediaOnly);
+    if (!media.length) {
         memoryGallery.dataset.memoryId = activeMemory.id;
-        memoryGallery.innerHTML = '<div class="memory-gallery-empty">No photos</div>';
+        memoryGallery.innerHTML = '';
+        memoryGallery.hidden = true;
+        memoryPanel.classList.add('memory-panel-no-gallery');
+        memoryPanel.classList.remove('memory-panel-media-only');
         return;
     }
 
-    activeMemoryImageIndex = ((activeMemoryImageIndex % images.length) + images.length) % images.length;
-    const imagePath = images[activeMemoryImageIndex];
-    const showNav = images.length > 1;
+    memoryGallery.hidden = false;
+    memoryPanel.classList.remove('memory-panel-no-gallery');
+    activeMemoryImageIndex = ((activeMemoryImageIndex % media.length) + media.length) % media.length;
+    const currentMedia = media[activeMemoryImageIndex];
+    const showNav = media.length > 1;
     if (memoryGallery.dataset.memoryId !== activeMemory.id) {
         memoryGallery.dataset.memoryId = activeMemory.id;
         memoryGallery.innerHTML = `
             <figure class="memory-photo">
-                <img class="memory-gallery-image" alt="" decoding="async">
+                <img class="memory-gallery-image" alt="" decoding="async" hidden>
+                <video class="memory-gallery-video" controls playsinline preload="metadata" hidden></video>
             </figure>
             <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo">‹</button>
             <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo">›</button>
             <div class="memory-gallery-count"></div>
         `;
-        preloadMemoryImages(images);
+        preloadMemoryImages(media.filter((item) => item.type === 'image').map((item) => item.src));
     }
 
     const galleryImage = memoryGallery.querySelector('.memory-gallery-image');
+    const galleryVideo = memoryGallery.querySelector('.memory-gallery-video');
     const galleryPrev = memoryGallery.querySelector('.memory-gallery-prev');
     const galleryNext = memoryGallery.querySelector('.memory-gallery-next');
     const galleryCount = memoryGallery.querySelector('.memory-gallery-count');
 
-    if (galleryImage) {
-        galleryImage.src = imagePath;
+    if (galleryImage && galleryVideo) {
+        const isVideo = currentMedia.type === 'video';
+        galleryImage.hidden = isVideo;
+        galleryVideo.hidden = !isVideo;
+        if (isVideo) {
+            galleryVideo.innerHTML = `<source src="${currentMedia.src}" type="${currentMedia.mime || 'video/mp4'}">`;
+            galleryVideo.load();
+            galleryImage.removeAttribute('src');
+        } else {
+            galleryImage.src = currentMedia.src;
+            galleryVideo.removeAttribute('src');
+            galleryVideo.innerHTML = '';
+        }
         galleryImage.alt = `${activeMemory.title} photo ${activeMemoryImageIndex + 1}`;
     }
     if (galleryPrev) galleryPrev.hidden = !showNav;
     if (galleryNext) galleryNext.hidden = !showNav;
-    if (galleryCount) galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${images.length}`;
+    if (galleryCount) galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${media.length}`;
 }
 
 function stepMemoryGallery(direction) {
-    if (!activeMemory?.images?.length) return;
+    if (!getMemoryMedia(activeMemory || {}).length) return;
     activeMemoryImageIndex += direction;
     renderMemoryGallery();
 }
@@ -939,6 +1184,13 @@ function ensureMemoryBeacons() {
         });
         document.body.appendChild(element);
         return { element, memory };
+    });
+    floatingSentenceElements = FLOATING_SENTENCES.map((sentence) => {
+        const element = document.createElement('div');
+        element.className = 'floating-scene-sentence';
+        element.textContent = sentence.text;
+        document.body.appendChild(element);
+        return { element, sentence };
     });
 }
 
@@ -958,16 +1210,118 @@ function updateMemoryBeacons() {
             element.classList.toggle('near', cameraDistance <= MEMORY_REVEAL_DISTANCE);
         }
     });
+    floatingSentenceElements.forEach(({ element, sentence }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        if (projectSceneBeacon(sentence.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(sentence.anchor);
+            element.classList.toggle('visible', cameraDistance <= FLOATING_SENTENCE_REVEAL_DISTANCE);
+        }
+    });
     window.requestAnimationFrame(updateMemoryBeacons);
 }
 
 function toggleMemoryBeacons() {
-    ensureMemoryBeacons();
-    memoryBeaconsVisible = !memoryBeaconsVisible;
-    if (!memoryBeaconsVisible) {
-        memoryOverlay.classList.remove('visible');
-        memoryOverlay.setAttribute('aria-hidden', 'true');
+    if (beaconLayerSwitchTimer) window.clearTimeout(beaconLayerSwitchTimer);
+    if (memoryBeaconsVisible) {
+        hideMemoryLayer();
+        return;
     }
+    const shouldDelay = objectBeaconsVisible;
+    hideObjectLayer();
+    beaconLayerSwitchTimer = window.setTimeout(() => {
+        ensureMemoryBeacons();
+        memoryBeaconsVisible = true;
+    }, shouldDelay ? BEACON_LAYER_SWITCH_DELAY : 0);
+}
+
+function hideMemoryLayer() {
+    memoryBeaconsVisible = false;
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+    memoryBeaconElements.forEach(({ element }) => {
+        element.classList.remove('visible');
+        element.classList.remove('near');
+    });
+    floatingSentenceElements.forEach(({ element }) => {
+        element.classList.remove('visible');
+    });
+}
+
+function showMemoryLayer() {
+    ensureMemoryBeacons();
+    memoryBeaconsVisible = true;
+}
+
+function openObjectPanel() {
+    const currentItemsOverlay = document.getElementById('items-overlay');
+    currentItemsOverlay?.classList.add('visible');
+    currentItemsOverlay?.setAttribute('aria-hidden', 'false');
+}
+
+function ensureObjectBeacons() {
+    if (objectBeaconElements.length) return;
+    objectBeaconElements = OBJECT_BEACONS.map((object) => {
+        const element = document.createElement('button');
+        element.type = 'button';
+        element.className = 'scene-beacon memory-beacon object-beacon';
+        element.setAttribute('aria-label', `Open object ${object.label}`);
+        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../../iconntext/Beacon.GIF" alt=""></span><span class="scene-beacon-label">${object.label}</span>`;
+        element.addEventListener('click', openObjectPanel);
+        document.body.appendChild(element);
+        return { element, object };
+    });
+}
+
+function updateObjectBeacons() {
+    if (!viewer.camera) {
+        window.requestAnimationFrame(updateObjectBeacons);
+        return;
+    }
+    objectBeaconElements.forEach(({ element, object }) => {
+        if (!objectBeaconsVisible) {
+            element.classList.remove('visible');
+            element.classList.remove('near');
+            return;
+        }
+        if (projectSceneBeacon(object.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(object.anchor);
+            element.classList.toggle('near', cameraDistance <= OBJECT_REVEAL_DISTANCE);
+        }
+    });
+    window.requestAnimationFrame(updateObjectBeacons);
+}
+
+function toggleObjectBeacons() {
+    if (beaconLayerSwitchTimer) window.clearTimeout(beaconLayerSwitchTimer);
+    if (objectBeaconsVisible) {
+        hideObjectLayer();
+        return;
+    }
+    const shouldDelay = memoryBeaconsVisible;
+    hideMemoryLayer();
+    beaconLayerSwitchTimer = window.setTimeout(() => {
+        ensureObjectBeacons();
+        objectBeaconsVisible = true;
+    }, shouldDelay ? BEACON_LAYER_SWITCH_DELAY : 0);
+}
+
+function hideObjectLayer() {
+    objectBeaconsVisible = false;
+    const currentItemsOverlay = document.getElementById('items-overlay');
+    currentItemsOverlay?.classList.remove('visible');
+    currentItemsOverlay?.setAttribute('aria-hidden', 'true');
+    objectBeaconElements.forEach(({ element }) => {
+        element.classList.remove('visible');
+        element.classList.remove('near');
+    });
+}
+
+function showObjectLayer() {
+    ensureObjectBeacons();
+    objectBeaconsVisible = true;
 }
 
 window.addEventListener('pointerdown', hideHint, { once: true });
@@ -978,6 +1332,7 @@ window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
 updateViewIndicator();
 updateMemoryBeacons();
+updateObjectBeacons();
 
 memoryClose.addEventListener('click', () => {
     memoryOverlay.classList.remove('visible');
@@ -1052,6 +1407,13 @@ if (reviewMemosButton) {
     const replacement = reviewMemosButton.cloneNode(true);
     reviewMemosButton.replaceWith(replacement);
     replacement.addEventListener('click', toggleMemoryBeacons);
+}
+
+const reviewNotesButton = document.getElementById('review-notes');
+if (reviewNotesButton) {
+    const replacement = reviewNotesButton.cloneNode(true);
+    reviewNotesButton.replaceWith(replacement);
+    replacement.addEventListener('click', toggleObjectBeacons);
 }
 
 window.addEventListener('keydown', (event) => {

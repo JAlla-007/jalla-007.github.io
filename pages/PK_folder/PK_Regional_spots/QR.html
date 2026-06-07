@@ -271,6 +271,292 @@
         .hero-title-line { color: rgba(255, 255, 255, 0.98); font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(42px, 8vw, 92px); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58); }
 
         .hero-subtitle { margin-top: 14px; color: rgba(255, 255, 255, 0.72); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; }
+        .scene-beacon {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 122;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid rgba(255, 228, 176, 0.22);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+            color: rgba(255, 255, 255, 0.94);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.9);
+            transition: opacity 0.22s ease, transform 0.22s ease, background 0.22s ease, width 0.22s ease, padding 0.22s ease;
+        }
+        .scene-beacon.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .scene-beacon.near {
+            width: auto;
+            min-height: 40px;
+            padding: 0 14px 0 8px;
+            background: rgba(28, 18, 10, 0.74);
+            pointer-events: auto;
+        }
+        .scene-beacon:hover { background: rgba(255,255,255,0.12); }
+        .scene-beacon-core {
+            position: relative;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            flex: 0 0 26px;
+            overflow: hidden;
+            mix-blend-mode: screen;
+        }
+        .scene-beacon-gif {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.9);
+        }
+        .scene-beacon-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: max-width 0.22s ease, opacity 0.18s ease, transform 0.22s ease, margin-left 0.22s ease;
+        }
+        .scene-beacon.near .scene-beacon-label {
+            max-width: 150px;
+            margin-left: 10px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .memory-beacon.visible { pointer-events: auto; }
+        .floating-scene-sentence {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 123;
+            max-width: min(360px, 78vw);
+            color: rgba(255,255,255,0.92);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.25;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.75);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            white-space: normal;
+        }
+        .floating-scene-sentence.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+        #memory-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 175;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.56);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #memory-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .memory-panel {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+            grid-template-rows: minmax(90px, auto) minmax(0, 1fr);
+            gap: 24px;
+            width: min(94vw, 980px);
+            height: min(84vh, 820px);
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 28px 24px 24px;
+            border-radius: 28px;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 24%), rgba(12, 12, 12, 0.9);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 28px 70px rgba(0,0,0,0.42);
+        }
+        .memory-panel.memory-panel-image-only {
+            display: block;
+            width: min(92vw, 780px);
+            height: auto;
+            max-height: min(86vh, 760px);
+            padding: 18px;
+        }
+        .memory-close {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .memory-date {
+            position: absolute;
+            left: 18px;
+            top: 18px;
+            z-index: 2;
+            max-width: calc(100% - 88px);
+            padding: 7px 10px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+        .memory-kicker { display: none; }
+        .memory-title {
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 0;
+            margin: 0;
+            padding-right: 62px;
+            color: white;
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(24px, 2.6vw, 34px);
+            line-height: 1.05;
+        }
+        .memory-copy {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            min-width: 0;
+            min-height: 0;
+            overflow: auto;
+            margin: 0;
+            color: rgba(255,255,255,0.78);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+        .memory-gallery {
+            grid-column: 1;
+            grid-row: 1 / -1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .memory-panel.memory-panel-image-only .memory-title,
+        .memory-panel.memory-panel-image-only .memory-copy {
+            display: none;
+        }
+        .memory-panel.memory-panel-image-only .memory-gallery {
+            width: min(84vw, 720px);
+            height: auto;
+            max-height: min(78vh, 680px);
+            aspect-ratio: 4 / 3;
+        }
+        .memory-photo {
+            display: block;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .memory-photo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            object-position: center;
+        }
+        .memory-panel.memory-panel-image-only .memory-photo img {
+            object-fit: contain;
+            background: black;
+        }
+        .memory-gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.48);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .memory-gallery-nav[hidden] { display: none; }
+        .memory-gallery-prev { left: 12px; }
+        .memory-gallery-next { right: 12px; }
+        .memory-gallery-count {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.52);
+            color: rgba(255,255,255,0.86);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 11px;
+        }
+        @media (max-width: 720px) {
+            .memory-panel {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto minmax(0, 1fr) 300px;
+            }
+            .memory-title,
+            .memory-copy,
+            .memory-gallery {
+                grid-column: 1;
+            }
+            .memory-title { grid-row: 1; padding-right: 58px; }
+            .memory-copy { grid-row: 2; }
+            .memory-gallery { grid-row: 3; height: 300px; min-height: 0; }
+            .memory-panel.memory-panel-image-only {
+                width: min(94vw, 520px);
+                padding: 14px;
+            }
+            .memory-panel.memory-panel-image-only .memory-gallery {
+                width: 100%;
+                max-height: 72vh;
+            }
+        }
     </style>
 </head>
 <body class="scene-loading">
@@ -282,8 +568,9 @@
     <div class="nav-connector" aria-hidden="true"></div>
     <a class="nav-link" href="../../Academic_Blocks_folder/Academic_Blocks.html"><span class="nav-icon">#</span><span>Academic</span></a>
 </div></nav>
-<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Quiet Room</div><div class="hero-subtitle">A smaller remembered stop branching out from PK</div></div></div>
+<div id="hero-title"><div class="hero-text"><div class="hero-title-line">Quiet Room</div><div class="hero-subtitle">Fighting for that IB diploma...</div></div></div>
 <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div><button id="audio-toggle" type="button">Sound Off</button>
+<div id="memory-overlay" aria-hidden="true"><div class="memory-panel"><button class="memory-close" id="memory-close" type="button" aria-label="Close memory">×</button><div class="memory-date" id="memory-date"></div><div class="memory-kicker" id="memory-kicker">Memory</div><h2 class="memory-title" id="memory-title">Untitled</h2><p class="memory-copy" id="memory-copy"></p><div class="memory-gallery" id="memory-gallery"></div></div></div>
 <audio id="ambient-audio" loop preload="auto"><source src="../../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
@@ -291,23 +578,51 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260501f';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260604nochurch';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
+const memoryOverlay = document.getElementById('memory-overlay');
+const memoryClose = document.getElementById('memory-close');
+const memoryKicker = document.getElementById('memory-kicker');
+const memoryDate = document.getElementById('memory-date');
+const memoryTitle = document.getElementById('memory-title');
+const memoryCopy = document.getElementById('memory-copy');
+const memoryGallery = document.getElementById('memory-gallery');
+const memoryPanel = memoryOverlay.querySelector('.memory-panel');
 
 initSharedChrome({
     homeHref: '../../../index.html',
-    regionalMap: {
+    globalMap: {
         caption: 'PK Regional Map',
-        center: { label: 'Quiet Room', left: '38%', top: '45%' },
+        hideCenter: true,
+        center: { label: 'PK Cluster', left: '42%', top: '48%' },
         lines: [
-            { left: '39%', top: '49%', width: '18%', rotate: '8deg' }
+            { left: '42%', top: '48%', width: '12%', rotate: '-18deg' },
+            { left: '42%', top: '48%', width: '13%', rotate: '16deg' },
+            { left: '42%', top: '48%', width: '14%', rotate: '48deg' }
         ],
         nodes: [
-            { label: 'PK', href: '../PK.html', left: '58%', top: '44%' }
+            { label: 'PK', href: '../PK.html', left: '55%', top: '39%' },
+            { label: 'Quiet Room', href: './QR.html', left: '57%', top: '53%' },
+            { label: 'My Dorm', href: './Mydorm.html', left: '56%', top: '66%' }
+        ]
+    },
+    regionalMap: {
+        caption: 'PK Regional Map',
+        hideCenter: true,
+        center: { label: 'PK Cluster', left: '42%', top: '48%' },
+        lines: [
+            { left: '42%', top: '48%', width: '12%', rotate: '-18deg' },
+            { left: '42%', top: '48%', width: '13%', rotate: '16deg' },
+            { left: '42%', top: '48%', width: '14%', rotate: '48deg' }
+        ],
+        nodes: [
+            { label: 'PK', href: '../PK.html', left: '55%', top: '39%' },
+            { label: 'Quiet Room', href: './QR.html', left: '57%', top: '53%' },
+            { label: 'My Dorm', href: './Mydorm.html', left: '56%', top: '66%' }
         ],
         placeCard: {
             kicker: 'Branch',
@@ -319,8 +634,8 @@ initSharedChrome({
 });
 initSharedMusicPlayer({ homeHref: '../../../index.html' });
 
-const initialCameraPosition = [0, -8, 8];
-const initialCameraLookAt = [0, 0, 0];
+const initialCameraPosition = [-0.84, 0.79, 3.36];
+const initialCameraLookAt = [-0.28, 0.62, -0.07];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
 
@@ -335,6 +650,59 @@ const viewer = new GaussianSplats3D.Viewer({
 });
 
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+const MEMORY_REVEAL_DISTANCE = 3.9;
+const FLOATING_SENTENCE_REVEAL_DISTANCE = 3.9;
+const MEMORY_BEACONS = [
+    {
+        id: 'all-nighter',
+        label: 'All nighter',
+        anchor: new THREE.Vector3(0.36, 0.14, -0.12),
+        kicker: 'Memory Fragment',
+        title: 'November 12th, 2025',
+        copy: 'Dear Diary,\n(8:15)\n昨天去Royal College of Music 参观\nwoc\n前天熬了通宵写Math IA\n交是交上去了，但是没完成\n哎\n这两天写physics IA\n会死的吧\n(22:39)\n下午3点睡到晚上6:30\n直接把晚餐跳了\n哎\n最近有些日夜颠倒\n但说真的我感觉凌晨工作是最佳时间\n这怪不了我\n起码能保证睡眠时间不错了\ncope\nnothing else\n只是coping method\n。。。',
+        images: ['./QR_sub/Memories/P1all nighter/IMG_9784.jpeg']
+    },
+    {
+        id: 'study',
+        label: 'Study',
+        anchor: new THREE.Vector3(-0.85, 0.18, -0.36),
+        kicker: 'Memory Fragment',
+        title: 'February 15th, 2025',
+        copy: 'Dear Diary,\n(11:48)\nwell\nat least got something done\nSo many IAs\nbro\ni need to do some study work today, not just writing IAs\n(23:35)\nthis is so bad...\nbruh',
+        images: [
+            './QR_sub/Memories/P2study/979267efe6e29972e7740f21e672d03a.jpg',
+            './QR_sub/Memories/P2study/58592c5ceb5d3c348217d3240d54af1a.jpg'
+        ]
+    },
+    {
+        id: 'view',
+        label: 'View',
+        anchor: new THREE.Vector3(-4.29, 2.74, -4.86),
+        kicker: 'Memory Fragment',
+        title: 'View',
+        copy: '',
+        images: ['./QR_sub/Memories/February 6th, 2025/X -4.29 Y 2.74 Z -4.86.jpg']
+    }
+];
+const FLOATING_SENTENCES = [
+    {
+        anchor: new THREE.Vector3(0.47, 1.15, -0.43),
+        text: 'Don\'t get seen by the night staffs after 2 am!'
+    },
+    {
+        anchor: new THREE.Vector3(1.46, -0.62, 0.05),
+        text: 'You could find the LARGEST spiders in the quiet room'
+    },
+    {
+        anchor: new THREE.Vector3(-15.62, -4.93, -54.64),
+        text: 'DON\'T WAVE AT ME, I want to spy on people, not being spied on'
+    }
+];
+let memoryBeaconsVisible = false;
+let memoryBeaconElements = [];
+let floatingSentenceElements = [];
+let activeMemory = null;
+let activeMemoryImageIndex = 0;
 
 function updateViewIndicator() {
     if (viewer.camera?.position) {
@@ -371,6 +739,161 @@ function showHeroTitle() {
     });
 }
 
+function projectSceneBeacon(anchor, element) {
+    const projectedPoint = anchor.clone().project(viewer.camera);
+    const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+        && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+        && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+    if (!isVisible) {
+        element.classList.remove('visible');
+        element.classList.remove('near');
+        return false;
+    }
+    const x = ((projectedPoint.x + 1) / 2) * window.innerWidth;
+    const y = ((-projectedPoint.y + 1) / 2) * window.innerHeight;
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
+    element.classList.add('visible');
+    return true;
+}
+
+function renderMemoryGallery() {
+    if (!memoryGallery || !activeMemory) return;
+    const images = activeMemory.images || [];
+    if (!images.length) {
+        memoryGallery.innerHTML = '';
+        memoryGallery.hidden = true;
+        return;
+    }
+    memoryGallery.hidden = false;
+    activeMemoryImageIndex = ((activeMemoryImageIndex % images.length) + images.length) % images.length;
+    const imagePath = images[activeMemoryImageIndex];
+    const showNav = images.length > 1;
+    if (memoryGallery.dataset.memoryId !== activeMemory.id) {
+        memoryGallery.dataset.memoryId = activeMemory.id;
+        memoryGallery.innerHTML = `
+            <figure class="memory-photo">
+                <img class="memory-gallery-image" alt="" decoding="async">
+            </figure>
+            <button class="memory-gallery-nav memory-gallery-prev" type="button" aria-label="Previous photo">‹</button>
+            <button class="memory-gallery-nav memory-gallery-next" type="button" aria-label="Next photo">›</button>
+            <div class="memory-gallery-count"></div>
+        `;
+        images.forEach((src) => {
+            const image = new Image();
+            image.src = src;
+        });
+    }
+    const galleryImage = memoryGallery.querySelector('.memory-gallery-image');
+    const galleryPrev = memoryGallery.querySelector('.memory-gallery-prev');
+    const galleryNext = memoryGallery.querySelector('.memory-gallery-next');
+    const galleryCount = memoryGallery.querySelector('.memory-gallery-count');
+    if (galleryImage) {
+        galleryImage.src = imagePath;
+        galleryImage.alt = `${activeMemory.title} photo ${activeMemoryImageIndex + 1}`;
+    }
+    if (galleryPrev) galleryPrev.hidden = !showNav;
+    if (galleryNext) galleryNext.hidden = !showNav;
+    if (galleryCount) galleryCount.textContent = `${activeMemoryImageIndex + 1} / ${images.length}`;
+}
+
+function openMemory(memory) {
+    activeMemory = memory;
+    activeMemoryImageIndex = 0;
+    const isImageOnly = !memory.copy?.trim() && Boolean(memory.images?.length);
+    const dateLabel = memory.date || (/\d{4}/.test(memory.title) ? memory.title : '');
+    memoryPanel.classList.toggle('memory-panel-image-only', isImageOnly);
+    memoryKicker.textContent = memory.kicker;
+    memoryDate.textContent = dateLabel;
+    memoryDate.hidden = !memoryDate.textContent.trim();
+    memoryTitle.textContent = memory.title;
+    memoryCopy.textContent = memory.copy;
+    memoryGallery.dataset.memoryId = '';
+    renderMemoryGallery();
+    memoryOverlay.classList.add('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeMemory() {
+    memoryOverlay.classList.remove('visible');
+    memoryOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function stepMemoryGallery(direction) {
+    if (!activeMemory?.images?.length) return;
+    activeMemoryImageIndex += direction;
+    renderMemoryGallery();
+}
+
+function ensureMemoryBeacons() {
+    if (memoryBeaconElements.length) return;
+    memoryBeaconElements = MEMORY_BEACONS.map((memory) => {
+        const element = document.createElement('button');
+        element.type = 'button';
+        element.className = 'scene-beacon memory-beacon';
+        element.setAttribute('aria-label', `Open memory ${memory.title}`);
+        element.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../../iconntext/Beacon.GIF" alt=""></span><span class="scene-beacon-label">${memory.label}</span>`;
+        element.addEventListener('click', () => openMemory(memory));
+        document.body.appendChild(element);
+        return { element, memory };
+    });
+    floatingSentenceElements = FLOATING_SENTENCES.map((sentence) => {
+        const element = document.createElement('div');
+        element.className = 'floating-scene-sentence';
+        element.textContent = sentence.text;
+        document.body.appendChild(element);
+        return { element, sentence };
+    });
+}
+
+function updateMemoryBeacons() {
+    if (!viewer.camera) {
+        window.requestAnimationFrame(updateMemoryBeacons);
+        return;
+    }
+    memoryBeaconElements.forEach(({ element, memory }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            element.classList.remove('near');
+            return;
+        }
+        if (projectSceneBeacon(memory.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(memory.anchor);
+            element.classList.toggle('near', cameraDistance <= MEMORY_REVEAL_DISTANCE);
+        }
+    });
+    floatingSentenceElements.forEach(({ element, sentence }) => {
+        if (!memoryBeaconsVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        if (projectSceneBeacon(sentence.anchor, element)) {
+            const cameraDistance = viewer.camera.position.distanceTo(sentence.anchor);
+            element.classList.toggle('visible', cameraDistance <= FLOATING_SENTENCE_REVEAL_DISTANCE);
+        }
+    });
+    window.requestAnimationFrame(updateMemoryBeacons);
+}
+
+function toggleMemoryBeacons() {
+    ensureMemoryBeacons();
+    memoryBeaconsVisible = !memoryBeaconsVisible;
+    if (!memoryBeaconsVisible) closeMemory();
+}
+
+function bindReviewMemosButton() {
+    const reviewMemosButton = document.getElementById('review-memos');
+    if (!reviewMemosButton || reviewMemosButton.dataset.qrMemoriesBound === 'true') return;
+    const replacement = reviewMemosButton.cloneNode(true);
+    replacement.dataset.qrMemoriesBound = 'true';
+    reviewMemosButton.replaceWith(replacement);
+    replacement.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        toggleMemoryBeacons();
+    });
+}
+
 window.addEventListener('pointerdown', hideHint, { once: true });
 window.addEventListener('wheel', hideHint, { once: true });
 window.addEventListener('keydown', hideHint, { once: true });
@@ -378,6 +901,18 @@ window.addEventListener('pointerdown', hideHeroTitle, { once: true });
 window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
 updateViewIndicator();
+updateMemoryBeacons();
+memoryClose.addEventListener('click', closeMemory);
+memoryOverlay.addEventListener('click', (event) => {
+    if (event.target === memoryOverlay) closeMemory();
+});
+memoryGallery.addEventListener('click', (event) => {
+    if (event.target.closest('.memory-gallery-prev')) {
+        stepMemoryGallery(-1);
+    } else if (event.target.closest('.memory-gallery-next')) {
+        stepMemoryGallery(1);
+    }
+});
 
 async function loadScene() {
     try {
@@ -412,6 +947,10 @@ async function loadScene() {
 }
 
 loadScene();
+bindReviewMemosButton();
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMemory();
+});
 </script>
 </body>
 </html>

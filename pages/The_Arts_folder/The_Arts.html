@@ -338,6 +338,29 @@
             white-space: nowrap;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.84);
         }
+
+        .floating-scene-sentence {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 122;
+            max-width: min(320px, 78vw);
+            color: rgba(255, 255, 255, 0.92);
+            font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.25;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            white-space: nowrap;
+        }
+
+        .floating-scene-sentence.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
     </style>
 </head>
 <body class="scene-loading">
@@ -369,7 +392,7 @@
 <div id="hero-title">
     <div class="hero-text">
         <div class="hero-title-line">The Arts</div>
-        <div class="hero-subtitle">A branch for rehearsal, expression, and the rooms around them</div>
+        <div class="hero-subtitle">best place on campus</div>
     </div>
 </div>
 
@@ -378,10 +401,11 @@
     <span class="destination-link-pin" aria-hidden="true"><span class="destination-link-icon">♪</span></span>
     <span class="destination-link-label">Music</span>
 </a>
-<a class="destination-link" id="glassroom-link" href="./The_Arts_regional/Glassroom.html" aria-label="Open Glassroom">
+<a class="destination-link" id="glassroom-link" href="./The_Arts_regional/Glassroom_sub/Glassroom.html" aria-label="Open Glassroom">
     <span class="destination-link-pin" aria-hidden="true"><span class="destination-link-icon">◇</span></span>
     <span class="destination-link-label">Glassroom</span>
 </a>
+<div class="floating-scene-sentence" id="art-students-note">on a good weather, art students appears here</div>
 
 <audio id="ambient-audio" loop preload="auto">
     <source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg">
@@ -398,7 +422,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260501f';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260604nochurch';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -407,6 +431,7 @@ const heroTitle = document.getElementById('hero-title');
 const ambientAudio = document.getElementById('ambient-audio');
 const musicDepartmentLink = document.getElementById('music-department-link');
 const glassroomLink = document.getElementById('glassroom-link');
+const artStudentsNote = document.getElementById('art-students-note');
 initSharedChrome({
     homeHref: '../../index.html',
     regionalMap: {
@@ -418,7 +443,7 @@ initSharedChrome({
         ],
         nodes: [
             { label: 'Music', href: '../Music_Department_folder/Music_Department.html', left: '58%', top: '44%' },
-            { label: 'Glassroom', href: './The_Arts_regional/Glassroom.html', left: '58%', top: '64%' }
+            { label: 'Glassroom', href: './The_Arts_regional/Glassroom_sub/Glassroom.html', left: '58%', top: '64%' }
         ],
         placeCard: {
             kicker: 'Branch',
@@ -435,7 +460,7 @@ const initialCameraLookAt = [1.38, 1.04, 0.20];
 const initialLookAtVector = new THREE.Vector3(...initialCameraLookAt);
 const DEFAULT_ZOOM_PERCENT = 100;
 const MIN_ZOOM_PERCENT = 72;
-const MAX_ZOOM_PERCENT = 450;
+const MAX_ZOOM_PERCENT = 700;
 const MIN_CAMERA_Y = -0.5;
 const MAX_CAMERA_Y = 7.5;
 const initialDistance = new THREE.Vector3(...initialCameraPosition).distanceTo(initialLookAtVector);
@@ -458,6 +483,25 @@ const destinationLinks = [
     { element: musicDepartmentLink, anchor: new THREE.Vector3(20.32, 5.21, -10.70) },
     { element: glassroomLink, anchor: new THREE.Vector3(-8.10, 0.06, 10.91) }
 ];
+const FLOATING_SENTENCE_REVEAL_DISTANCE = 9;
+let floatingSentencesVisible = false;
+const floatingSentences = [
+    { element: artStudentsNote, anchor: new THREE.Vector3(2.61, -0.08, -2.39) },
+    {
+        element: null,
+        anchor: new THREE.Vector3(6.86, 0.41, 0.34),
+        text: 'you could get in through this window... in emergencies of course (remember to leave it open)'
+    }
+];
+
+floatingSentences.forEach((sentence) => {
+    if (sentence.element || !sentence.text) return;
+    const element = document.createElement('div');
+    element.className = 'floating-scene-sentence';
+    element.textContent = sentence.text;
+    document.body.appendChild(element);
+    sentence.element = element;
+});
 
 function enforceCameraConstraints() {
     if (!viewer.camera?.position) return;
@@ -542,6 +586,30 @@ function updateDestinationLinks() {
         element.classList.add('visible');
     });
 
+    floatingSentences.forEach(({ element, anchor }) => {
+        if (!element) return;
+        if (!floatingSentencesVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+        const projectedPoint = anchor.clone().project(viewer.camera);
+        const isVisible = projectedPoint.z > -1 && projectedPoint.z < 1
+            && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+            && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+
+        if (!isVisible) {
+            element.classList.remove('visible');
+            return;
+        }
+
+        const x = ((projectedPoint.x + 1) / 2) * window.innerWidth;
+        const y = ((-projectedPoint.y + 1) / 2) * window.innerHeight;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        const cameraDistance = viewer.camera.position.distanceTo(anchor);
+        element.classList.toggle('visible', cameraDistance <= FLOATING_SENTENCE_REVEAL_DISTANCE);
+    });
+
     window.requestAnimationFrame(updateDestinationLinks);
 }
 
@@ -554,6 +622,18 @@ window.addEventListener('wheel', hideHeroTitle, { once: true });
 window.addEventListener('keydown', hideHeroTitle, { once: true });
 updateViewIndicator();
 updateDestinationLinks();
+
+const reviewMemosButton = document.getElementById('review-memos');
+if (reviewMemosButton) {
+    const replacement = reviewMemosButton.cloneNode(true);
+    reviewMemosButton.replaceWith(replacement);
+    replacement.addEventListener('click', () => {
+        floatingSentencesVisible = !floatingSentencesVisible;
+        if (!floatingSentencesVisible) {
+            floatingSentences.forEach(({ element }) => element?.classList.remove('visible'));
+        }
+    });
+}
 
 async function loadScene() {
     try {
