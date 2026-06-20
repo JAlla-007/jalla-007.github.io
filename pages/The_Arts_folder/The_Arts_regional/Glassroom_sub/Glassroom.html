@@ -597,7 +597,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../../shared-chrome.js?v=20260604nochurch';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../../shared-chrome.js?v=20260620sceneaudio';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -635,7 +635,6 @@ initSharedMusicPlayer({
         { label: 'Outer Wilds Cover', src: '../../../../Music/outerwilds_cleancover.mp3' },
         { label: 'Homepage Ambience', src: '../../../../Music/homepoage_ambiencemusic.mp3?v=20260501c' },
         { label: 'Bird Ambience', src: '../../../../Sound_effects/ambience/Birdambience.mp3?v=20260501a' },
-        { label: "Kelly's Theme", src: "../../../../Music/kelly's_themecover.mp3" },
         { label: 'Moonsong Hmm', src: '../../../../Music/Moonsong_hmmcover.mp3' }
     ]
 });

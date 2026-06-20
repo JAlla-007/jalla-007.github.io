@@ -1513,15 +1513,49 @@ function getRootHref(homeHref) {
     return homeHref.replace(/index\.html(?:[?#].*)?$/, '');
 }
 
+function buildSceneMusicTrack(rootHref, pathname = window.location.pathname) {
+    const normalizedPath = decodeURIComponent(pathname).toLowerCase();
+    const sceneTracks = [
+        {
+            path: '/academic_blocks_folder/languages_folder/',
+            label: 'Languages',
+            src: `${rootHref}Music/Languages.mp3`
+        },
+        {
+            path: '/pk_folder/',
+            label: 'PK',
+            src: `${rootHref}Music/PK.mp3`
+        },
+        {
+            path: '/seafront_folder/',
+            label: 'Seafront Noise',
+            src: `${rootHref}Music/Seafront noise .mp3`
+        },
+        {
+            path: '/academic_blocks_folder/',
+            label: 'Piano Ambience',
+            src: `${rootHref}Music/Piano Ambience.mp3`
+        },
+        {
+            path: '/the_arts_folder/',
+            label: 'Piano Ambience 2',
+            src: `${rootHref}Music/Piano Ambience 2.mp3`
+        }
+    ];
+
+    return sceneTracks.find((track) => normalizedPath.includes(track.path)) || null;
+}
+
 function buildSharedPlaylist(homeHref) {
     const rootHref = getRootHref(homeHref);
-    return [
+    const sharedTracks = [
         { label: 'Outer Wilds Cover', src: `${rootHref}Music/outerwilds_cleancover.mp3` },
         { label: 'Homepage Ambience', src: `${rootHref}Music/homepoage_ambiencemusic.mp3?v=20260501c` },
         { label: 'Bird Ambience', src: `${rootHref}Sound_effects/ambience/Birdambience.mp3?v=20260501a` },
-        { label: "Kelly's Theme", src: `${rootHref}Music/kelly's_themecover.mp3` },
         { label: 'Moonsong Hmm', src: `${rootHref}Music/Moonsong_hmmcover.mp3` }
     ];
+    const sceneTrack = buildSceneMusicTrack(rootHref);
+    return sceneTrack ? [sceneTrack, ...sharedTracks] : sharedTracks;
 }
 
 const DEFAULT_MAP_CONFIG = buildGlobalMapConfig('../index.html');
@@ -1545,6 +1579,11 @@ export function initSharedChrome(options = {}) {
     if (!keepSubpagesPanel) {
         document.getElementById('subpages-panel')?.remove();
     }
+    queueMicrotask(() => {
+        if (!window.__sharedMusicPlayerController) {
+            initSharedMusicPlayer({ homeHref });
+        }
+    });
 }
 
 export function bindSceneCoordinatePicker({ viewer, THREE }) {
@@ -1761,8 +1800,17 @@ export function bindCameraViewClipboard({ viewer }) {
 
 export function initSharedMusicPlayer(options = {}) {
     const homeHref = options.homeHref || '../index.html';
-    const ambientAudio = document.getElementById('ambient-audio');
-    if (!ambientAudio) return null;
+    if (window.__sharedMusicPlayerController) {
+        return window.__sharedMusicPlayerController;
+    }
+
+    let ambientAudio = document.getElementById('ambient-audio');
+    if (!ambientAudio) {
+        ambientAudio = document.createElement('audio');
+        ambientAudio.id = 'ambient-audio';
+        ambientAudio.preload = 'auto';
+        document.body.appendChild(ambientAudio);
+    }
 
     ensureStyles();
 
@@ -1805,12 +1853,15 @@ export function initSharedMusicPlayer(options = {}) {
     const musicLoop = document.getElementById('music-loop');
 
     const playlist = options.playlist || buildSharedPlaylist(homeHref);
+    const hasAutomaticSceneTrack = !options.playlist && Boolean(buildSceneMusicTrack(getRootHref(homeHref)));
     const extractAudioFilename = (value) => (value || '').replace(/[?#].*$/, '').split('/').pop() || '';
     const sourceChild = ambientAudio.querySelector('source');
     const currentSource = ambientAudio.getAttribute('src') || sourceChild?.getAttribute('src') || '';
     ambientAudio.loop = false;
     sourceChild?.remove();
-    let currentTrackIndex = Math.max(0, playlist.findIndex((track) => extractAudioFilename(track.src) === extractAudioFilename(currentSource)));
+    let currentTrackIndex = hasAutomaticSceneTrack
+        ? 0
+        : Math.max(0, playlist.findIndex((track) => extractAudioFilename(track.src) === extractAudioFilename(currentSource)));
     let musicPlayerExpanded = false;
     let shuffleEnabled = false;
     let loopMode = 'all';
@@ -2074,8 +2125,9 @@ export function initSharedMusicPlayer(options = {}) {
     bindExclusiveVideoAudio();
     updateAudioButton();
 
-    return {
+    window.__sharedMusicPlayerController = {
         loadTrack,
         startAmbientAudio
     };
+    return window.__sharedMusicPlayerController;
 }
