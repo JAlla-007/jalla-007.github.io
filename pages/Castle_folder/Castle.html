@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castle - Atlantic College Memo</title>
+    <style>
+        @font-face { font-family: "Castle Regular"; src: url("../../iconntext/font_castle/Myfont-Regular.ttf") format("truetype"); }
+        html, body { width: 100%; height: 100%; }
+        body { margin: 0; overflow: hidden; background: #050505; }
+        body::before { content: ""; position: fixed; inset: 0; z-index: 125; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.2) 58%, transparent); opacity: 1; transition: opacity 2s ease; }
+        body.intro-mask-hidden::before { opacity: 0; }
+        #info { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; pointer-events: none; transition: opacity .45s ease; }
+        #info.hidden { opacity: 0; }
+        .loading-gif { width: min(220px, 42vw); height: auto; border-radius: 18px; filter: drop-shadow(0 10px 28px rgba(0,0,0,.34)); }
+        body.scene-loading #nav, body.scene-loading #hero-title, body.scene-loading #hint, body.scene-loading #side-tags, body.scene-loading #page-identity-card, body.scene-loading #music-player, body.scene-loading #screenshot-button { opacity: 0 !important; pointer-events: none !important; }
+        #hero-title { position: fixed; inset: 0; z-index: 130; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transform: translateY(16px); transition: opacity 2s ease, transform 2s ease; }
+        #hero-title.visible { opacity: 1; transform: translateY(0); }
+        #hero-title.hidden { opacity: 0; transform: translateY(-10px); }
+        .hero-text { padding: 0 24px; text-align: center; }
+        .hero-title-line { color: white; font-family: "Castle Regular", "Times New Roman", serif; font-size: clamp(44px, 8vw, 94px); letter-spacing: .08em; text-transform: uppercase; text-shadow: 0 18px 60px rgba(0,0,0,.58); }
+        .hero-subtitle { margin-top: 14px; color: rgba(255,255,255,.72); font: 13px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .24em; text-transform: uppercase; }
+        #hint { position: fixed; left: 50%; bottom: 22px; z-index: 120; max-width: min(92vw, 420px); padding: 12px 16px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(0,0,0,.55); backdrop-filter: blur(10px); color: rgba(255,255,255,.88); font: 12px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif; text-align: center; transform: translateX(-50%); transition: opacity .35s ease, transform .35s ease; }
+        #hint.hidden { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    </style>
+</head>
+<body class="scene-loading">
+    <div id="info"><img class="loading-gif" src="../../iconntext/loading.GIF" alt="Loading animation"></div>
+    <nav id="nav" aria-label="Primary"></nav>
+    <div id="hero-title"><div class="hero-text"><div class="hero-title-line">Castle</div><div class="hero-subtitle">Yo we actually live in a castle......</div></div></div>
+    <div id="hint">Drag to orbit. Scroll to zoom. Shift+drag to pan.</div>
+
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+    <script type="module">
+        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
+        import * as THREE from 'three';
+        import { initSharedChrome, initSharedMusicPlayer, bindSceneCoordinatePicker, showLoadFailure } from '../shared-chrome.js?v=20260622castle';
+
+        const info = document.getElementById('info');
+        const hint = document.getElementById('hint');
+        const heroTitle = document.getElementById('hero-title');
+        const sceneLocations = {
+            castle: {
+                title: 'Castle',
+                subtitle: 'Yo we actually live in a castle......',
+                scenePath: '../../Scenes/Castle courtyard.ksplat',
+                cameraPosition: [3.32, -0.74, -8.42],
+                cameraLookAt: [-1.72, 0.09, -2.61]
+            },
+            canteen: {
+                title: 'Canteen',
+                subtitle: 'Inside Castle',
+                scenePath: '../../Scenes/Canteen.ksplat',
+                cameraPosition: [6.44, 1.01, 3.91],
+                cameraLookAt: [-1.24, 2.75, -3.40]
+            },
+            'signature-room': {
+                title: 'Signature room',
+                subtitle: 'leave your name here',
+                scenePath: '../../Scenes/signature room.ksplat',
+                cameraPosition: [2.90, -0.09, 2.17],
+                cameraLookAt: [-1.40, -0.61, -1.97]
+            }
+        };
+        const requestedLocation = new URLSearchParams(window.location.search).get('location') || 'castle';
+        const activeLocation = sceneLocations[requestedLocation] || sceneLocations.castle;
+        document.title = `${activeLocation.title} - Atlantic College Memo`;
+        heroTitle.querySelector('.hero-title-line').textContent = activeLocation.title;
+        heroTitle.querySelector('.hero-subtitle').textContent = activeLocation.subtitle;
+
+        initSharedChrome({
+            homeHref: '../../index.html',
+            regionalMap: {
+                caption: 'Castle Regional Map',
+                center: { label: 'Castle', left: '38%', top: '45%', icon: '../../iconntext/Map_icons/Castle_icon.PNG' },
+                lines: [
+                    { left: '40%', top: '48%', width: '18%', rotate: '-18deg' },
+                    { left: '40%', top: '50%', width: '18%', rotate: '24deg' }
+                ],
+                nodes: [
+                    { label: 'Canteen', href: './Castle.html?location=canteen', left: '60%', top: '35%' },
+                    { label: 'Signature room', href: './Castle.html?location=signature-room', left: '60%', top: '64%' }
+                ],
+                placeCard: { kicker: 'Location', title: 'Castle', copy: 'Canteen and Signature room sit inside the Castle branch.', actions: [] }
+            }
+        });
+        const castlePlaylist = [
+            { label: 'Piano Ambience', src: '../../Music/Piano Ambience.mp3' },
+            { label: 'Outer Wilds Cover', src: '../../Music/outerwilds_cleancover.mp3' },
+            { label: 'Homepage Ambience', src: '../../Music/homepoage_ambiencemusic.mp3?v=20260501c' },
+            { label: 'Bird Ambience', src: '../../Sound_effects/ambience/Birdambience.mp3?v=20260501a' },
+            { label: 'Moonsong Hmm', src: '../../Music/Moonsong_hmmcover.mp3' }
+        ];
+        const canteenPlaylist = [
+            { label: 'Canteen Noise', src: '../../Music/Canteen .mp3?v=20260622canteen3' },
+            { label: 'Outer Wilds Cover', src: '../../Music/outerwilds_cleancover.mp3' },
+            { label: 'Homepage Ambience', src: '../../Music/homepoage_ambiencemusic.mp3?v=20260501c' },
+            { label: 'Bird Ambience', src: '../../Sound_effects/ambience/Birdambience.mp3?v=20260501a' },
+            { label: 'Moonsong Hmm', src: '../../Music/Moonsong_hmmcover.mp3' }
+        ];
+        initSharedMusicPlayer({
+            homeHref: '../../index.html',
+            ...(requestedLocation === 'castle' ? { playlist: castlePlaylist } : {}),
+            ...(requestedLocation === 'canteen' ? { playlist: canteenPlaylist } : {})
+        });
+
+        const initialCameraPosition = activeLocation.cameraPosition || sceneLocations.castle.cameraPosition;
+        const initialCameraLookAt = activeLocation.cameraLookAt || sceneLocations.castle.cameraLookAt;
+        const viewer = new GaussianSplats3D.Viewer({
+            initialCameraPosition,
+            initialCameraLookAt,
+            sharedMemoryForWorkers: false,
+            gpuAcceleratedSort: false,
+            dynamicScene: true,
+            sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual,
+            sceneFadeInRateMultiplier: .8
+        });
+        const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+
+        function hideHint() {
+            if (hint.classList.contains('hidden')) return;
+            hint.classList.add('hidden');
+            window.setTimeout(() => { hint.style.display = 'none'; }, 350);
+        }
+        function hideHeroTitle() {
+            if (!heroTitle.classList.contains('visible') || heroTitle.classList.contains('hidden')) return;
+            heroTitle.classList.add('hidden');
+            document.body.classList.add('intro-mask-hidden');
+            window.setTimeout(() => { heroTitle.style.display = 'none'; }, 2000);
+        }
+        function showHeroTitle() {
+            heroTitle.style.display = 'flex';
+            heroTitle.classList.remove('hidden');
+            window.requestAnimationFrame(() => heroTitle.classList.add('visible'));
+        }
+        ['pointerdown', 'wheel', 'keydown'].forEach((eventName) => {
+            window.addEventListener(eventName, hideHint, { once: true });
+            window.addEventListener(eventName, hideHeroTitle, { once: true });
+        });
+
+        async function loadScene() {
+            const scenePath = activeLocation.scenePath;
+            try {
+                const response = await fetch(scenePath);
+                if (!response.ok) throw new Error(`HTTP ${response.status} while fetching ${scenePath}`);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                await viewer.addSplatScene(blobUrl, {
+                    format: GaussianSplats3D.SceneFormat.KSplat,
+                    rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w],
+                    showLoadingUI: false,
+                    progressiveLoad: false
+                });
+                URL.revokeObjectURL(blobUrl);
+                if (viewer.controls) {
+                    viewer.controls.minPolarAngle = 0;
+                    viewer.controls.maxPolarAngle = Math.PI;
+                    viewer.controls.enablePan = true;
+                    viewer.controls.update();
+                }
+                info.classList.add('hidden');
+                window.setTimeout(() => { info.style.display = 'none'; }, 450);
+                viewer.start();
+                document.body.classList.remove('scene-loading');
+                bindSceneCoordinatePicker({ viewer, THREE });
+                showHeroTitle();
+            } catch (error) {
+                console.error(error);
+                showLoadFailure(info, error, { scenePath });
+            }
+        }
+        loadScene();
+    </script>
+</body>
+</html>

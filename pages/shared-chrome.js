@@ -931,7 +931,9 @@ function buildMapOverlayMarkup(mapConfig, closeId = 'map-close') {
     const nodes = (mapConfig.nodes || []).map((node) => `
         <a class="map-node${node.icon ? ' has-icon' : ''}" href="${node.href}" style="left: ${node.left}; top: ${node.top};">${node.icon ? `<img class="map-node-icon" src="${node.icon}" alt="">` : ''}<span>${node.label}</span></a>
     `).join('');
-    const centerNode = mapConfig.hideCenter ? '' : `
+    const centerNode = mapConfig.hideCenter ? '' : mapConfig.center.href ? `
+                    <a class="map-node${mapConfig.center.icon ? ' has-icon' : ''}" href="${mapConfig.center.href}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></a>
+    ` : `
                     <div class="map-node home-node${mapConfig.center.icon ? ' has-icon' : ''}" style="left: ${mapConfig.center.left}; top: ${mapConfig.center.top};">${mapConfig.center.icon ? `<img class="map-node-icon" src="${mapConfig.center.icon}" alt="">` : ''}<span>${mapConfig.center.label}</span></div>
     `;
 
@@ -1490,7 +1492,7 @@ function buildGlobalMapConfig(homeHref) {
 
     return {
         caption: 'Interactive Map',
-        center: { label: 'Atlantic College Memo', left: '38%', top: '45%', icon: `${rootHref}iconntext/Map_icons/Castle_icon.PNG` },
+        center: { label: 'Castle', href: `${rootHref}pages/Castle_folder/Castle.html`, left: '38%', top: '45%', icon: `${rootHref}iconntext/Map_icons/Castle_icon.PNG` },
         lines: [
             { left: '38%', top: '50%', width: '19%', rotate: '-18deg' },
             { left: '42%', top: '52%', width: '17%', rotate: '28deg' },
@@ -1524,12 +1526,12 @@ function buildSceneMusicTrack(rootHref, pathname = window.location.pathname) {
         {
             path: '/pk_folder/',
             label: 'PK',
-            src: `${rootHref}Music/PK.mp3`
+            src: `${rootHref}Music/PK.mp3?v=20260622`
         },
         {
             path: '/seafront_folder/',
             label: 'Seafront Noise',
-            src: `${rootHref}Music/Seafront noise .mp3`
+            src: `${rootHref}Music/Seafront noise .mp3?v=20260622`
         },
         {
             path: '/academic_blocks_folder/',
