@@ -264,6 +264,7 @@
         .scene-beacon-gif { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; object-fit: contain; pointer-events: none; transform: translate(-50%, -50%) scale(1.9); }
         .scene-beacon-label { max-width: 0; overflow: hidden; color: white; font: 11px/1 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: max-width 0.22s ease, opacity 0.18s ease, margin-left 0.22s ease; }
         .scene-beacon.near .scene-beacon-label { max-width: 140px; margin-left: 10px; opacity: 1; }
+        .scene-beacon.object-beacon.near { width: 32px; min-height: 32px; padding: 0; }
 
         #memory-overlay {
             position: fixed; inset: 0; z-index: 190; display: grid; place-items: center; padding: 28px;
@@ -284,6 +285,25 @@
             .seafront-memory-title { grid-row: 1; padding-right: 58px; }
             .seafront-memory-text { grid-row: 2; }
             .seafront-memory-gallery { grid-row: 3; height: 300px; }
+        }
+
+        #object-overlay {
+            position: fixed; inset: 0; z-index: 191; display: grid; place-items: center; padding: 28px;
+            background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(14px);
+            opacity: 0; pointer-events: none; transition: opacity 0.28s ease;
+        }
+        #object-overlay.visible { opacity: 1; pointer-events: auto; }
+        .seafront-object-panel { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 18px; width: min(92vw, 920px); height: min(82vh, 720px); box-sizing: border-box; overflow: hidden; padding: 26px; border: 1px solid rgba(255,255,255,0.14); border-radius: 28px; background: radial-gradient(circle at top left, rgba(255,255,255,0.09), transparent 28%), rgba(12,12,12,0.94); box-shadow: 0 28px 70px rgba(0,0,0,0.48); }
+        .seafront-object-heading { min-width: 0; padding-right: 62px; }
+        .seafront-object-kicker { color: rgba(255,255,255,0.52); font: 10px/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.18em; text-transform: uppercase; }
+        .seafront-object-title { margin: 7px 0 0; color: white; font-family: "Castle Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: clamp(26px, 3.4vw, 42px); font-weight: 400; line-height: 1; }
+        .seafront-object-viewer { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); border-radius: 22px; background: #050505; }
+        .seafront-object-status { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 24px; color: rgba(255,255,255,0.68); font: 11px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.12em; text-align: center; text-transform: uppercase; pointer-events: none; }
+        .seafront-object-status.hidden { display: none; }
+        .seafront-object-close { position: absolute; right: 18px; top: 18px; z-index: 4; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.06); color: white; font-size: 22px; cursor: pointer; }
+        @media (max-width: 720px) {
+            #object-overlay { padding: 16px; }
+            .seafront-object-panel { width: 100%; height: min(82vh, 660px); padding: 22px 18px 18px; }
         }
     </style>
 </head>
@@ -316,6 +336,18 @@ It seems so far
 almost unreal</p>
     </article>
 </div>
+<div id="object-overlay" aria-hidden="true">
+    <article class="seafront-object-panel">
+        <button class="seafront-object-close" id="object-close" type="button" aria-label="Close Coastal Path Sign">×</button>
+        <header class="seafront-object-heading">
+            <div class="seafront-object-kicker">Found Object</div>
+            <h2 class="seafront-object-title">Coastal Path Sign</h2>
+        </header>
+        <div class="seafront-object-viewer" id="object-scene-root">
+            <div class="seafront-object-status" id="object-scene-status">Loading object scene…</div>
+        </div>
+    </article>
+</div>
 <button id="audio-toggle" type="button">Sound Off</button>
 <audio id="ambient-audio" loop preload="auto"><source src="../../Music/outerwilds_cleancover.mp3" type="audio/mpeg"></audio>
 <script type="importmap">
@@ -324,7 +356,7 @@ almost unreal</p>
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260620sceneaudio';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../shared-chrome.js?v=20260623more';
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
 const nav = document.getElementById('nav');
@@ -369,12 +401,24 @@ const viewer = new GaussianSplats3D.Viewer({ initialCameraPosition, initialCamer
 const modelRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0));
 const FLOATING_SENTENCE_REVEAL_DISTANCE = 15;
 const MEMORY_REVEAL_DISTANCE = 15;
+const OBJECT_REVEAL_DISTANCE = 15;
 let floatingSentencesVisible = false;
+let objectBeaconsVisible = false;
 const memoryOverlay = document.getElementById('memory-overlay');
 const memoryClose = document.getElementById('memory-close');
+const objectOverlay = document.getElementById('object-overlay');
+const objectClose = document.getElementById('object-close');
+const objectSceneRoot = document.getElementById('object-scene-root');
+const objectSceneStatus = document.getElementById('object-scene-status');
+let objectViewer = null;
+let objectSceneLoadPromise = null;
 const memoryBeacon = {
     anchor: new THREE.Vector3(12.99, -7.50, 7.24),
     label: 'Stargaze'
+};
+const objectBeacon = {
+    anchor: new THREE.Vector3(7.23, 1.36, 0.95),
+    label: 'Coastal Path Sign'
 };
 const floatingSentences = [
     {
@@ -409,6 +453,61 @@ memoryBeaconElement.addEventListener('click', () => {
     memoryOverlay.classList.add('visible');
     memoryOverlay.setAttribute('aria-hidden', 'false');
 });
+
+const objectBeaconElement = document.createElement('button');
+objectBeaconElement.type = 'button';
+objectBeaconElement.className = 'scene-beacon object-beacon';
+objectBeaconElement.setAttribute('aria-label', 'Open object Coastal Path Sign');
+objectBeaconElement.innerHTML = `<span class="scene-beacon-core" aria-hidden="true"><img class="scene-beacon-gif" src="../../iconntext/Beacon.GIF" alt=""></span>`;
+document.body.appendChild(objectBeaconElement);
+
+async function loadObjectScene() {
+    if (objectSceneLoadPromise) return objectSceneLoadPromise;
+    objectSceneLoadPromise = (async () => {
+        const response = await fetch('../../Scenes/coastal_path_sign.ksplat');
+        if (!response.ok) throw new Error(`HTTP ${response.status} while fetching coastal_path_sign.ksplat`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        objectViewer = new GaussianSplats3D.Viewer({
+            rootElement: objectSceneRoot,
+            initialCameraPosition: [0, 0.25, 0.9],
+            initialCameraLookAt: [0, 0, 0],
+            sharedMemoryForWorkers: false,
+            gpuAcceleratedSort: false,
+            dynamicScene: true,
+            sceneRevealMode: GaussianSplats3D.SceneRevealMode.Gradual,
+            sceneFadeInRateMultiplier: 0.8
+        });
+        await objectViewer.addSplatScene(blobUrl, { format: GaussianSplats3D.SceneFormat.KSplat, rotation: [modelRotation.x, modelRotation.y, modelRotation.z, modelRotation.w], showLoadingUI: false, progressiveLoad: false });
+        URL.revokeObjectURL(blobUrl);
+        if (objectViewer.controls) {
+            objectViewer.controls.minPolarAngle = 0;
+            objectViewer.controls.maxPolarAngle = Math.PI;
+            objectViewer.controls.enablePan = true;
+            objectViewer.controls.update();
+        }
+        objectViewer.start();
+        objectSceneStatus.classList.add('hidden');
+    })().catch((error) => {
+        console.error(error);
+        objectSceneStatus.textContent = 'Unable to load Coastal Path Sign';
+        throw error;
+    });
+    return objectSceneLoadPromise;
+}
+
+function openObjectCard() {
+    objectOverlay.classList.add('visible');
+    objectOverlay.setAttribute('aria-hidden', 'false');
+    loadObjectScene().catch(() => {});
+}
+
+function closeObjectCard() {
+    objectOverlay.classList.remove('visible');
+    objectOverlay.setAttribute('aria-hidden', 'true');
+}
+
+objectBeaconElement.addEventListener('click', openObjectCard);
 
 function updateViewIndicator() { if (viewer.camera?.position) { const currentDistance = viewer.camera.position.distanceTo(initialLookAtVector); const zoomPercent = Math.max(1, Math.round((initialDistance / currentDistance) * 100)); } window.requestAnimationFrame(updateViewIndicator); }
 function updateFloatingSentences() {
@@ -452,6 +551,24 @@ function updateFloatingSentences() {
                 memoryBeaconElement.classList.remove('visible', 'near');
             }
         }
+
+        if (!objectBeaconsVisible) {
+            objectBeaconElement.classList.remove('visible', 'near');
+        } else {
+            const projectedPoint = objectBeacon.anchor.clone().project(viewer.camera);
+            const isOnScreen = projectedPoint.z > -1 && projectedPoint.z < 1
+                && projectedPoint.x >= -1.15 && projectedPoint.x <= 1.15
+                && projectedPoint.y >= -1.15 && projectedPoint.y <= 1.15;
+
+            if (isOnScreen) {
+                objectBeaconElement.style.left = `${((projectedPoint.x + 1) / 2) * window.innerWidth}px`;
+                objectBeaconElement.style.top = `${((-projectedPoint.y + 1) / 2) * window.innerHeight}px`;
+                objectBeaconElement.classList.add('visible');
+                objectBeaconElement.classList.toggle('near', viewer.camera.position.distanceTo(objectBeacon.anchor) <= OBJECT_REVEAL_DISTANCE);
+            } else {
+                objectBeaconElement.classList.remove('visible', 'near');
+            }
+        }
     }
 
     window.requestAnimationFrame(updateFloatingSentences);
@@ -477,20 +594,51 @@ memoryClose.addEventListener('click', closeMemory);
 memoryOverlay.addEventListener('click', (event) => {
     if (event.target === memoryOverlay) closeMemory();
 });
+objectClose.addEventListener('click', closeObjectCard);
+objectOverlay.addEventListener('click', (event) => {
+    if (event.target === objectOverlay) closeObjectCard();
+});
 window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && memoryOverlay.classList.contains('visible')) closeMemory();
+    if (event.key === 'Escape' && objectOverlay.classList.contains('visible')) closeObjectCard();
 });
 
 const reviewMemosButton = document.getElementById('review-memos');
 if (reviewMemosButton) {
     const replacement = reviewMemosButton.cloneNode(true);
     reviewMemosButton.replaceWith(replacement);
+    replacement.setAttribute('aria-pressed', 'false');
     replacement.addEventListener('click', () => {
+        objectBeaconsVisible = false;
+        objectBeaconElement.classList.remove('visible', 'near');
+        closeObjectCard();
         floatingSentencesVisible = !floatingSentencesVisible;
+        replacement.setAttribute('aria-pressed', String(floatingSentencesVisible));
+        document.getElementById('review-notes')?.setAttribute('aria-pressed', 'false');
         if (!floatingSentencesVisible) {
             floatingSentences.forEach(({ element }) => element.classList.remove('visible'));
             memoryBeaconElement.classList.remove('visible', 'near');
             closeMemory();
+        }
+    });
+}
+
+const reviewNotesButton = document.getElementById('review-notes');
+if (reviewNotesButton) {
+    const replacement = reviewNotesButton.cloneNode(true);
+    reviewNotesButton.replaceWith(replacement);
+    replacement.setAttribute('aria-pressed', 'false');
+    replacement.addEventListener('click', () => {
+        floatingSentencesVisible = false;
+        floatingSentences.forEach(({ element }) => element.classList.remove('visible'));
+        memoryBeaconElement.classList.remove('visible', 'near');
+        closeMemory();
+        objectBeaconsVisible = !objectBeaconsVisible;
+        replacement.setAttribute('aria-pressed', String(objectBeaconsVisible));
+        document.getElementById('review-memos')?.setAttribute('aria-pressed', 'false');
+        if (!objectBeaconsVisible) {
+            objectBeaconElement.classList.remove('visible', 'near');
+            closeObjectCard();
         }
     });
 }

@@ -546,11 +546,67 @@ body[data-shared-chrome="true"] .memo-panel {
     width: min(92vw, 920px);
     max-height: min(82vh, 760px);
     overflow: auto;
+    text-align: center;
     border-radius: 30px;
     padding: 30px 26px 26px;
     background:
         radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%),
         rgba(12, 12, 12, 0.86);
+}
+
+body[data-shared-chrome="true"] .memo-panel,
+body[data-shared-chrome="true"] .memo-panel * {
+    font-family: "Castle Regular", "Times New Roman", serif !important;
+}
+
+body[data-shared-chrome="true"] .memo-title {
+    margin: 14px auto 6px;
+}
+
+body[data-shared-chrome="true"] .more-sections {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 34px;
+    text-align: center;
+}
+
+body[data-shared-chrome="true"] .more-section {
+    width: min(100%, 680px);
+}
+
+body[data-shared-chrome="true"] .more-section-title {
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+body[data-shared-chrome="true"] .social-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+}
+
+body[data-shared-chrome="true"] .social-link {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: none;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+body[data-shared-chrome="true"] .social-link:hover {
+    background: none;
+    color: white;
+    opacity: 0.72;
 }
 
 body[data-shared-chrome="true"] .memo-letter {
@@ -563,19 +619,14 @@ body[data-shared-chrome="true"] .memo-letter {
 }
 
 body[data-shared-chrome="true"] .gift-card {
-    margin-top: 8px;
-    padding: 22px 22px 18px;
-    border-radius: 24px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+    display: block;
 }
 
 body[data-shared-chrome="true"] .gift-visual {
     display: block;
-    width: min(220px, 100%);
+    width: min(140px, 42vw);
     height: auto;
-    margin: 0 auto 14px;
+    margin: 0 auto 18px;
     border-radius: 14px;
     object-fit: contain;
 }
@@ -591,6 +642,7 @@ body[data-shared-chrome="true"] .gift-question {
 body[data-shared-chrome="true"] .gift-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 12px;
     margin-top: 18px;
 }
@@ -620,7 +672,8 @@ body[data-shared-chrome="true"] .gift-action:hover {
 
 body[data-shared-chrome="true"] .gift-form {
     display: none;
-    margin-top: 16px;
+    width: min(100%, 420px);
+    margin: 16px auto 0;
 }
 
 body[data-shared-chrome="true"] .gift-form.visible {
@@ -1121,24 +1174,34 @@ function ensureOverlays(homeHref, globalMapConfig, regionalMapConfig, itemsConfi
                 <button class="map-close" id="memo-close" type="button" aria-label="Close more panel">×</button>
                 <div class="memo-kicker">Atlantic College Memo</div>
                 <h2 class="memo-title">More</h2>
-                <p class="memo-intro">
-                    Private access card
-                </p>
-                <div class="gift-card">
-                    <img class="gift-visual" src="${rootHref}iconntext/waving.GIF" alt="Waving animation">
-                    <p class="gift-question">Did you receive a gift?</p>
-                    <div class="gift-actions">
-                        <button class="gift-action" id="gift-yes" type="button">Yes</button>
-                        <button class="gift-action" id="gift-no" type="button">No</button>
-                    </div>
-                    <form class="gift-form" id="gift-form" autocomplete="off">
-                        <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
-                        <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
-                        <div class="gift-actions">
-                            <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+                <div class="more-sections">
+                    <section class="more-section gift-card" aria-labelledby="more-gift-title">
+                        <img class="gift-visual" src="${rootHref}iconntext/waving.GIF" alt="Waving animation">
+                        <div>
+                            <div class="more-section-title" id="more-gift-title">Gift Card</div>
+                            <p class="gift-question">Did you receive a gift?</p>
+                            <div class="gift-actions">
+                                <button class="gift-action" id="gift-yes" type="button">Yes</button>
+                                <button class="gift-action" id="gift-no" type="button">No</button>
+                            </div>
+                            <form class="gift-form" id="gift-form" autocomplete="off">
+                                <input class="gift-input" id="gift-name" type="text" name="name" placeholder="Type your name" required>
+                                <input class="gift-input" id="gift-password" type="password" name="password" placeholder="Type password" required>
+                                <div class="gift-actions">
+                                    <button class="gift-action" id="gift-enter" type="submit">Enter Secret Location</button>
+                                </div>
+                            </form>
+                            <p class="gift-note" id="gift-note">Choose an option to continue.</p>
                         </div>
-                    </form>
-                    <p class="gift-note" id="gift-note">Choose an option to continue.</p>
+                    </section>
+                    <section class="more-section" aria-labelledby="more-social-title">
+                        <div class="more-section-title" id="more-social-title">Social Media</div>
+                        <div class="social-links">
+                            <a class="social-link" href="https://github.com/JAlla-007" target="_blank" rel="noreferrer">GitHub</a>
+                            <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noreferrer">YouTube</a>
+                            <a class="social-link" href="mailto:${LOAD_REPORT_EMAIL}">gmail: ${LOAD_REPORT_EMAIL}</a>
+                        </div>
+                    </section>
                 </div>
             </div>
         `;

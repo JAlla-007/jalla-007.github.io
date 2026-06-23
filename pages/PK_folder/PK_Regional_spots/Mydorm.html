@@ -783,7 +783,7 @@
 <script type="module">
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js';
 import * as THREE from 'three';
-import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260620sceneaudio';
+import { initSharedChrome, bindSceneCoordinatePicker, initSharedMusicPlayer, showLoadFailure } from '../../shared-chrome.js?v=20260623more';
 
 const info = document.getElementById('info');
 const hint = document.getElementById('hint');
@@ -981,6 +981,17 @@ const MEMORY_BEACONS = [
         copy: '',
         media: [
             { type: 'video', src: './Mydorm_sub/Memories/summer alone/X -1.78 Y -0.70 Z 0.86.mp4' }
+        ]
+    },
+    {
+        id: 'last-day',
+        label: 'Last day',
+        anchor: new THREE.Vector3(-1.55, 0.07, 0.58),
+        kicker: 'Memory Fragment',
+        title: 'May 23rd, 2026',
+        copy: 'Bye.',
+        images: [
+            './Mydorm_sub/Memories/Last day/c05f15d74b6e1eeedd9c0725218e5f4c.jpg'
         ]
     }
 ];
